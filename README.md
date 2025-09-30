@@ -176,20 +176,18 @@ Since rout_unit.con is the only additional file needed to perform the Data Prepa
 
 # 5. Process
 ### Data Preparation tab
-This tab allows you to either only provide pareto_fitness.txt (optionally also sq_fitness.txt) and the objective names or to provide all required datasets and perform the Data Preparation. The option to "Run Prep" becomes available when all files have been found after clicking "Check Files".
-"Run Prep" calls the convert_optain R script and writes var_corr_par.csv into the input folder. Var_corr_par.csv contains all variables considered in the clustering. Depending on the measures implemented, different variables are included. You can find their description in the glossary.
-The clustering is later run across these variables.
+This tab allows you to either only provide pareto_fitness.txt (optionally also sq_fitness.txt) and the objective names, to provide all required datasets and perform the Data Preparation or to provide subsets of the required data that you reproduce following the OPTAIN templates. See previous section for Details.
 
-If you want this tab lets you select those measures that require a buffer in maps to enhance their visibility (note that elements in the downloaded maps tend to be a bit smaller than shown in the app).
+If you want the Data Preparation tab lets you select those measures that require a buffer in maps to enhance their visibility (note that elements in the downloaded maps tend to be a bit smaller than shown in the app).
 
 Please note that it is not straightforward to change the objectives names at a later point without performing a hard reset and rerunning the data preparation first. 
-You can force a change of objective names with the following steps:
+A change of objective names an be forced following these three steps:
 
 1. delete object_names.RDS from the input folder
 
 2. manually change the names in the first four columns in var_corr_par.csv in the input folder
 
-3. manually change the names in the first four columns of the newest file in the output folder with a name like kmeans_data_w_clusters_representativesolutions.csv
+3. manually change the names in the first four columns of the newest file in the output Folder, named kmeans_data_w_clusters_representativesolutions.csv or similar
 
 ### Cluster Tabs
 The clustering, both manually or under default settings writes two .csv files to the output folder. One is called correlation_matrix.csv, the other is called kmeans_data_w_clusters_representativesolutions.csv or kmedoid_data_w_clusters_representativesolutions.csv or similar depending on which 
@@ -210,10 +208,10 @@ It is important to note that:
   * stratified variables do not work in the tool, the sliders cannot be moved
  
 
-## 6.2 Planned Features/Missing
+## 6.2 Planned Features for future versions
+  * write/load full scenario run from previous uses
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed
-  * processing speed of Visualisation tab went down with matched selection
   * add a small spinner to the Check Data button to clarify that it takes a while
   * description of reproducing data 
   * dynamic clustering with other variables, different var_corr_par.csv unlinked from SWAT+ and CoMOLA  
