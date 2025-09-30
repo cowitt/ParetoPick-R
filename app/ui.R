@@ -648,6 +648,8 @@ ui <-
                                ),
 
                                br(),
+                               div(style = "text-align: center; font-size:120%", uiOutput("opt_count")), #optima count
+                               br(),
                                div(
                                  style = "display: inline-block; vertical-align: top; margin-right: 0px;",
                                  textInput("fp_plot_savename", label = NULL, value = "pareto")
@@ -1229,7 +1231,9 @@ ui <-
 
                            div(id = "pareto_weighted", "Best Option under selected weighting", style = "text-align: center; font-size: 150%;"),
                                                    div(tableOutput("best_option_output"), style = "margin: 0 auto; width: fit-content; font-size: 150%;")),
-                           
+                           br(),
+                           div(style = "text-align: center; font-size:120%", uiOutput("ahp_count")), #optima count
+                           br(),
                            div(id = "manual_ahp", "Manual Selection/Refinement of best Option", style = "text-align: center; font-size: 150%;",
                                div("The starting point is the currently selected best optimum", style = "text-align: center; font-size: 60%;"),
                            div(tableOutput("manual_ahp_tab"), style = "margin: 0 auto; width: fit-content;"))%>%hidden(),
