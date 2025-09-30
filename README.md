@@ -211,7 +211,7 @@ It is important to note that:
  
 
 ## 6.2 Planned Features/Missing
-  * selected line and optima jump around when sliders touched as this is done using line number/id, reevaluation required
+  * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed
   * processing speed of Visualisation tab went down with matched selection
   * add a small spinner to the Check Data button to clarify that it takes a while
