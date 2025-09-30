@@ -45,10 +45,10 @@ server <- function(input, output, session) {
   best_option = reactiveVal(NULL)
   bo_pass = reactiveVal()
   fit1 = reactiveVal()
-  dat_matched = reactiveVal()
+
   whole_ahp = reactiveVal(NULL)
   sols_ahp = reactiveVal(NULL)
-  cl_line = reactiveVal(NULL)
+ 
   buffers = reactiveVal(NULL)
   cmf = reactiveVal(NULL)
   slider_mes_ini <- reactiveVal(FALSE)
@@ -56,8 +56,7 @@ server <- function(input, output, session) {
   memima_ini = reactiveVal(NULL)
   mes_touched = reactiveVal(FALSE)
   reset_move = reactiveVal(FALSE)
-  cl_line_val = reactiveVal(NULL)
-  cl_line_x = reactiveVal(NULL)
+ 
   scatter_regr = reactiveVal(NULL)
   
   #control/limit range of objectives, works in combination with slider input$ran1 etc.
@@ -170,7 +169,7 @@ server <- function(input, output, session) {
     req(f_scaled(),objectives())
     f_scaled()%>% pivot_longer(.,cols=-id)%>%mutate(name=factor(name,levels=objectives()),id=as.factor(id))
   })
-  
+
   observe({
     req(pp())
     req(length(unique(pp()$id))>0)
@@ -851,14 +850,14 @@ server <- function(input, output, session) {
         }, .init = .)
       
       mt_optis = ff$optimum #optima
-      opti_mima(fit() %>% rownames_to_column("optimum")%>%filter(optimum %in% mt_optis) %>% select(-optimum))
+      opti_mima(fit1()%>%filter(optimum %in% mt_optis) %>% select(-optimum))
       
-    }else{opti_mima(FALSE)}
+    }else{opti_mima(FALSE)} 
    
   })
-
-    
-    ## make or pull fit()
+  
+ 
+     ## make or pull fit()
     observe({
       
       if (file.exists(pareto_path)) {
@@ -1006,10 +1005,10 @@ server <- function(input, output, session) {
     )
   })
   
-  
-  filtered_data <- reactive({
+  #filtered_data and scaled_filtered_data(), currently rather verbose setup
+  scaled_filtered_data <- reactive({ 
     req(input_ranges_valid())
-    req(fit(), f_scaled())
+    req(f_scaled())
     
     ranges <- input_ranges()
     
@@ -1018,19 +1017,29 @@ server <- function(input, output, session) {
                  mes_slider = mes_touched(), mes_df = opti_mima())
   })
   
-  scaled_filtered_data <- reactive({
-    req(input_ranges_valid())
-    req(fit(), f_scaled())
-    
+  filtered_data <- reactive({
+    req(scaled_filtered_data())
+    req(f_scaled())
+
     ranges <- input_ranges()
-    
-    scaled_abs_match(minval_s = ranges$minvals,
+ 
+    scaled_abs_match(minval_s = ranges$minvals,#to be merged with above function, subset with row indices
                      maxval_s = ranges$maxvals,
                      abs_tab = fit(),scal_tab = f_scaled(),
                      allobs = objectives(),smll=F, mes_slider = mes_touched(), 
                      mes_df =opti_mima())
   })  
   
+  observe({
+    req(scaled_filtered_data(),filtered_data())
+    sk = scaled_filtered_data();fd = filtered_data()
+    if(nrow(sk) == nrow(fd)){#indication if something's wrong in subset
+    output$opt_count <- renderUI({
+      tagList("The remaining number of optima is: ",tags$b(nrow(sk)))
+      })
+    }
+    
+  })
   
   
   object_names_exists <- reactive({
@@ -1039,10 +1048,9 @@ server <- function(input, output, session) {
   
 
   observe({
-    req(scaled_filtered_data(), object_names_exists())
+    req(filtered_data(), object_names_exists())
     
-    df <- scaled_filtered_data()
-    dat_matched(df)
+    df <- filtered_data()
     
     is_empty <- nrow(df) == 0
     
@@ -1083,9 +1091,10 @@ server <- function(input, output, session) {
     
   
     first_pareto_fun = function(){
-      req(dat_matched(),input$y_var3)
+      req(filtered_data(),input$y_var3)
       #match scaled input with unscaled fit() to create dat
-      dat=dat_matched()
+      dat=filtered_data()
+      if(nrow(dat)==0){return(NULL)}
       if(!is.null(sel_tay()) && nrow(merge(sel_tay(),dat))==0){sel_tay(NULL)} #remove selection when not in sliders
       
       #run plt_sc_optima with sq
@@ -1104,25 +1113,20 @@ server <- function(input, output, session) {
     output$first_pareto <- renderPlot({ first_pareto_fun() })
   
     observeEvent(input$clickpoint, { #first pareto
-      req(scaled_filtered_data(), input$obj1, input$x_var3)
+      req(filtered_data(), input$x_var3) #non-scaled
       
       clickpoint_button(TRUE)
-      dat <- scaled_filtered_data()
+      dat <- filtered_data()#always filters from the set currently selected
       nearest <- nearPoints(dat, input$clickpoint, xvar = input$x_var3, yvar = input$y_var3, maxpoints = 1)
       if(nrow(nearest) > 0) {
         id <-  as.numeric(rownames(nearest)[1])
-        
+        update_selection(id) #pass to line plot
         yo <- dat[id, , drop = FALSE]
-        yo$id = id
-        sel_tay(yo %>% select(-id))
-        cl_line(yo %>% select(id))
-        cl_line_x(1)
-        cl_line_val(filtered_data()[id,1])
-      }
+        sel_tay(yo) #point in pareto plot and link for changes after
+        }
       
     })
-    
-   
+  
    
     output$clickpoint_map <- renderUI({
       if(clickpoint_button()){
@@ -1278,13 +1282,13 @@ server <- function(input, output, session) {
     
     ## line plot
     parplot_fun = function(){ #clickline
-      req(filtered_data())
-      sk= filtered_data()
+      req(scaled_filtered_data())
+      sk= scaled_filtered_data()
       
       if(is.null(sk)){return(NULL)}else{
         ko= sk%>% mutate(id = factor(row_number()))%>%pivot_longer(.,cols=-id)%>%
           mutate(name=factor(name))%>%mutate(name=forcats::fct_relevel(name,objectives()))
-        
+       
         if(input$plt_sq) {
           req(stq())
           
@@ -1327,56 +1331,50 @@ server <- function(input, output, session) {
                {
                  req(filtered_data())
                  clickpoint_button(TRUE)
-                 cl_line_x(round(input$clickline$x))#x
-                 cl_line_val(input$clickline$y) #val
+                 cl_line_x=round(input$clickline$x)#x
+                 cl_line_val=input$clickline$y #val
                  
-                 sc = filtered_data() %>% mutate(id = row_number())
-                 #
-                 closest_id <- which.min(abs(sc[[cl_line_x()]] - cl_line_val()))
-                 cl_line(sc[closest_id, "id", drop = FALSE])
-                 sel_tay(sc[closest_id, -5, drop = FALSE]) #dropping the 5th column (id)
+                 sc = scaled_filtered_data() %>% mutate(id = row_number())
+                 #find closest value
+                 closest_id <- which.min(abs(sc[[cl_line_x]] - cl_line_val))
+                 update_selection(closest_id) #make line plot
+                 sel_tay(filtered_data()[closest_id,]) 
                  
                },
                ignoreNULL = TRUE)
  
+  
   observeEvent({
-    list(cl_line(),
-         input$obj1,
-         input$obj2,
-         input$obj3,
-         input$obj4,
-         opti_mima())
+    #update selected line when subset changes, sel_tay() works automatically
+    list(input$obj1, input$obj2, input$obj3, input$obj4, opti_mima())
   }, {
-    req(cl_line(), pp())
+    if (!is.null(sel_tay()) && nrow(filtered_data()) >0) {
+      #we ignore when sel_tay is kicked out
+      
+      st = sel_tay()
+      fml = filtered_data() #non-scaled
+      id = st %>% left_join(fml %>% rownames_to_column("id"), by = names(st)) %>% pull(id) %>% as.numeric()
+      update_selection(id)
+      
+    } else{reset_selection()} #remove selected line
+  }, ignoreNULL = TRUE)
+  
+  
+  output$click_info <- renderTable({click_table_data()}, include.rownames = F)
+  
+  pull_opt_number = function(){
+    req(fit1())#doesn't need to check sel_tay()
+    ft1 = fit1()
+    st = sel_tay()
     
-    # selected optimum from reduced table
-    
-    fml = scaled_filtered_data()
-    
-    te <<- fml[cl_line()$id,]   # te <- fit()[yo$id,] would not work!!
-    
-    m_opt <<- fit1() %>% filter(across(all_of(objectives()), ~ . %in% te))
-    
-    if(nrow(m_opt)==0){
-      
-      reset_selection()
-      
-      output$click_info <- renderTable({data.frame()}, include.rownames = F, align = "c")
-      
-    }else{
-      
-      update_selection(m_opt)
-      
-      colnms = objectives()
-      
-      ## table of chosen line 
-      output$click_info <- renderTable({click_table_data()}, include.rownames = F)
-      
-    }}, ignoreNULL = TRUE)
+    st %>% left_join(ft1, by = names(st)) %>% pull(optimum) %>%as.numeric()
+  }
   
   
   click_table_data <- reactive({
-    req(m_opt, sel_tay())
+    req(sel_tay())
+    
+    m_opt = pull_opt_number()
     
     colnms <- objectives()
     new_colnms <- if(!is.null(axiselected())){
@@ -1385,7 +1383,7 @@ server <- function(input, output, session) {
       }, col = colnms, unit = axiselected(), SIMPLIFY = TRUE)
     } else colnms
     
-    lclick <- cbind(m_opt$optimum, as.data.frame(sel_tay()))
+    lclick <- cbind(m_opt, as.data.frame(sel_tay()))
     colnames(lclick) <- c("optimum", new_colnms)
     
     lclick %>%
@@ -1398,26 +1396,24 @@ server <- function(input, output, session) {
   
  
   reset_selection <- function(){
-    cl_line(NULL)
-    sel_tay(NULL)
-    rv$sizes <- rep(0.5, length(unique(pp()$id)))
-    rv$colls <- rep("grey50", length(unique(pp()$id)))
+   # sel_tay(NULL)
+    n_points = length(unique(pp()$id))
+    rv$sizes <- rep(0.5, n_points)
+    rv$colls <- rep("grey50", n_points)
     clickpoint_button(FALSE)
-    # output$click_info <- renderTable({data.frame()}, include.rownames = F)
   }
   
-  update_selection <- function(m_opt){
-    rom <- as.numeric(cl_line()[["id"]]) #length(rv) has to align with subset and NOT with fit()
-    
-    n_points <- length(unique(pp()$id))
-    
+  update_selection <- function(id){
+   
+    rom <- id #length(rv) has to align with subset and NOT with fit()
+
+    n_points = length(unique(pp()$id))
     #update color
     rv$sizes <- rep(0.5, n_points)
     rv$colls[] <- rep("grey50", n_points)
     rv$sizes[rom] <- 1.3
     rv$colls[rom] <- "#FF5666"
-    
-    sel_tay(m_opt %>% select(-optimum))#pass to pareto plot and selection table
+
    
   }
   
@@ -1483,8 +1479,7 @@ server <- function(input, output, session) {
   
   ## absolute table with status quo difference
     output$sliders_abs <- renderTable({
-      req(f_scaled(), fit(), objectives(), stq(), colname_unit)
-      
+      req(f_scaled(), objectives(), stq(), colname_unit)
       dn <- scaled_abs_match(
         minval_s = c(input$obj1[1], input$obj2[1], input$obj3[1], input$obj4[1]),
         maxval_s = c(input$obj1[2], input$obj2[2], input$obj3[2], input$obj4[2]),
@@ -1495,12 +1490,16 @@ server <- function(input, output, session) {
         mes_slider = mes_touched(),
         mes_df = opti_mima()
       )
-      if (!any(is.na(dn))) {
-        # dn[] <- lapply(dn, function(x) as.numeric(as.character(x)))
-        
-        dn2 = add_perc_stq(df = dn, stq = stq())
-      } else{ dn[is.na(dn)] = "-"
-      dn2 = dn
+
+      dn2 = if(nrow(dn) == 0){ #empty measure sliders
+        dn[1,] = "-"
+        rownames(dn)[1] = "not applicable"
+        dn
+      } else if(any(is.na(dn))){
+        dn[is.na(dn)] = "-"
+        dn
+      } else {
+        add_perc_stq(df = dn, stq = stq())
       }
       
       colnames(dn2) = colname_unit
@@ -1509,9 +1508,8 @@ server <- function(input, output, session) {
     }, include.rownames = TRUE, sanitize.text.function = function(x) x)
   
   
-  mima_fun = function(){
-    req(fit())
-    df = as.data.frame(t(get_mima(fit()))[-1,])
+  mima_fun = function(ff){
+    df = as.data.frame(t(get_mima(ff))[-1,])
     df = df[nrow(df):1,]
     df[] = lapply(df, function(x) as.numeric(as.character(x)))
     
@@ -1524,7 +1522,7 @@ server <- function(input, output, session) {
     cols = objectives()
    
 
-   df = mima_fun()
+   df = mima_fun(fit())
 
    df = df %>%
      mutate(across(where(is.numeric), 
@@ -1652,9 +1650,9 @@ server <- function(input, output, session) {
       shinyjs::hide("download_freq_id")}})
  
   play_freq = function(leg = TRUE){ #excessive function
-    req(cmf(),lalo(), dat_matched(),hru_matcher())
+    req(cmf(),lalo(), filtered_data(),hru_matcher())
     
-    dat = dat_matched()
+    dat = filtered_data()
     
     if(nrow(dat)== 0 || ncol(dat)== 0){return(NULL)}else{
       optima <-unique( match(do.call(paste, dat), do.call(paste, fit())))
@@ -1708,9 +1706,9 @@ server <- function(input, output, session) {
   )
   
  freq_shaper = function(){ 
-   req(cmf(), dat_matched(),hru_matcher())
+   req(cmf(), filtered_data(),hru_matcher())
    
-   dat = dat_matched()
+   dat = filtered_data()
    
    if(nrow(dat)== 0 || ncol(dat)== 0){return(NULL)}else{
      optima <-unique( match(do.call(paste, dat), do.call(paste, fit())))
@@ -1857,10 +1855,10 @@ server <- function(input, output, session) {
      })
 
     output$aep_tab_full <-renderTable({
-      req(aep_100_con(),hru_ever(),dat_matched())
-      if(nrow(dat_matched())>= 1){
+      req(aep_100_con(),hru_ever(),filtered_data())
+      if(nrow(filtered_data())>= 1){
 
-        optima <-match(do.call(paste, dat_matched()), do.call(paste, fit()))
+        optima <-match(do.call(paste, filtered_data()), do.call(paste, fit()))
         hru_spec_act = hru_ever() %>%filter(optims %in% optima)
         
         # aep_sel = aep_100() %>% filter(hru %in% unique(hru_spec_act$id))
@@ -1883,9 +1881,9 @@ server <- function(input, output, session) {
     
 
   ## scatter plot
-    
+   
     scat_fun = function() {
-      scat_abs = dat_matched()
+      scat_abs = filtered_data()
       scatter_regr_val = scatter_regr()
       erv = sel_tay()
       ft = fit()
@@ -1927,10 +1925,6 @@ server <- function(input, output, session) {
       }
       
     }
-
-    
-    
-  
 
     output$scatter_plot <- renderPlot({ scat_fun()})
   
@@ -2990,7 +2984,7 @@ server <- function(input, output, session) {
     # ks = hru_ever() %>% select(-measure)
    
     # fk = aep_100()  %>% left_join(ks, by =c("hru"="id")) %>% select(-hru)
-    
+  
     fk = aep_100() %>% inner_join(hru_ever(),by = c("hru" = "id", "nswrm" = "measure"))%>% select(-hru)
  
     ahpmt(fk %>% ## all optima and the number of implemented measures
@@ -3203,6 +3197,17 @@ server <- function(input, output, session) {
     if(!is.null(sols_ahp()) && !is.null(input$best_cluster) && input$best_cluster){dfx(sols_ahp())}else{
       dfx(whole_ahp()) #default
     }
+    
+  })
+  
+  observe({
+    req(dfx())
+    sk = dfx()
+   
+      output$ahp_count <- renderUI({
+        tagList("The remaining number of optima is: ",tags$b(nrow(sk)))
+      })
+    
     
   })
   
