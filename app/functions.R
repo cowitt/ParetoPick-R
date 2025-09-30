@@ -1022,7 +1022,7 @@ plt_sc = function(dat, ranges, col=rep("grey",nrow(dat)),
      pname = paste0(xcol, "_", ycol)
      coef_dat = coefo[[pname]]
      
-     p <- ggplot(dat, aes(x = .data[[xcol]], y = .data[[ycol]]))+
+     p <- ggplot(dat, aes(x = !!sym(xcol), y = !!sym(ycol)))+
        geom_point(size = size, color = col) + bt + coord_cartesian(clip = "off") +  #prevent labels to be cut off
        geom_abline(
        intercept = coef_dat$intercept,
@@ -1043,12 +1043,10 @@ plt_sc = function(dat, ranges, col=rep("grey",nrow(dat)),
      }
      
      if(!is.null(sq)){
-       p = p+ geom_point(data=sq,aes(x = .data[[xcol]], y= .data[[ycol]]), color="cyan", size=2.8)
+       p = p+ geom_point(data=sq,aes(x = !!sym(xcol), y = !!sym(ycol)), color="cyan", size=2.8)
      }
       
       
-      
-   
      plots[[plot_index]] <- p
      plot_index <- plot_index + 1
     }
@@ -1168,8 +1166,8 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   }
   
   #plot with main data
-  p = ggplot(dat, aes(x = .data[[x_var]], y = .data[[y_var]],
-                      fill = .data[[col_var]], size = .data[[size_var]]), alpha = 0.5) +
+  p = ggplot(dat, aes(x = !!sym(x_var), y = !!sym(y_var),
+                      fill = !!sym(col_var), size = !!sym(size_var)), alpha = 0.5) +
     #essential scales added first to prevent warnings
     viridis::scale_fill_viridis(alpha = 0.8, name = col_var, labels = function(x) abs(as.numeric(x)), limits=range(swiss_extra[[col_var]], na.rm = TRUE)) +
     scale_size(range = c(1, 10), limits=range(swiss_extra[[size_var]], na.rm = TRUE), name = size_var, labels = function(x) abs(as.numeric(x))) +
@@ -1200,7 +1198,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   
   #the optional whole dataset 
   if(add_whole){
-    p = p + geom_point(data=whole, aes(x=.data[[x_var]], y = .data[[y_var]], size = .data[[size_var]]), fill="grey50", alpha=0.1)
+    p = p + geom_point(data=whole, aes(x=!!sym(x_var), y = !!sym(Y_var), size = !!sym(size_var)), fill="grey50", alpha=0.1)
   }
   
   #main data points
@@ -1208,7 +1206,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   
   #cluster number labels if needed
   if(an_tab && "cluster number" %in% colnames(dat2)){
-    p = p + geom_text(data = dat2, aes(x = .data[[x_var]]+(0.03*diff(range(.data[[x_var]]))), y = .data[[y_var]], label = `cluster number`),
+    p = p + geom_text(data = dat2, aes(x = !!sym(x_var)+(0.03*diff(range(!!sym(x_var)))), y = !!sym(y_var), label = `cluster number`),
                       position = position_dodge(width = 0.85), hjust = 0, size=6)
   }
   
@@ -1216,7 +1214,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   # if (!is.null(all_extra_data)) {
   if(length(aed)>0){
     all_extra_data = do.call(rbind, aed)
-    p = p + geom_point(data = all_extra_data, aes(x = .data[[x_var]], y = .data[[y_var]], shape = set, color = set, size = .data[[size_var]], fill = .data[[col_var]]),
+    p = p + geom_point(data = all_extra_data, aes(x = !!sym(x_var), y = !!sym(y_var), shape = set, color = set, size = !!sym(size_var), fill = !!sym(col_var)),
                        stroke = 1.8, show.legend = TRUE, alpha=0.7)
   }
   
@@ -1315,17 +1313,32 @@ scaled_abs_match = function(minval_s=c(0,0,0,0),
                             allobs=NULL,smll = TRUE,at=F,mes_slider =F, mes_df = NULL){ 
   
 
+  #merge with selection under measure sliders
+  if(mes_slider &&!is.na(mes_slider) && identical(names(abs_tab),names(mes_df))){
+    abs_tab = abs_tab %>% mutate(.temp_idx = row_number())
+    scal_tab = scal_tab %>% mutate(.temp_idx = row_number())
+    
+    abs_tab = semi_join(abs_tab, mes_df, by = allobs)
+    
+    scal_tab = scal_tab %>% filter(.temp_idx %in% abs_tab$.temp_idx)
+    
+    abs_tab = abs_tab %>% select(-.temp_idx)
+    scal_tab = scal_tab %>% select(-.temp_idx)
+  }
+  
+
   df <- as.data.frame(array(NA,dim=c(2,length(allobs))),row.names = c("max","min"))
   colnames(df) = allobs
-  
+  if(nrow(scal_tab)>0){
+    
   # locate values in scaled dataframe 
   for(i in seq_along(allobs)){ #this does not have to run for those where we only want abs_tab/output(ch)
     
-    sca_max <- scal_tab[which.min(abs(scal_tab[[allobs[i]]]-maxval_s[i])),]
-    df["max",allobs[i]] = abs_tab[rownames(sca_max),allobs[i]]  
+    idx_max <- which.min(abs(scal_tab[[allobs[i]]] - maxval_s[i]))
+    df["max", allobs[i]] = abs_tab[idx_max, allobs[i]]  
     
-    sca_min <- scal_tab[which.min(abs(minval_s[i]-scal_tab[[allobs[i]]])),]
-    df["min",allobs[i]] = abs_tab[rownames(sca_min),allobs[i]]
+    idx_min <- which.min(abs(minval_s[i] - scal_tab[[allobs[i]]]))
+    df["min", allobs[i]] = abs_tab[idx_min, allobs[i]]
   }
   
   # consider interactions between objectives (some are not attainable anymore)
@@ -1337,13 +1350,7 @@ scaled_abs_match = function(minval_s=c(0,0,0,0),
     valmi = df["min",k]
     ch =  ch %>% filter(.data[[allobs[k]]]<=valma & .data[[allobs[k]]]>=valmi)
 
-  }
-
-  #merge with selection under measure sliders
-  if(mes_slider &&!is.na(mes_slider) && identical(names(ch),names(mes_df))){
-    
-    ch =merge(ch, mes_df, by = allobs, all = FALSE)#new dat_matched()
-  }
+  }}else{ch = scal_tab}
   
   cw = as.data.frame(array(NA,dim=c(2,length(allobs))),row.names = c("max","min"))
   colnames(cw) = allobs
@@ -1371,7 +1378,7 @@ scaled_abs_match = function(minval_s=c(0,0,0,0),
   #when smll is set to false the table with all absolute values is returned
   if(smll){return(cw)}else{return(ch)} 
   
-  }#}
+  }
 
 
 ## similar to ch in scaled_abs_match, matching input scaled data with a scaled dataframe
@@ -1381,16 +1388,21 @@ match_scaled = function(minval_s=c(0,0,0,0),
                         abs_tab = NULL, #needed for matching with measure sliders
                         mes_slider =F, mes_df = NULL,
                         allobs){
-  
   df <- as.data.frame(array(NA,dim=c(2,length(allobs))),row.names = c("max","min"))
   colnames(df) = allobs
   
   # if measure slider has been touched, we need to recreate f_scaled()
   # from fit() after first subsetting it
   if(mes_slider &&!is.na(mes_slider) && identical(names(abs_tab),names(mes_df))){
-    abs_tab = merge(abs_tab, mes_df, by = allobs, all = FALSE)
-    scal_tab = abs_tab %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
-  }
+    abs_tab = abs_tab %>% mutate(.temp_idx = row_number())
+    scal_tab = scal_tab %>% mutate(.temp_idx = row_number())
+    
+    abs_tab = semi_join(abs_tab, mes_df, by = allobs)
+    
+    scal_tab = scal_tab %>% filter(.temp_idx %in% abs_tab$.temp_idx)
+    
+    scal_tab = scal_tab %>% select(-.temp_idx)
+    }
   
   
   if(nrow(scal_tab)>0){
@@ -1432,7 +1444,7 @@ match_abs <- function(minval, maxval, abs_tab, ranger = NULL, mes_slider = F, me
   #consider measure slider
   allobs = names(abs_tab) #naja
   if(mes_slider && !is.na(mes_slider) && identical(names(abs_tab),names(mes_df))){
-    abs_tab = merge(abs_tab, mes_df, by = allobs, all = FALSE)
+    abs_tab = semi_join(abs_tab, mes_df, by = allobs)
   }
   
   
