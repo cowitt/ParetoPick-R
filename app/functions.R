@@ -1198,7 +1198,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   
   #the optional whole dataset 
   if(add_whole){
-    p = p + geom_point(data=whole, aes(x=!!sym(x_var), y = !!sym(Y_var), size = !!sym(size_var)), fill="grey50", alpha=0.1)
+    p = p + geom_point(data=whole, aes(x=!!sym(x_var), y = !!sym(y_var), size = !!sym(size_var)), fill="grey50", alpha=0.1)
   }
   
   #main data points
