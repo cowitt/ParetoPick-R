@@ -52,9 +52,32 @@ ui <-
     ,
     dashboardBody(  
 
+    tags$script(HTML("
+      $(function(){
+        function getQueryParam(name){
+          var urlParams = new URLSearchParams(window.location.search);
+          return urlParams.get(name);
+        }
+
+        function selectTab(tabValue){
+          if(!tabValue) return;
+          var $link = $('.sidebar-menu a[data-value=\"' + tabValue + '\"]');
+          if($link.length){
+            $link.trigger('click');
+          }
+        }
+
+        // Initial selection from query string: ?default-tab=play_around
+        var initialTab = getQueryParam('default-tab');
+        if(initialTab){
+          selectTab(initialTab);
+        }
+      });
+    ")),
+
     tags$style(HTML('
-                                  /* File status message font size adjustment */
-                                  #fileStatusMessage {font-size: 150%;}
+                                   /* File status message font size adjustment */
+                                   #fileStatusMessage {font-size: 150%;}
 
 
                                   /* Logo background color */
@@ -272,7 +295,24 @@ ui <-
 
                      useShinyjs(),
                    tags$script(src = "iframeResizer.contentWindow.min.js"),
-                  
+                   tags$script(HTML("
+                     (function(){
+                       function triggerResize(){
+                         if(window.parentIFrame?.size){
+                           try{ window.parentIFrame.size(); }catch(e){}
+                         }
+                       }
+
+                       $(function(){
+                         $('.content-wrapper').attr('data-iframe-size','');
+
+                         // Sidebar toggle - attendre la fin de l'animation
+                         $(document).on('click', '.sidebar-toggle', function(){
+                           setTimeout(triggerResize, 350);
+                         });
+                       });
+                     })();
+                   ")),
                    tags$script(HTML("
                                     $(document).on('shiny:value', function(event) {
                                       function removeMinusSigns() {

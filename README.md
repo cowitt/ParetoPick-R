@@ -22,26 +22,58 @@ Python code: [S. White](https://github.com/SydneyEWhite)
 
 
 # 3. Folder and File Structure
+The tool consists of six folders: input, app, data, output, data_for_container* and python_files*.
 
+The app now uses a nested case‑study aware folder layout under WP5. Instead of flat folders like data-cs12, input-cs12, output-cs12, you should organise files as:
+
+- WP5/<case-study>/{data,input,output}
+- WP5/default/{data,input,output}
+
+Examples:
+- WP5/cs-12/data
+- WP5/cs-12/input
+- WP5/cs-12/output
+- WP5/default/data (used when no case study is specified)
+
+The folder “data for container” stores the default configuration file, called config.ini, which is used by the external python executables. During a reset of the app, this file is used to restore the config.ini in the input folder.
+All files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO [Strauch and Schürz, 2024](https://www.optain.eu/sites/default/files/delivrables/OPTAIN%20D5.1%20-%20Common%20optimisation%20protocol.pdf).
+The output folder stores all files produced during the correlation and cluster analysis. When selecting to save specific optima, these are also this folder to a file called selected_optima.csv. The python_files folder contains all Python-based parts of the software. These are three executables, correlation_matrix.exe, kmeans.exe and kmedoid.exe as well as an _internal folder that creates a temporary Python environment including all necessary dependencies.
+
+The Shiny app automatically resolves these paths per session:
+- If the URL contains ?cs=cs12 (or cs-12), it will use WP5/cs-12/{data,input,output}.
+- If the specified case-study directory is missing, it falls back to any legacy flat folders if present (data-cs12, input-cs12, output-cs12).
+- If neither exists, it falls back to WP5/default/{data,input,output}.
+
+Repository layout of the WP5 app:
 ```
 .
 ├── app
 │   ├── ui.R
 │   ├── server.R
 │   ├── global.R
-│   └── convert_optain.R
+│   └── functions.R
+├── cs-xx
+│   ├── data/
+│   ├── input/
+│   └── output/
+├── default
+│   ├── data/
+│   ├── input/
+│   └── output/
 ├── python_files
 │   ├── kmeans.exe
 │   ├── kmedoid.exe
 │   ├── correlation_matrix.exe
 │   └── _internal
-├── input
-│   └── config.ini
-├── data
-├── data_for_container
-│   └── config.ini (for hard reset)
-└── output
+└── data_for_container
+    └── config.ini (for hard reset)
 ```
+Notes:
+- The input folder holds runtime configuration and intermediate files created by the app (e.g., config.ini, object_names.RDS, units.RDS, etc.).
+- The data folder holds the user‑provided optimisation outputs (e.g., pareto_fitness.txt, pareto_genomes.txt, measure_location.csv, …).
+- The output folder stores results produced by the correlation analysis, clustering, exports, and selected_optima.csv when saving specific optima.
+- Legacy folders (data-csXX/input-csXX/output-csXX) are still recognised for backward compatibility but the nested layout is recommended.
+
 **Folder purposes:**
 - **app**: UI and server logic
 - **python_files**: Python executables for analysis
@@ -54,7 +86,11 @@ Python code: [S. White](https://github.com/SydneyEWhite)
 Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO [Strauch and Schürz, 2024](https://www.optain.eu/sites/default/files/delivrables/OPTAIN%20D5.1%20-%20Common%20optimisation%20protocol.pdf).
 
 
-*In the forthcoming portable version [OPTAIN_Pareto_Demo](https://github.com/MartynLLM/OPTAIN_Pareto_Demo), the app was converted into a fully R-based software and the python_files and data for container folders have been removed.
+Selecting the case study:
+- In a browser: append ?cs=cs12 (or cs=cs-12) to the app URL to activate WP5/cs-12/* for that session.
+- Without a cs parameter, WP5/default/* is used.
+
+Previously referenced folders data_for_container and python_files applied to an earlier hybrid version. In the current repository they are not required; the app is fully R‑based in this environment.
 
 
 ## 3.1 Files created during processing
