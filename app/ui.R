@@ -1058,7 +1058,7 @@ ui <-
 
                                                      checkboxInput("add_whole", label = "Show the whole Pareto front", value = FALSE),
                                     checkboxInput("add_sq",label = "Show status quo",value = FALSE),
-                                    checkboxInput("unit_add2",label = "Show units",value = TRUE),
+                                    checkboxInput("unit_add2",label = "Show units",value = FALSE),
                                     div(id="rev_plot2",checkboxInput("rev_box2",label="reverse x and y axes",value = FALSE))%>%hidden(),
 
                                         fluidRow(
