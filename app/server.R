@@ -1383,7 +1383,7 @@ server <- function(input, output, session) {
       }, col = colnms, unit = axiselected(), SIMPLIFY = TRUE)
     } else colnms
     
-    lclick <- cbind(m_opt, as.data.frame(sel_tay()))
+    lclick <- cbind(m_opt, as.data.frame(sel_tay()[1, , drop = FALSE]))
     colnames(lclick) <- c("optimum", new_colnms)
     
     lclick %>%
@@ -2489,6 +2489,11 @@ server <- function(input, output, session) {
     } else{
       choices = readRDS("../input/object_names.RDS")
     }
+    
+    if (!file.exists("../data/sq_fitness.txt")){shinyjs::disable("add_sq")}else{shinyjs::enable("add_sq")} 
+    if (!file.exists("../input/units.RDS")){shinyjs::disable("unit_add2")}else{shinyjs::enable("unit_add2")} 
+    
+    
     
     # preselected = read_config_plt(obj = T, axis = F)
     
