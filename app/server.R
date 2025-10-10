@@ -1172,7 +1172,7 @@ server <- function(input, output, session) {
       cols = objectives()
       values = sel_tay()
       
-      mv <- fit1() %>%  filter(across(all_of(cols), ~ . %in% values))
+      mv <- fit1() %>%  filter(across(all_of(cols), ~ . %in% values))%>%slice(1) #slice needed for duplicate optima, should not happen in clean optimisation
       
       hru_one = plt_sel(shp = cmf(), opti_sel = mv$optimum)
       
@@ -1367,7 +1367,8 @@ server <- function(input, output, session) {
     ft1 = fit1()
     st = sel_tay()
     
-    st %>% left_join(ft1, by = names(st)) %>% pull(optimum) %>%as.numeric()
+    st %>% left_join(ft1, by = names(st)) %>% slice(1) %>% 
+      pull(optimum) %>%as.numeric()#slice needed for duplicate optima values
   }
   
   
