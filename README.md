@@ -210,6 +210,12 @@ It is important to note that:
 
 ## 6.2 Planned Features for future versions
   * write/load full scenario run from previous uses
+  * Show value of (frequency) map on hover
+  * Show Optimum number in AHP
+  * add dynamic regression line and R2 to scatter plot in red, other R2 in blue
+  * add option for optima selection from optima number through simple field
+  * add information on objectives on hover through link to glossary
+  * remove minus sign in all tables
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed
   * add a small spinner to the Check Data button to clarify that it takes a while
