@@ -554,6 +554,8 @@ ui <-
                                                 tags$div(textOutput("ensure_sel"), style = "color: red;"),
                                                 div(id = "measure_title_vis",
                                                   "Number of measures", 
+                                                  tags$h5("Note that in some instances the number of measures refers to groups of measures and not to individual elements."),
+                                                  
                                                     title = "Please select the minimum and maximum number of measures you would like to implement.",
                                                     
                                                     style = "text-align: left; font-size:150%; margin-top: 10px;"),
