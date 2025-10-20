@@ -14,3 +14,9 @@ data/hru.dbf
 data/rou_unit.con
 data/pareto_fitness.txt
 data/pareto_genomes.txt
+.cs-active
+.cs-count
+cs-*/
+default/
+app/temp_files
+app/temp.html

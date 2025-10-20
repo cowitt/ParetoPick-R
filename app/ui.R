@@ -3,6 +3,11 @@
 # Project: Clustering Pareto solutions/Multi-objective visualisation
 # author: cordula.wittekind@ufz.de
 ####################################################################
+
+# Read env var to optionally restrict UI to the Visualising the Pareto Front tab only
+.paretopick_vis_only_env <- tolower(Sys.getenv("PARETOPICK_VIS_ONLY", ""))
+.paretopick_vis_only_flag <- if (.paretopick_vis_only_env %in% c("1", "true", "yes", "on")) TRUE else FALSE
+
 ui <-
   dashboardPage(
     dashboardHeader(title="ParetoPick-R"),
@@ -52,6 +57,8 @@ ui <-
     ,
     dashboardBody(  
 
+    tags$script(HTML(paste0('\n      window.PARETOPICK_VIS_ONLY = ', if (.paretopick_vis_only_flag) 'true' else 'false', ';\n    '))),
+
     tags$script(HTML("
       $(function(){
         function getQueryParam(name){
@@ -71,6 +78,50 @@ ui <-
         var initialTab = getQueryParam('default-tab');
         if(initialTab){
           selectTab(initialTab);
+        }
+
+        // Optionally collapse the sidebar by default via query param
+        // Usage examples: ?sidebar=1, ?sidebar=true, ?sidebar=yes, ?sidebar=on, ?sidebar=closed, ?sidebar=collapse
+        var qpSidebar = getQueryParam('sidebar');
+        var collapseSidebar = (qpSidebar && (function(v){
+          v = v.toLowerCase();
+          return v === '1' || v === 'true' || v === 'yes' || v === 'on' || v === 'closed' || v === 'collapse';
+        })(qpSidebar));
+        if(collapseSidebar){
+          // AdminLTE/shinydashboard collapse is controlled by class on <body>
+          $('body').addClass('sidebar-collapse');
+        }
+
+        // Determine whether to restrict UI to only the Visualising tab
+        var qpVisOnly = getQueryParam('visonly');
+        var qpVisOnlyActive = (qpVisOnly && (qpVisOnly.toLowerCase() === '1' || qpVisOnly.toLowerCase() === 'true' || qpVisOnly.toLowerCase() === 'yes' || qpVisOnly.toLowerCase() === 'on'));
+        var envVisOnlyActive = (typeof window.PARETOPICK_VIS_ONLY !== 'undefined') ? !!window.PARETOPICK_VIS_ONLY : false;
+        var visOnlyActive = qpVisOnlyActive || envVisOnlyActive;
+
+        if(visOnlyActive){
+          // Auto-select the allowed tab
+          selectTab('play_around');
+
+          // Hide all other tabs in the sidebar
+          $('.sidebar-menu a').not('[data-value=\"play_around\"]').closest('li').hide();
+
+          // Guard: prevent navigation to other tabs in case of programmatic selection
+          $(document).on('click', '.sidebar-menu a', function(e){
+            var val = $(this).attr('data-value');
+            if(val && val !== 'play_around'){
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              selectTab('play_around');
+              return false;
+            }
+          });
+
+          // Also ensure URL query param reflects current tab if needed (optional, non-destructive)
+          try{
+            var url = new URL(window.location);
+            url.searchParams.set('default-tab','play_around');
+            window.history.replaceState({}, '', url);
+          }catch(err){ /* no-op */ }
         }
       });
     ")),
