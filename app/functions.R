@@ -848,8 +848,8 @@ plt_scat2 = function(dat, x, y){
       panel.grid.minor = element_blank(),
       panel.border = element_blank(),
       axis.text = element_text(size = 12),
-      axis.title = element_text(size = 16)) +
-    scale_x_continuous(expand = c(0.02, 0.15), labels = function(x) {rem_min(x)}) +
+      axis.title = element_text(size = 16)) +  #5%range around both ends
+    scale_x_continuous(expand = expansion(mult = c(0.05, 0.05)), labels = function(x) {rem_min(x)}) +
     scale_y_continuous(labels = function(y) {rem_min(y)})
 }
 
@@ -1072,10 +1072,10 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   
   if(is.null(full_front)){return(NULL)}
   
-  if(file.exists("../input/units.RDS")){units = readRDS("../input/units.RDS")}
+  if(file.exists("../input/units.RDS")){units = readRDS("../input/units.RDS")}else{units = rep("-",ncol(dat))}
   
   
-  if(unit && file.exists("../input/units.RDS")){
+  if(unit){
     current_obj_order = c(x_var, y_var,
                           col_var, size_var)
     
