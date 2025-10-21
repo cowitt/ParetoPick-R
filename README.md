@@ -3,31 +3,25 @@ ParetoPick-R is part of the post processing in the [OPTAIN Project](https://www.
 It provides a dashboard for the user to supply their own data, visualise it and alter a range of parameters. 
 The code allows the user to select variables to be analysed in a correlation analysis and a cluster algorithm. 
 
-* Variables considered by the cluster algorithm, the first 3 are produced seperately for each measure (in a call to convert_optain)
-  1. **share_con** - ratio between area covered by measure and area available for measure implementation (per measure type) 
-  2. **channel_frac** - fraction of water from measure hru draining straight into the channel (per measure type) 
-  3. **moran** - Moran's I (per measure type) 
-  4. **linE** - ratio of structural to management options 
-  5. **lu_share** - share of area used for "land use" measures (buffer, grassslope and hedge) in area available for measure implementation
+## Cluster Variables
+The algorithm considers five variables:
+1. **share_con** - ratio of area covered by measure to available area (per measure type) 
+2. **channel_frac** - fraction of measure HRU water draining directly to channel (per measure type) 
+3. **moran** - Moran's I (per measure type) 
+4. **linE** - ratio of structural to management options 
+5. **lu_share** - share of land use measures (buffer, grassslope, hedge) in available area
 
+ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
 
-The cluster algorithm relies on Principal Component Analysis (PCA) and kmeans/kmedoid. While the variables that can be considered in 
-the algorithm are fixed, several settings such as outlier treatment and the number of tested principal components, can be set by the user. 
-ParetoPick-R also integrates an Analytical Hierarchy Process (AHP) allowing the user to determine weights for the objectives based on pair-wise comparisons. The results of the clustering and the AHP can be combined and the app provides a range of methods for visualising the results.
-
-Please note that the Python code used in this app was written by [S. White](https://github.com/SydneyEWhite).
+Python code: [S. White](https://github.com/SydneyEWhite)
 
 # 2. Requirements
   * R version 4.4.2 or higher
   * package "promises" version 1.3.2 or higher
-  * package "tmap" has shown to lead to conflicts, it is recommended to either remove it(e.g. via remove.packages("tmap")) or to upgrade it to at least version 4.0
+  * package "tmap" remove or upgrade to version 4.0+ to avoid conflicts
+
 
 # 3. Folder and File Structure
-The tool consists of six folders: input, app, data, output, data_for_container* and python_files*. 
-
-The folder “data for container” stores the default configuration file, called config.ini, which is used by the external python executables. During a reset of the app, this file is used to restore the config.ini in the input folder.
-All files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO [Strauch and Schürz, 2024](https://www.optain.eu/sites/default/files/delivrables/OPTAIN%20D5.1%20-%20Common%20optimisation%20protocol.pdf).
-The output folder stores all files produced during the correlation and cluster analysis. When selecting to save specific optima, these are also this folder to a file called selected_optima.csv. The python_files folder contains all Python-based parts of the software. These are three executables, correlation_matrix.exe, kmeans.exe and kmedoid.exe as well as an _internal folder that creates a temporary Python environment including all necessary dependencies.
 
 ```
 .
@@ -48,23 +42,33 @@ The output folder stores all files produced during the correlation and cluster a
 │   └── config.ini (for hard reset)
 └── output
 ```
-The input folder is used for storing all data required to run the tool. These input files are created by the software and regularly accessed and modified after all required data files have been provided by the user.
+**Folder purposes:**
+- **app**: UI and server logic
+- **python_files**: Python executables for analysis
+- **input**: Configuration and processed data
+- **data**: User-supplied outputs from multi-objective optimisation
+- **output**: Analysis results and selected optima
+- **data_for_container**: Default configuration for reset functionality
+
+
+Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO [Strauch and Schürz, 2024](https://www.optain.eu/sites/default/files/delivrables/OPTAIN%20D5.1%20-%20Common%20optimisation%20protocol.pdf).
+
 
 *In the forthcoming portable version [OPTAIN_Pareto_Demo](https://github.com/MartynLLM/OPTAIN_Pareto_Demo), the app was converted into a fully R-based software and the python_files and data for container folders have been removed.
 
 
-## 3.1 Files created and used in the process
+## 3.1 Files created during processing
 (stored in input folder)
 
-* object_names.RDS: the names of the four objectives
-* var_corr_par.csv: (created in convert_optain.R) objectives and variables considered in correlation and cluster analysis
-* nswrm_priorities.RDS: (created in covert_optain.R based on measure_location.csv) measures and their priority of implementation
-* hru_in_optima.RDS: created in convert_optain.R based on measure_location.csv) connection between activated HRUs and optima/measure allocation across all HRUs for all optima
-* all_var.RDS: all variables produced in the clustering
-* pca_content.RDS: variables considered in the clustering after highly correlated variables have been removed from all_var
-* config.ini: used for communicating with the external Python processes
-* buffers.RDS: names of measures that require a buffer to improve their visibility in maps
-* units.RDS
+* **object_names.RDS**: objective names
+* **var_corr_par.csv**: objectives and variables for analysis
+* **nswrm_priorities.RDS**: measures and implementation priority
+* **hru_in_optima.RDS**: HRU-optimum connections
+* **all_var.RDS**: all clustering variables
+* **pca_content.RDS**: variables after correlation filtering
+* **config.ini**: Python process configuration
+* **buffers.RDS**: measures requiring buffer for map visibility
+* **units.RDS**: unit definitions
 
 ## 3.2 Scripts
 ParetoPick-R is built using a standard structure for dividing shiny functionalities among scripts. The five R scripts contained in the app folder are: ui.R, app.R, server.R, global.R, and convert_optain.R.
@@ -158,7 +162,7 @@ id,	name,	nswrm,	obj_id
 
 ## 4.1 Input files for reduced functionalities
 
-There are four levels of functionality based on input data availability.
+There are four levels of functionality based on data availability.
 If all input data files are available from a coupled model workflow based on SWAT+ and CoMOLA or if all files can be reproduced, then all functionalities of ParetoPick-R (inlcuding both slider types, clustering and plotting) can be used.
 The table below outlines the four levels of functionality, their differences and required input files. 
 
@@ -176,44 +180,35 @@ Since rout_unit.con is the only additional file needed to perform the Data Prepa
 
 # 5. Process
 ### Data Preparation tab
-This tab allows you to either only provide pareto_fitness.txt (optionally also sq_fitness.txt) and the objective names, to provide all required datasets and perform the Data Preparation or to provide subsets of the required data that you reproduce following the OPTAIN templates. See previous section for Details.
+Allows to either only provide pareto_fitness.txt (optionally also sq_fitness.txt) and the objective names, to provide all required datasets and perform the Data Preparation or to provide subsets of the required data that you reproduce following the OPTAIN templates. See previous section for Details.
 
-If you want the Data Preparation tab lets you select those measures that require a buffer in maps to enhance their visibility (note that elements in the downloaded maps tend to be a bit smaller than shown in the app).
+Users can identify measures requiring buffer visualisation in maps. (note that elements in the downloaded maps tend to be a bit smaller than shown in the app).
 
-Please note that it is not straightforward to change the objectives names at a later point without performing a hard reset and rerunning the data preparation first. 
-A change of objective names an be forced following these three steps:
+**Note**: Changing objective names without a Hard Reset requires: (1) delete object_names.RDS, (2) manually update names in var_corr_par.csv, (3) update names in the newest kmeans/kmedoid output file.
 
-1. delete object_names.RDS from the input folder
+### Clusterin Tabs
+Clustering (manually & default) generates two correlation_matrix.csv and kmeans/kmedoid_data_w_clusters_representativesolutions.csv  
 
-2. manually change the names in the first four columns in var_corr_par.csv in the input folder
-
-3. manually change the names in the first four columns of the newest file in the output Folder, named kmeans_data_w_clusters_representativesolutions.csv or similar
-
-### Cluster Tabs
-The clustering, both manually or under default settings writes two .csv files to the output folder. One is called correlation_matrix.csv, the other is called kmeans_data_w_clusters_representativesolutions.csv or kmedoid_data_w_clusters_representativesolutions.csv or similar depending on which 
-cluster method you chose and if outliers were tested. 
-
-It is important to note that:
-1. **these files are overwritten** each time the clustering is run again, save them in another location if you would like to keep your clustering results
-2. in the following tabs, **only the most recent** of the <kmeans_data_w_clusters_re....>csv file is read! If you would like to process an older one, you have to remove all newer ones from the output folder
- 
+**Important**:
+1. Files are overwritten each clustering run—save externally if retention is needed
+2. Only the most recent kmeans/kmedoid output file is read; remove older versions to reprocess a previous result
 
 
 # 6. Assumptions and Planned Features
 
-## 6.1 General 
-  * covert_optain.R is hard coded to measures, if these measures are not specifically named in this script they cannot be processed
-  * the current default settings produce reasonable cluster outputs across all catchments but the default currently does not perform outlier testing 
-  * in AHP, the initial state of the pairwise comparison as "Equal" amplifies the mathematical definition of inconsistency, therefore only when at least three sliders are NOT set to "Equal" is inconsistency considered at all
-  * stratified variables do not work in the tool, the sliders cannot be moved
- 
+## 6.1 Current Limitations
+* convert_optain.R requires specific measure names; unmapped measures cannot be processed
+* Default settings optimise clustering across catchments without outlier testing
+* AHP inconsistency calculation requires ≥3 sliders set to non-"Equal" values
+* Stratified variables are not supported
 
-## 6.2 Planned Features for future versions
+
+## 6.2 Planned Features
   * write/load full scenario run from previous uses
-  * Show value of (frequency) map on hover
-  * Show Optimum number in AHP
-  * add dynamic regression line and R2 to scatter plot in red, other R2 in blue
-  * add option for optima selection from optima number through simple field
+  * frequency map value display on hover
+  * optimum number display in AHP
+  * dynamic regression line with R2 in scatter plot in red, other R2 in blue
+  * optima selection via direct number input
   * add information on objectives on hover through link to glossary
   * remove minus sign in all tables
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
