@@ -527,29 +527,14 @@ plt_freq = function(data, lo, la, buffers, remaining, dispal = pal,
       addProviderTiles(providers$CartoDB.Positron)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
   }
   
-  m = m %>%
-    addPolygons(
-      fillColor = ~ dispal(measure),
-      fillOpacity = ~ freq,
-      color = "lightgrey",
-      weight = 1,
-      popup = ~ paste0("Value: ", mes),
-      highlightOptions = highlightOptions(
-        color = "white",
-        weight = 2,
-        bringToFront = TRUE
-      ),
-      label = ~ measure
-    ) 
-  
-  
+  #buffer first otherwise small elements not selectable
   if(!is.null(buffers)){
     buffered_data <- buffers %>%filter(id %in% remaining$id)
     buffered_data <- buffered_data %>%
       inner_join(remaining %>% filter(freq > 0), by = "id") %>% #previously NA filtered beforehand
       st_make_valid() 
- 
-  m = m %>% addPolygons(
+    
+    m = m %>% addPolygons(
       data = buffered_data,
       fillColor = NA,
       color = ~ dispal(measure),
@@ -559,12 +544,28 @@ plt_freq = function(data, lo, la, buffers, remaining, dispal = pal,
       highlightOptions = highlightOptions(
         color = ~ dispal(measure),
         weight = 2,
-        bringToFront = TRUE
+        bringToFront = F
       )
     )
   }
   
- 
+  
+  
+  m = m %>%
+    addPolygons(
+      fillColor = ~ dispal(measure),
+      fillOpacity = ~ freq,
+      color = "lightgrey",
+      weight = 1,
+      highlightOptions = highlightOptions(
+        color = "white",
+        weight = 2,
+        bringToFront = TRUE
+      ),
+      label = ~ paste0(measure," frequency: ", round(freq,2))
+    ) 
+  
+  
   color_swatches <- lapply(mes, function(mess) {
     base_color <- dispal(mess)
     sapply(c(0.15, 0.5, 1), function(opacity) {
