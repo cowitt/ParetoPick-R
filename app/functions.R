@@ -542,10 +542,10 @@ plt_freq = function(data, lo, la, buffers, remaining, dispal = pal,
       dashArray = "3",
       fillOpacity = ~ freq,
       highlightOptions = highlightOptions(
-        color = ~ dispal(measure),
         weight = 2,
         bringToFront = F
-      )
+      ),
+      label = ~ paste0(measure," frequency: ", round(freq,2))
     )
   }
   
