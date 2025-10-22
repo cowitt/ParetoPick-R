@@ -205,7 +205,6 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
 
 ## 6.2 Planned Features
   * write/load full scenario run from previous uses
-  * frequency map value display on hover
   * optimum number display in AHP
   * dynamic regression line with R2 in scatter plot in red, other R2 in blue
   * optima selection via direct number input
@@ -216,3 +215,4 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
   * add a small spinner to the Check Data button to clarify that it takes a while
   * description of reproducing data 
   * dynamic clustering with other variables, different var_corr_par.csv unlinked from SWAT+ and CoMOLA  
+  * remove superfluous priority file writing, remove hru.con requirement for lat lon 
