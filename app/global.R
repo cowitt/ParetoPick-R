@@ -16,7 +16,7 @@ foo1 <- function(x) {
 ## check if any packages are missing (not only here but also for external convert_optain)
 foo1(c("configr", "corrplot", "DT", "fs", "fst", 
        "geosphere","geohashTools", "ggplot2","ggtext", "gridExtra",
-       "ini", "leaflet", "leafsync",
+       "ini", "leaflet","leaflet.extras", "leafsync",
        "mapview", "patchwork", "plotly",  "processx", 
        "quanteda",   "RColorBrewer",   "reticulate",
        "scales", "sf", "shiny", "shinycssloaders", "shinydashboard",

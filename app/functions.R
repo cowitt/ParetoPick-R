@@ -641,7 +641,9 @@ plt_freq = function(data, lo, la, buffers, remaining, dispal = pal,
   m <- m %>%
     addControl(custom_legend,
       position = "bottomright"
-    )
+    )%>%
+    addFullscreenControl(position = "topleft",
+                          pseudoFullscreen = FALSE)
   
  
   return(m) 
