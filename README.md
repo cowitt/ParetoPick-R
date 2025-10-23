@@ -200,7 +200,7 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
 * convert_optain.R requires specific measure names; unmapped measures cannot be processed
 * Default settings optimise clustering across catchments without outlier testing
 * AHP inconsistency calculation requires ≥3 sliders set to non-"Equal" values
-* Stratified variables are not supported
+* Stratified variables (as sometimes happens through rounding) are not supported
 
 
 ## 6.2 Planned Features
@@ -215,4 +215,4 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
   * add a small spinner to the Check Data button to clarify that it takes a while
   * description of reproducing data 
   * dynamic clustering with other variables, different var_corr_par.csv unlinked from SWAT+ and CoMOLA  
-  * remove superfluous priority file writing, remove hru.con requirement for lat lon 
+  * remove superfluous priority file writing, replace hru.con requirement for lat lon 
