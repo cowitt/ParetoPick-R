@@ -641,9 +641,12 @@ plt_freq = function(data, lo, la, buffers, remaining, dispal = pal,
   m <- m %>%
     addControl(custom_legend,
       position = "bottomright"
-    )%>%
-    addFullscreenControl(position = "topleft",
-                          pseudoFullscreen = FALSE)
+    )
+  
+  if (legend) {#remove fullscreen option on png
+    m = m %>%
+      addFullscreenControl(position = "topleft", pseudoFullscreen = FALSE)
+  }
   
  
   return(m) 
@@ -765,20 +768,42 @@ plt_boxpl_clus = function(dat, sel, all_obs,mima){
 
 
 ## plot leaflet w/ specific column
-plt_lf <- function(data, lo, la, buff_els, col_sel, buffers, dispal = pal, basemap = basemap) {
+plt_lf <- function(data, lo, la, buff_els, col_sel, buffers, dispal = pal, basemap = basemap, fullscreen = T) {
   data = data %>%subset(!st_is_empty(geometry))
   m <- vector("list", length = length(col_sel))
   
   for (i in seq_along(col_sel)) {
     col = col_sel[i]
     
-    
-    p=   leaflet(data = data) %>%
+    p  = leaflet(data = data) %>%
       setView(lng = lo, lat = la, zoom = 12)
     
     if(!basemap){ #show basemap if anonymise NOT selected
       p = p %>%
         addProviderTiles(providers$CartoDB.Positron)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
+    }
+    
+    if(!is.null(buffers)){
+      relevant_data <- data[data[[col]] %in% buff_els, ]
+      
+      buffered_data <- buffers %>%filter(id %in% relevant_data$id)%>%
+        # rename(!!col := measure)%>%
+        st_make_valid()
+      
+      p = p%>%
+        addPolygons(
+          data = buffered_data,
+          fillColor = NA,
+          color = ~ dispal(relevant_data[[col]]),
+          weight = 1,
+          dashArray = "3",
+          fillOpacity = 0.2,
+          highlightOptions = highlightOptions(
+            color = ~ dispal(relevant_data[[col]]),
+            weight = 2,
+            bringToFront = TRUE
+          )
+        ) 
     }
     
    p = p %>%
@@ -801,30 +826,13 @@ plt_lf <- function(data, lo, la, buff_els, col_sel, buffers, dispal = pal, basem
         className = "map-title"
       ) 
     
-    if(!is.null(buffers)){
-      relevant_data <- data[data[[col]] %in% buff_els, ]
-      
-      buffered_data <- buffers %>%filter(id %in% relevant_data$id)%>%
-        # rename(!!col := measure)%>%
-        st_make_valid()
-      
-    p = p%>%
-      addPolygons(
-        data = buffered_data,
-        fillColor = NA,
-        color = ~ dispal(relevant_data[[col]]),
-        weight = 1,
-        dashArray = "3",
-        fillOpacity = 0.2,
-        highlightOptions = highlightOptions(
-          color = ~ dispal(relevant_data[[col]]),
-          weight = 2,
-          bringToFront = TRUE
-        )
-      ) 
-  }
-    p = p %>% 
+
+   p = p %>% 
       addLegend("bottomright", pal = dispal, values = data[[col]], na.label = "no change")
+    
+    if(fullscreen){
+      p = p %>% addFullscreenControl(position = "topleft", pseudoFullscreen = FALSE)
+    }
     
     m[[i]] = p
   }

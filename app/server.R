@@ -1166,7 +1166,7 @@ server <- function(input, output, session) {
          })
     
     
-    single_meas_fun2 = function() {
+    single_meas_fun2 = function(fs = T) {#fs - full screen, set to true in app, false in download
       req(lalo(), cmf(), sel_tay(), fit1())
       
       cols = objectives()
@@ -1185,7 +1185,7 @@ server <- function(input, output, session) {
       pal = colorFactor(palette = man_col, domain = unique(mes$nswrm), na.color = "lightgrey")
       
       m1 = plt_lf( data = hru_one, dispal = pal,la = lalo()[1],lo =lalo()[2],buff_els = needs_buffer(),
-                   col_sel = col_sel, buffers=buffers(), basemap = input$anomap)
+                   col_sel = col_sel, buffers=buffers(), basemap = input$anomap, fullscreen = fs)
       return(m1)
       play_running(FALSE) #for spinner
     }
@@ -1199,7 +1199,7 @@ server <- function(input, output, session) {
 
         content = function(file) {
           shinyjs::show("spinner_download_play")
-          measmap <- single_meas_fun2()[[1]]
+          measmap <- single_meas_fun2(fs = F)[[1]]
           saveWidget(measmap, "temp.html", selfcontained = FALSE)
           webshot::webshot("temp.html", file = file, cliprect = "viewport",vwidth = 900,
                            vheight = 900)
@@ -2861,7 +2861,7 @@ server <- function(input, output, session) {
     pal = colorFactor(palette = man_col, domain = unique(mes$nswrm), na.color = "lightgrey")
     
     m1 = plt_lf(data=hru_sel, col_sel = col_sel ,dispal=pal,
-                la = lalo()[1],lo =lalo()[2], buff_els=needs_buffer(), buffers=buffers(), basemap = input$anomap)
+                la = lalo()[1],lo =lalo()[2], buff_els=needs_buffer(), buffers=buffers(), basemap = input$anomap, fullscreen = T)
     
     m = m1
     
@@ -3718,7 +3718,7 @@ server <- function(input, output, session) {
   })
     
 
-  single_meas_fun = function(){
+  single_meas_fun = function(fs = T){
     if(!file.exists("../data/measure_location.csv")){return(NULL)}else{
     req(boo(),lalo(),cmf())
       
@@ -3732,7 +3732,7 @@ server <- function(input, output, session) {
     
     
     m1 = plt_lf(data=hru_one, dispal = pal,la = lalo()[1],lo =lalo()[2],
-                buff_els=needs_buffer(),col_sel=col_sel,buffers=buffers(), basemap = input$anomap)
+                buff_els=needs_buffer(),col_sel=col_sel,buffers=buffers(), basemap = input$anomap, fullscreen = fs)
     return(m1)
     meas_running(FALSE)
     }
@@ -3749,7 +3749,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       shinyjs::show("spinner_download_ahp")  
-      mp =single_meas_fun()[[1]]
+      mp =single_meas_fun(fs = F)[[1]]
       saveWidget(mp, "temp.html", selfcontained = FALSE)
       webshot::webshot("temp.html", file = file, cliprect = "viewport",vwidth = 900,
                        vheight = 900)
