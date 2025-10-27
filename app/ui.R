@@ -729,7 +729,7 @@ ui <-
                            div(id = "tab_play1",
 
                                div("Pareto Plot", style = "text-align: left; font-size:150%"),
-                               plotOutput("first_pareto",click="clickpoint"),
+                               withSpinner(plotOutput("first_pareto", click = "clickpoint"), type = 4, color = "#F7A600"),
                                checkboxInput("add_sq_f",label = "Show status quo",value = FALSE),
                                checkboxInput("unit_add1",label = "Show units",value = TRUE),
                                div(id="rev_plot",checkboxInput("rev_box",label="reverse x and y axes",value = FALSE))%>%hidden(),
@@ -842,7 +842,7 @@ ui <-
 
 
                            div(id = "tab_play2",div("Parallel Axis plot", style = "text-align: left; font-size:150%"),
-                               plotOutput("linePlot",click="clickline"),
+                               withSpinner(plotOutput("linePlot", click = "clickline"), type = 4, color = "#F7A600"),
                                checkboxInput("plt_sq", label = "Show status quo", value = FALSE)),
                            
                                div(
@@ -855,7 +855,7 @@ ui <-
                                verbatimTextOutput("lineDetails"),
 
                                div(id="scatter","Scatter Plot",style = "text-align: left; font-size:150%"),
-                               plotOutput("scatter_plot"),
+                               withSpinner(plotOutput("scatter_plot"), type = 4, color = "#F7A600"),
 
                                div(
                                  style = "display: inline-block; vertical-align: top; margin-right: 0px;",
