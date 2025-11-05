@@ -1,6 +1,6 @@
 # 1. Background
-ParetoPick-R is part of the post processing in the [OPTAIN Project](https://www.optain.eu/). It shall facilitate the analysis of the Pareto front across objectives and support decision making for measure implementation.
-It provides a dashboard for the user to supply their own data, visualise it and alter a range of parameters. 
+ParetoPick-R is part of the post processing in the [OPTAIN Project](https://www.optain.eu/). It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making for measure implementation.
+It provides a dashboard for the user to supply their own data (produced with the OPTAIN model workflow or other optimisation processes), visualise it and alter a range of parameters. 
 The code allows the user to select variables to be analysed in a correlation analysis and a cluster algorithm. 
 
 ## Cluster Variables
@@ -125,7 +125,7 @@ This design separates functionality, creating a modular software simpler to deve
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 ```
 
-** Please make sure that the two files align. If there are x rows (=optima) in pareto_fitness.txt there should be x columns (or rows, the app understands both) in pareto_genomes.txt **
+** Please make sure that the two files align! **
 
 3. __hru.con__
   * connection file created with SWAT+ Editor/SWATmeasR containing details on HRU size and location
