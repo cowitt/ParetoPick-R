@@ -1,6 +1,8 @@
 # 1. Background
-ParetoPick-R is part of the post processing in the [OPTAIN Project](https://www.optain.eu/). It shall facilitate the analysis of the Pareto front across objectives and support decision making for measure implementation.
+ParetoPick-R is part of the post processing in the [OPTAIN Project](https://www.optain.eu/). <img align = "right" width="120" height="130" alt="ParetoPick-R_logo" src="https://github.com/user-attachments/assets/6fc792e2-fd4a-4e3b-873a-a4b6f609770b" />
+It shall facilitate the analysis of the Pareto front across objectives and support decision making for measure implementation.
 It provides a dashboard for the user to supply their own data, visualise it and alter a range of parameters. 
+
 The code allows the user to select variables to be analysed in a correlation analysis and a cluster algorithm. 
 
 ## Cluster Variables
