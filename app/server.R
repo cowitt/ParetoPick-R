@@ -1390,11 +1390,13 @@ server <- function(input, output, session) {
     colnames(lclick) <- c("optimum", new_colnms)
     
     lclick %>%
-      mutate(across(where(is.numeric), ~ case_when(
-        abs(.) < 1 ~ as.character(round(., 4)),
-        abs(.) < 10 ~ as.character(round(., 2)),
-        TRUE ~ as.character(round(., 0))
-      )))
+      mutate(across(where(is.numeric), ~ gsub("-", "", as.character(case_when(
+        abs(.) < 1 ~ round(., 4),
+        abs(.) < 10 ~ round(., 2),
+        TRUE ~ round(., 0)
+      )))))
+    
+  
   })
   
  
