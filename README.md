@@ -211,7 +211,6 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
   * dynamic regression line with R2 in scatter plot in red, other R2 in blue
   * optima selection via direct number input
   * add information on objectives on hover through link to glossary
-  * remove minus sign in all tables
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed
   * add a small spinner to the Check Data button to clarify that it takes a while
