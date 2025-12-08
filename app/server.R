@@ -893,8 +893,10 @@ server <- function(input, output, session) {
           
           for (i in 1:4) {
             var_name <- paste0("steps", i)
-                                                                   #step_val also fails on small distances
-            if (pmin(abs(min_max$min[i]),abs(min_max$max[i])) <= 1 || abs(min_max$max[i]-min_max$min[i]) <= 1) {
+            
+            #step_val also fails on small distances
+            if (pmin(abs(min_max$min[i]),abs(min_max$max[i])) <= 1 || abs(min_max$max[i]-min_max$min[i]) <= 1) {              
+              
               min_max$max[i] = min_max$max[i] * 1000
               min_max$min[i] = min_max$min[i] * 1000
               
@@ -1660,14 +1662,22 @@ server <- function(input, output, session) {
       hru_subset_freq = hru_matcher()[,c("id",as.character(optima))]     #subset to only those optima in selection
       
       hru_freq = hru_subset_freq
-      hru_freq$freq = rowSums(!is.na(hru_freq[ , -which(names(hru_freq) == "id")])) / (ncol(hru_freq) - 1)
+
+      opt_cols_cont <- hru_freq[, -which(names(hru_freq) == "id")]#only opt columns
+      
+      hru_freq$freq <- apply(opt_cols_cont, 1, function(row) {
+        counts <- table(row, useNA = "no")
+        if (length(counts) == 0) return(NA) #not activated (anymore)
+        max(counts) / length(row)
+      })
+      # hru_freq$freq = rowSums(!is.na(hru_freq[ , -which(names(hru_freq) == "id")])) / (ncol(hru_freq) - 1)
       # hru_share = hru_freq%>%left_join(hru_100(),by="id") %>%select(id,measure,freq)
-      opt_cols <- setdiff(names(hru_freq), c("id", "freq")) #only opt colums
+      opt_cols <- names(opt_cols_cont)
       
       hru_share = hru_freq
       hru_share$measure = apply(hru_share[opt_cols], 1, color_meas_most) 
       hru_share = hru_share %>% select(id, measure, freq)
-      
+
       #make unique measures outside
       mes <<- unique(hru_ever()$measure)
       

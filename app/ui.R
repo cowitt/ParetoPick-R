@@ -571,7 +571,7 @@ ui <-
                                          ),
                                          div(id ="freq_title",
                                            "Frequency of area implemented",
-                                             title = "if locations of different types of measures overlap, only the most frequent type of measure is displayed.",
+                                             title = "if locations of different types of measures overlap, only the frequency of the most frequent type of measure is displayed.",
                                              style = "text-align: left; font-size:120%; margin-top: 10px;"),
                                          uiOutput("freq_map_play")%>%hidden(),
                                          div(id="download_freq_id",
