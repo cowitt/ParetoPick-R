@@ -658,7 +658,9 @@ ui <-
                                ),
                                div(
                                  style = "display: inline-block; vertical-align: top; margin-left: 0px;",
-                                 downloadButton("download_fp_plot", "Download pareto plot")),
+                                 downloadButton("download_fp_plot", "Download pareto plot"),
+                                 radioButtons("dl_fp_format", NULL,  choices = c("PNG" = "png", "SVG" = "svg"),
+                                              selected = "png", inline = TRUE)),
                                uiOutput("clickpoint_map") ,#button
                                    uiOutput("plt_play_measure"),#map placeholder
                                withSpinner(

@@ -1269,17 +1269,23 @@ server <- function(input, output, session) {
     output$download_fp_plot <- downloadHandler(
       filename = function() {
         curt = format(Sys.time(), "_%Y%m%d")
-        
-        paste(input$fp_plot_savename,curt, ".png", sep = "")
+        ext <- tolower(input$dl_fp_format) #pull the selected file extension
+        paste0(input$fp_plot_savename, curt, ".", ext)
       },
       content = function(file) {
-        png(file, width = 1200, height = 800)
-        
         plot <- first_pareto_fun()
-        print(plot)
-        
-        dev.off()
+        format <- if (is.null(input$dl_fp_format)) "png" else input$dl_fp_format
+        if (format == "png") {
+          png(file, width = 1200, height = 800)
+          print(plot)
+          dev.off()
+        } else if (format == "svg") {
+          svg(file, width = 12, height = 8)
+          print(plot)
+          dev.off()
+        }
       }
+      
     )
     
     ## line plot
