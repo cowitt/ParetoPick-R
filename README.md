@@ -165,7 +165,7 @@ id,	name,	nswrm,	obj_id
 ## 4.1 Input files for reduced functionalities
 
 There are four levels of functionality based on data availability.
-If all input data files are available from a coupled model workflow based on SWAT+ and CoMOLA or if all files can be reproduced, then all functionalities of ParetoPick-R (inlcuding both slider types, clustering and plotting) can be used.
+If all input data files are available from a coupled model workflow based on SWAT+ and CoMOLA or if all files can be reproduced, then all functionalities of ParetoPick-R (inlcuding both slider types, clustering and plotting) can be used. If you have not used the OPTAIN workflow, reproducing cluster_params.csv for the cluster functionality is straightforward, see below.
 The table below outlines the four levels of functionality, their differences and required input files. 
 
 | Level                 | Description                                          | Required Input Files                                   |                               
@@ -173,12 +173,12 @@ The table below outlines the four levels of functionality, their differences and
 | Basic Functionality   | Visualisations & the AHP  <br> are working but without <br> measure sliders, clustering and <br>map plotting | Only the base file: <br> pareto_fitness.txt|
 | Full Visualisation    | All sliders, Visualisations <br> & the AHP are working but neither <br> map plotting nor Clustering | pareto_fitness.txt <br> measure_location.csv <br> hru_in_optima.RDS |
 | Full Connection to Decision Space  | All sliders, maps & the AHP are working <br> only the clustering cannot be performed | pareto_fitness.txt <br> measure_location.csv <br> hru_in_optima.RDS <br> hru.con <br> hru.shp/.dbf/.prj/.shx |
-| Full Functionality    | All sliders, maps, the AHP & the <br> clustering are working | All files named above. <br> The Data Prep has to run before the <br> Clustering can be performed |
+| Full Functionality - OPTAIN   | All sliders, maps, the AHP & the <br> clustering are working | All files named Above. <br> The Data Prep has to run before the <br> Clustering can be performed |
+| Full Functionality - not OPTAIN | All sliders, maps, the AHP & the <br> clustering are working | All files named Above. <br> plus cluster_params.csv |
 
-
+cluster_params.csv is a file containing results of the multi-objective optimisation; each row should represent a Pareto optimal solution, column names can contain spaces and values should be numerical. In no particular order, the file should contain objective value columns as well as columns with information interesting for a cluster algorithm (such as decision space descriptors).  
 
 This manual will be expanded with a detailed explanation of the steps required to reproduce the data, specifically: hru_in_optima.RDS and measure_location.csv required for the measure sliders and hru.shp and hru.con required for the mapping.
-Since rout_unit.con is the only additional file needed to perform the Data Preparation for the clustering (write var_corr_par.csv), a method for replacing it for other projects shall also be developed. This might potentially include turning off the cluster variable "fraction of water".
 
 # 5. Process
 ### Data Preparation tab
@@ -199,15 +199,20 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
 # 6. Assumptions and Planned Features
 
 ## 6.1 Current Limitations
-* convert_optain.R requires specific measure names; unmapped measures cannot be processed
-* Default settings optimise clustering across catchments without outlier testing
+* (OPTAIN - specific) convert_optain.R requires specific measure names; unmapped measures cannot be processed
 * AHP inconsistency calculation requires ≥3 sliders set to non-"Equal" values
-* Stratified variables (as sometimes happens through rounding) are not supported
+* Stratified variables (as sometimes happens through rounding) are not supported and there is no error message
 
 
-## 6.2 Planned Features
+## 6.2 Planned Features for Version 1.1.0
   * write/load full scenario run from previous uses
+  * option to download maps as .svg
   * optimum number display in AHP
+  * dynamic clustering with other variables, different var_corr_par.csv unlinked from SWAT+ and CoMOLA  
+  * (OPTAIN-specific) remove superfluous priority file writing, replace hru.con requirement for lat lon 
+  * conversion to full R
+
+Other
   * dynamic regression line with R2 in scatter plot in red, other R2 in blue
   * optima selection via direct number input
   * add information on objectives on hover through link to glossary
@@ -215,5 +220,3 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
   * clearer error messages for aborted/failed clustering needed
   * add a small spinner to the Check Data button to clarify that it takes a while
   * description of reproducing data 
-  * dynamic clustering with other variables, different var_corr_par.csv unlinked from SWAT+ and CoMOLA  
-  * remove superfluous priority file writing, replace hru.con requirement for lat lon 
