@@ -1462,16 +1462,24 @@ server <- function(input, output, session) {
   output$download_line_plot <- downloadHandler(
     filename = function() {
       curt = format(Sys.time(), "_%Y%m%d")
-      paste(input$line_plot_savename,curt, ".png", sep = "")
+      ext <- tolower(input$dl_lineplot_format) #pull the selected file extension
+      paste0(input$line_plot_savename, curt, ".", ext)
     },
     content = function(file) {
-      png(file, width = 1200, height = 800)
       plot <- parplot_fun()
-      print(plot)
-      dev.off()
+      format <- if (is.null(input$dl_lineplot_format)) "png" else input$dl_lineplot_format
+      
+      if (format == "png") {
+        png(file, width = 1200, height = 800)
+        print(plot)
+        dev.off()
+      } else if (format == "svg") {
+        svg(file, width = 15, height = 8)
+        print(plot)
+        dev.off()
+      }
     }
   )
-  
   
 
   ## column names for scaled and absolute tables with status quo (below here)
@@ -1739,6 +1747,8 @@ server <- function(input, output, session) {
       }
   )
   
+  
+
  freq_shaper = function(){ 
    req(cmf(), filtered_data(),hru_matcher())
    
@@ -1966,17 +1976,28 @@ server <- function(input, output, session) {
   output$download_scat_plot <- downloadHandler(
     filename = function() {
       curt = format(Sys.time(), "_%Y%m%d")
+      ext <- tolower(input$dl_scat_format) #pull the selected file extension
+      paste0(input$scat_plot_savename,curt,  ".", ext)
       
-      paste(input$scat_plot_savename,curt, ".png", sep = "")
     },
     content = function(file) {
-     png(file, width = 1200, height = 800)
-        plot <- scat_fun()
+      plot <- scat_fun()
+      
+      format <- if (is.null(input$dl_scat_format)) "png" else input$dl_scat_format
+      
+      if (format == "png") {
+        png(file, width = 1200, height = 800)
         print(plot)
         dev.off()
+      } else if (format == "svg") {
+        svg(file, width = 12, height = 8)
+        print(plot)
+        dev.off()
+      }
     }
   )
- 
+  
+
   ### Configure ####
   observe({
     optain = "../input/var_corr_par.csv"
@@ -2890,18 +2911,46 @@ server <- function(input, output, session) {
     output$download_clus_plot <- downloadHandler(
       filename = function() {
         curt = format(Sys.time(), "_%Y%m%d")
-        
-        paste(input$par_plot_savename,curt, ".png", sep = "")
+        ext <- tolower(input$dl_clur_format) #pull the selected file extension
+        paste0(input$par_plot_savename,curt, ".", ext)
       },
       content = function(file) {
-        png(file, width = 1200, height = 800)
-        plot <- fun_fun()
-        print(plot)
-        dev.off()
-     
-      }
+        format <- if (is.null(input$dl_clur_format)) "png" else input$dl_clur_format
+        
+        if(input$show_boxplot){#grid.arrange needs to be handled differently
+          pl = clus_dis_plt()
+          if(format == "png"){
+            ggsave(
+              filename = file,
+              plot = pl,
+              device = "png",
+              width = 12,
+              height = 8
+            )} else if (format == "svg"){
+              ggsave(
+                filename = file,
+                plot = pl,
+                device = "svg",
+                width = 12,
+                height = 8
+              )
+            }
+          
+        }else{plot <- fun_fun()
+
+        if (format == "png") {
+          png(file, width = 1200, height = 800)
+          print(plot)
+          dev.off()
+        } else if (format == "svg") {
+          svg(file, width = 12, height = 8)
+          print(plot)
+          dev.off()
+        }
+      }}
     )
     
+
     output$tabtext = renderText({HTML("You can select up to 12 optima and compare the implementation of measures in the catchment.")})
     
    
@@ -3656,16 +3705,33 @@ server <- function(input, output, session) {
   output$download_weights_plot <- downloadHandler(
     filename = function() {
       curt = format(Sys.time(), "_%Y%m%d")
-      
-      paste(input$weights_plot_savename,curt, ".png", sep = "")
+      ext <- tolower(input$dl_weight_format) 
+      paste0(input$weights_plot_savename,curt, ".", ext)
     },
     content = function(file) {
-      png(file, width = 1500, height = 1000)
+      
       plot <- weight_plt_fun()
-      print(plot)
-      dev.off()
+      format <- if (is.null(input$dl_weight_format)) "png" else input$dl_weight_format
+      
+      if (format == "png") {
+        png(file, width = 1500, height = 1000)
+        print(plot)
+        dev.off()
+      } else if (format == "svg") {
+        svg(file, width = 15, height = 10)
+        print(plot)
+        dev.off()
+      }
+      
       }
   )
+  
+  
+    
+  
+  
+  
+  
   })
   
   observe({

@@ -773,7 +773,9 @@ ui <-
                                ),
                                div(
                                  style = "display: inline-block; vertical-align: top; margin-left: 0px;",
-                                 downloadButton("download_line_plot", "Download Plot")),
+                                 downloadButton("download_line_plot", "Download Plot"),
+                                 radioButtons("dl_lineplot_format", NULL,  choices = c("PNG" = "png", "SVG" = "svg"),
+                                              selected = "png", inline = TRUE)),
                                verbatimTextOutput("lineDetails"),
 
                                div(id="scatter","Scatter Plot",style = "text-align: left; font-size:150%"),
@@ -785,7 +787,9 @@ ui <-
                                ),
                                div(
                                  style = "display: inline-block; vertical-align: top; margin-left: 0px;",
-                                 downloadButton("download_scat_plot", "Download Plot")
+                                 downloadButton("download_scat_plot", "Download Plot"),
+                                 radioButtons("dl_scat_format", NULL,  choices = c("PNG" = "png", "SVG" = "svg"),
+                                           selected = "png", inline = TRUE)
                                )
 
                       
@@ -1107,7 +1111,9 @@ ui <-
                                         ),
                                         div(
                                           style = "display: inline-block; vertical-align: top; margin-left: 0px;",
-                                          downloadButton("download_clus_plot", "Download Plot")
+                                          downloadButton("download_clus_plot", "Download Plot"),
+                                          radioButtons("dl_clur_format", NULL,  choices = c("PNG" = "png", "SVG" = "svg"),
+                                                    selected = "png", inline = TRUE)
                                         )))),
 
                            actionButton("plt_opti", "Plot map of measure implementation under selected optima"), textOutput("no_row") %>% hidden(),
@@ -1292,7 +1298,9 @@ ui <-
                              ),
                              div(
                                style = "display: inline-block; vertical-align: top; margin-left: 0px;",
-                               downloadButton("download_weights_plot", "Download Plot")
+                               downloadButton("download_weights_plot", "Download Plot"),
+                               radioButtons("dl_weight_format", NULL,  choices = c("PNG" = "png", "SVG" = "svg"),
+                                    selected = "png", inline = TRUE)
                              ),
                              br(),
                              div(id = "measure_table_title",
