@@ -51,6 +51,23 @@ find_high_corr <- function(cor_matrix, threshold = 0.75, tab = T,strike = NULL) 
 }
 
 
+## pull the correlation variables (non OPTAIN)
+
+check_cvp = function(objs, var_path = "../input/cluster_params.csv", ws = T) {
+  
+  if (!file.exists(var_path)) {return(NULL)} 
+  
+  
+ #only ever called for non-optain cluster.csvs
+  clu_col = read.csv(var_path, nrows = 1, check.names = F)
+  clu_col = names(clu_col)
+  params =  setdiff(clu_col, objs)
+  if(ws){saveRDS(params, file = "../input/all_var.RDS")}
+  
+  return(params)
+  
+}
+
 #### Write Config Functions ####
 
 ## pca and correlation update
@@ -58,7 +75,7 @@ write_corr = function(vars,
                       measures = mes,
                       cor_analysis = F,
                       pca_content = all_var,
-                      pca = T,inipath="../input/config.ini") {
+                      pca = T,inipath="../input/config.ini", isOptain = T) { 
   
   if (!file.exists(inipath)) {
     return(NULL)  
@@ -70,6 +87,8 @@ write_corr = function(vars,
     stop("cannot write both PCA and Correlation ini at the same time, set pca = T OR cor_analysis = T, not both")
   }
   if (cor_analysis) {
+    
+    if(isOptain){
     varmes = NULL
     
     if ("moran" %in% vars) {
@@ -88,7 +107,10 @@ write_corr = function(vars,
       varmes = append(varmes, paste(mes, "channel_frac", sep = "_"))
     }
     
-    config[[1]]$col_correlation_matrix = paste(varmes, collapse = ", ")
+    config[[1]]$col_correlation_matrix = paste(varmes, collapse = ", ")}else{
+      config[[1]]$col_correlation_matrix = paste(vars,collapse = ", ")
+      config[[1]]$input_file = paste0("cluster_params.csv")
+    }
     
     write.ini(config, inipath)
   } 

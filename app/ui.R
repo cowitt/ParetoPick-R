@@ -326,7 +326,7 @@ ui <-
                                        br(),
                                        br(),
                                p(" The application is structured the following way:"),
-                               p(HTML("The second tab <b>Data Preparation</b> is needed to produce the data required for the subsequent analyses. Four different levels of functionality can be distinguished depending on whether the SWAT+ - CoMOLA workflow was used or if files have to be reproduced in the SWAT+ - CoMOLA structure.")),
+                               p(HTML("The second tab <b>Data Preparation</b> is needed to upload or produce the data required for the subsequent analyses. Four different levels of functionality can be distinguished depending on whether the SWAT+ - CoMOLA workflow was used or if files have to be reproduced in the SWAT+ - CoMOLA structure.")),
                                p(HTML("The third tab <strong>Visualising the Pareto Front</strong> provides an overview over the optimisation results. The user can gain insights into the relationships between the objectives and the pareto front by selecting and plotting preferred objective ranges.")),
                                p(HTML("The fourth tab <strong>Configure Clustering</strong> allows to perform the clustering with default settings or to jump to the optional tabs for manual clustering.")),
                                
@@ -362,7 +362,7 @@ ui <-
                                
                                div("1. File Upload - Basic Functionality",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
-                               div(p("Please provide pareto_fitness.txt as well as the objective names. These two files are sufficient to run the Visualisations and the AHP without the measure sliders."),style = "text-align: justify; font-size:140%; width: 150%;"),
+                               div(p("Please provide pareto_fitness.txt as well as the objective names. These two files are sufficient to run the Visualisations and the AHP (without the measure sliders)."),style = "text-align: justify; font-size:140%; width: 150%;"),
                                # div(id="fitness_avail",
 
                                div("pareto_fitness.txt",style = "text-align: left; font-size:115%;",
@@ -411,9 +411,9 @@ ui <-
 
                                hr(style = "border-top: 2px solid #03597F;"),  # Horizontal line with custom styling
                                br(),
-                               div("2. File Upload - Full Functionality",
+                               div("2. File Upload - Full Functionality (OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
-                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use the full functionality of this tool. Please provide the following files. 
+                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use the full functionality of this tool. (This is also possible if you can reproduce a number of files, see below). Please provide the following files. 
                                  Their names have to align with what is given here:",style =  "text-align: left; font-size:140%; width:150%"),
 
                                #file numbers are jumbled but just here
@@ -464,11 +464,22 @@ ui <-
                                
                                actionButton("save_full_vis", "Save files"),
                                
+                               ######################################################################## Clustering
+                               hr(style = "border-top: 2px solid #03597F;"),
                                
+                               div("4. File Upload - Full Functionality (not OPTAIN)",
+                                   style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
+                               
+                               p("Only relevant if you have used a model workflow with outputs structured differently than CoMOLA and SWAT+ outputs. If you can reproduce 
+                                 the following .csv file according the Readme, you will be able to use all visualisations and the AHP including the measure sliders and map plotting :",style =  "text-align: left; font-size:130%; width: 150%;"),
+                               
+                               div("cluster_params.csv", style = "text-align: left; font-size:115%"),
+                               div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
+                               actionButton("save_cluster_no","Save file"),
                                ######################################################################## Full Connection to Decision Space
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
-                               div("4. File Upload - Full Connection to Decision Space (not needed for OPTAIN)",
+                               div("5. File Upload - Full Connection to Decision Space (not needed for OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                p("Only relevant if you have used a model workflow with outputs structured differently than CoMOLA and SWAT+ outputs. If you can reproduce 
                                  the following files according the Readme, you will be able to use all visualisations and the AHP including the measure sliders and map plotting :",style =  "text-align: left; font-size:130%; width: 150%;"),
@@ -845,19 +856,24 @@ ui <-
                                    div(
                                      "1. Choose variables to be included in the Correlation Analysis:",
                                      style = "text-align: left; font-size:150%"
-                                   ),div(
-                                     "(those marked with * have been calculated for each measure separately. For details see Glossary)",
-                                     style = "text-align: left; font-size:80%"
                                    ),
-                                   checkboxGroupInput("selements", "",
-                                                      choiceNames = c("share_con (*)",
-                                                                      "Moran's I (*)",
-                                                                      "channel_frac (*)",
-                                                                      "linE",
-                                                                      "lu_share"),
-                                                      choiceValues=c("share_con","moran","channel_frac","linE","lu_share"),
-                                                      selected = c("share_con","moran","channel_frac","linE","lu_share")),
-
+                                   # div( # this was the original for OPTAIN-only cluster
+                                   #   "(those marked with * have been calculated for each measure separately. For details see Glossary)",
+                                   #   style = "text-align: left; font-size:80%"
+                                   # ),
+                                   # checkboxGroupInput("selements", "",
+                                   #                    choiceNames = c("share_con (*)",
+                                   #                                    "Moran's I (*)",
+                                   #                                    "channel_frac (*)",
+                                   #                                    "linE",
+                                   #                                    "lu_share"),
+                                   #                    choiceValues=c("share_con","moran","channel_frac","linE","lu_share"),
+                                   #                    selected = c("share_con","moran","channel_frac","linE","lu_share")),
+                                    checkboxGroupInput("selements", "",
+                                                       choiceNames = NULL,
+                                                       choiceValues = NULL,
+                                                       selected = NULL
+                                                       ),
                                    textOutput("numbercorr"),
                                    div("2. Perform the Correlation Analysis", style = "text-align: left; font-size:150%"),
                                    actionButton("run_corr", "Run Correlation Analysis"),

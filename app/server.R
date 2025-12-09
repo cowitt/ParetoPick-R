@@ -15,6 +15,7 @@ server <- function(input, output, session) {
   file_hru_activ = reactiveVal(NULL)
   file_hru_con = reactiveVal(NULL)
   file_shapefile_cd = reactiveVal(NULL)
+  file_cluster_params = reactiveVal(NULL)
   ##
   shapefile <- reactiveVal(NULL)
   
@@ -58,7 +59,7 @@ server <- function(input, output, session) {
   reset_move = reactiveVal(FALSE)
  
   scatter_regr = reactiveVal(NULL)
-  
+  clus_path = reactiveVal(NULL)
   #control/limit range of objectives, works in combination with slider input$ran1 etc.
   default_vals = reactiveVal(list(ran1 = c(0,100),
                                   ran2 = c(0,100),
@@ -519,6 +520,21 @@ server <- function(input, output, session) {
       shinyjs::refresh()
       
     })
+    
+    ## Clustering with other non-OPTAIN datasets
+    observeEvent(input$cluster_params, { file <- input$cluster_params
+    if (is.null(file)) {return(NULL)}
+    file_cluster_params(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
+    
+    observeEvent(input$save_cluster_no,{
+      save_cluster_params = file_cluster_params()$name
+      path_cluster_params = file.path(save_dir, save_cluster_params)
+      file.copy(file_cluster_params()$path, path_cluster_params, overwrite = T)
+      
+      shinyjs::refresh()
+    })
+    
+    
     ## Full Connection to Decision Space with reproduced hru.con and hru.shp files
     observeEvent(input$hru_con, { file <- input$hru_con
     if (is.null(file)) {return(NULL)}
@@ -527,6 +543,7 @@ server <- function(input, output, session) {
     observeEvent(input$shapefile_cd, { file <- input$shapefile_cd
     if (is.null(file)) {return(NULL)}
     file_shapefile_cd(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
+    
     
     
     observeEvent(input$save_full_cd, {
@@ -812,6 +829,7 @@ server <- function(input, output, session) {
       sliders
     })
  
+    
     observe({
       if (!file.exists("../data/sq_fitness.txt")) {
         req(objectives())
@@ -856,11 +874,25 @@ server <- function(input, output, session) {
    
   })
   
- 
-     ## make or pull fit()
+  ## make or pull fit()
     observe({
       
       if (file.exists(pareto_path)) {
+        ## Configure tab and Analysis turned off (the latter would still work but with old data)
+        observe({
+          
+          if(is.null(clus_path())){ #clus_path holds either var_corr_par.csv or cluster_param.csv path
+            # shinyjs::hide("main_analysis")
+            
+            shinyjs::hide("show_extra_dat") #AHP hide option to show clusters
+            shinyjs::hide("random_ahp") #AHP hide option to show clusters
+            updateCheckboxInput(session, "show_extra_dat", value = FALSE)#turn it off (has default TRUE)
+            
+            output$config_needs_var = renderText({"Please click Run Prep (for OPTAIN workflow) or provide cluster_params.csv in the Data Preparation tab before proceeding here!"})
+            output$analysis_needs_var = renderText({"Please click Run Prep in the Data Preparation tab before proceeding here!"})
+          }
+        })
+        
         
         req(objectives())
         
@@ -933,20 +965,8 @@ server <- function(input, output, session) {
           initial_update_done$initial = TRUE
           }
         
-        ## Configure tab and Analysis turned off (the latter would still work but with old data)
-        if(!file.exists("../input/var_corr_par.csv")){
-          # shinyjs::hide("main_analysis")
-          
-          shinyjs::hide("show_extra_dat") #AHP hide option to show clusters
-          shinyjs::hide("random_ahp") #AHP hide option to show clusters
-          updateCheckboxInput(session, "show_extra_dat", value = FALSE)#turn it off (has default TRUE)
-          
-          output$config_needs_var = renderText({"Please click Run Prep in the Data Preparation tab before proceeding here!"})
-          output$analysis_needs_var = renderText({"Please click Run Prep in the Data Preparation tab before proceeding here!"})}
-      
-        
-      }else{#not even pareto_fitness available
-          output$config_needs_var = renderText({"Please provide pareto_fitness.txt and click Run Prep in the Data Preparation tab before proceeding here!"})
+       }else{#not even pareto_fitness available
+          output$config_needs_var = renderText({"Please provide pareto_fitness.txt and click Run Prep (OPTAIN workflow) or provide cluster_params.csv in the Data Preparation tab before proceeding here!"})
             output$uploaded_pareto <- renderText({"To be able to proceed, please provide pareto_fitness.txt as well as the objective names in the previous tab."})
             shinyjs::hide("main_analysis")
             shinyjs::hide("all_ahp")
@@ -958,12 +978,7 @@ server <- function(input, output, session) {
       }
     })
     
-   observe({
-     invalidateLater(1500)
-     if(!file.exists("../input/var_corr_par.csv")){shinyjs::hide("config_all") #otherwise not reactive enough
-}else{shinyjs::show("config_all")}})
-    
-    
+   
    if(file.exists("../input/units.RDS")){#shinyjs::hide(id="units")
         axiselected(readRDS("../input/units.RDS"))
         updateTextInput(session, "unit1",  value  = axiselected()[1])
@@ -1963,6 +1978,42 @@ server <- function(input, output, session) {
   )
  
   ### Configure ####
+  observe({
+    optain = "../input/var_corr_par.csv"
+    not_optain = "../input/cluster_params.csv"
+    
+    if(file.exists(optain)){
+      clus_path(optain)
+    }else if(file.exists(not_optain)){
+      clus_path(not_optain)
+    }
+    })
+  
+  observe({
+    req(objectives())
+    if(!is.null(clus_path())){
+      if(clus_path() == "../input/var_corr_par.csv"){
+        updateCheckboxGroupInput(#OPTAIN
+          session, "selements",
+          choiceNames = c("share_con (*)", "Moran's I (*)","channel_frac (*)","linE","lu_share"),
+                                             choiceValues=c("share_con","moran","channel_frac","linE","lu_share"),
+                                             selected = c("share_con","moran","channel_frac","linE","lu_share"))
+        
+        
+      }else{
+        
+        choicestuff = check_cvp(objs=objectives())
+        
+        updateCheckboxGroupInput(
+          session, "selements",
+          choiceNames = choicestuff,
+          choiceValues = choicestuff,
+          selected = choicestuff
+          
+        )
+      }
+    }
+  })
   
       output$next_step <- renderUI({
         if (input$show_tabs == "show") {
@@ -2164,10 +2215,10 @@ server <- function(input, output, session) {
         
           req(input$selements,objectives())
           all_var <<- readRDS("../input/all_var.RDS")
+          clp <- clus_path() != "../input/cluster_params.csv"
+          write_corr(vars = input$selements,cor_analysis = T, pca = F, isOptain = clp)
           
-          write_corr(vars = input$selements,cor_analysis = T, pca = F)
-          
-          check_align()#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain) 
+          check_align(var_path=clus_path())#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain)
          
           check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), 
                         default_vals= default_vals(),ranger = range_controlled())   
