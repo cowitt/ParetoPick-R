@@ -3099,7 +3099,7 @@ server <- function(input, output, session) {
     })
   
   observe({ #hide measire slider title too
-    if(is.null(hru_ever())){
+    if(is.null(hru_ever()) && !file.exists("../input/cluster_params.csv")){
       shinyjs::hide("measure_title_ahp")
       shinyjs::hide("measure_table_title")
       
