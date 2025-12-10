@@ -2860,6 +2860,13 @@ server <- function(input, output, session) {
       }else{selected_data <- NULL} 
     }
     
+    # turn off share_con if not OPTAIN
+    observe({
+      if(file.exists("../input/cluster_params.csv")){
+      shinyjs::disable("show_share_con")}
+      
+    })
+    
     #switch between plots/functions
     observeEvent(input$show_pareto,{ #default
       if (input$show_pareto) {
