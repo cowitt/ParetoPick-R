@@ -736,7 +736,112 @@ server <- function(input, output, session) {
   
  
   ### Play Around Tab ####
-
+  #remove tab content if fitness not available
+  observe({
+    if (!file.exists(pareto_path)) {
+      output$config_needs_var = renderText({"Please provide pareto_fitness.txt and click Run Prep (OPTAIN workflow) or provide cluster_params.csv in the Data Preparation tab before proceeding here!"})
+      output$uploaded_pareto <- renderText({"To be able to proceed, please provide pareto_fitness.txt as well as the objective names in the previous tab."})
+      shinyjs::hide("main_analysis")
+      shinyjs::hide("all_ahp")
+      shinyjs::hide("ahp_analysis")
+      shinyjs::hide("config_all")
+      # shinyjs::hide("play_sidebar")
+      shinyjs::hide("tab_play1")
+      shinyjs::hide("tab_play2")
+      shinyjs::hide("play_sidebar")
+      shinyjs::hide("plt_opti")
+      output$analysis_needs_var = renderText({"The correlation analysis and the clustering have to run first before their results can be analysed."})
+      
+    }else{
+      observe({
+        if (is.null(clus_path())) {
+          #clus_path holds either var_corr_par.csv or cluster_param.csv path
+          # shinyjs::hide("main_analysis")
+          
+          shinyjs::hide("show_extra_dat") #AHP hide option to show clusters
+          shinyjs::hide("random_ahp") #AHP hide option to show clusters
+          updateCheckboxInput(session, "show_extra_dat", value = FALSE)#turn it off (has default TRUE)
+          
+          output$config_needs_var = renderText({"Please click Run Prep (for OPTAIN workflow) or provide cluster_params.csv in the Data Preparation tab before proceeding here!"})
+          output$analysis_needs_var = renderText({"Please click Run Prep in the Data Preparation tab before proceeding here!"})
+        }
+      })
+      
+      ## make or pull fit()
+      
+      req(objectives())
+      
+      data <- read.table(pareto_path, header = FALSE, stringsAsFactors = FALSE,sep = deli(pareto_path))
+      new_col_data <- objectives()
+      colnames(data) = new_col_data
+      fit(data)
+      fit1(fit() %>% rownames_to_column("optimum"))
+      yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
+      f_scaled(yo)
+      
+      yo2 <- pull_high_range(fit())
+      rng_plt(yo2)
+      
+      yo2 <- pull_high_range(fit(),num_order=T)
+      rng_plt_axes(yo2)
+      
+      # output$uploaded_pareto <- renderText({"All Files found.
+      #                                        You can now examine the Pareto front.
+      #                                        How does it change when the objective ranges are modified?"})
+      
+      
+      ## adapt sliders in ahp and configure tab
+      if(!(initial_update_done$initial)){ #making sure this only runs once
+        min_max <-data.frame(t(sapply(data, function(x) range(x, na.rm = TRUE))))
+        names(min_max) =c("min","max")
+        range_value = NULL
+        
+        new_defaults <- default_vals()
+        
+        for (i in 1:4) {
+          var_name <- paste0("steps", i)
+          
+          #step_val also fails on small distances
+          if (pmin(abs(min_max$min[i]),abs(min_max$max[i])) <= 1 || abs(min_max$max[i]-min_max$min[i]) <= 1) {              
+            
+            min_max$max[i] = min_max$max[i] * 1000
+            min_max$min[i] = min_max$min[i] * 1000
+            
+            range_value = append(range_value,(rownames(min_max[i, ])))
+            
+          }
+          
+          if (abs(min_max$min[i]) > 100) {
+            min_max$max[i] = ceiling(min_max$max[i])
+            min_max$min[i] = floor(min_max$min[i])
+          }
+          
+          step_val = 1 #otherwise keyboard arrows do not work properly
+          # ranger not particularly flexible, another option instead of /1000:
+          
+          # range_abs =  abs(min_max$max[i]- min_max$min[i])
+          #   
+          # if(range_abs > 10){
+          #   step_val = 1 #
+          # }else{
+          #   step_val = cal_step(ra = range_abs, n = 100)
+          #   }
+          
+          range_controlled(range_value)
+          
+          updateSliderInput(session, paste0("obj",i,"_ahp"), value = c(min_max$min[i],min_max$max[i]),min =min_max$min[i],max = min_max$max[i],step=step_val)
+          updateSliderInput(session, paste0("ran",i), value = c(min_max$min[i],min_max$max[i]),min =min_max$min[i],max = min_max$max[i],step=step_val)
+          
+          
+          new_defaults[[paste0("ran",i)]] <- c(min_max$min[i], min_max$max[i]) 
+          
+        }
+        default_vals(new_defaults)
+        initial_update_done$initial = TRUE
+      }
+      
+    }
+  })
   ##check if names of objectives have to be supplied or already present
   observeEvent(input$tabs=="play_around",{ 
     ## make or pull objectives()
@@ -874,109 +979,7 @@ server <- function(input, output, session) {
    
   })
   
-  ## make or pull fit()
-    observe({
-      
-      if (file.exists(pareto_path)) {
-        ## Configure tab and Analysis turned off (the latter would still work but with old data)
-        observe({
-          
-          if(is.null(clus_path())){ #clus_path holds either var_corr_par.csv or cluster_param.csv path
-            # shinyjs::hide("main_analysis")
-            
-            shinyjs::hide("show_extra_dat") #AHP hide option to show clusters
-            shinyjs::hide("random_ahp") #AHP hide option to show clusters
-            updateCheckboxInput(session, "show_extra_dat", value = FALSE)#turn it off (has default TRUE)
-            
-            output$config_needs_var = renderText({"Please click Run Prep (for OPTAIN workflow) or provide cluster_params.csv in the Data Preparation tab before proceeding here!"})
-            output$analysis_needs_var = renderText({"Please click Run Prep in the Data Preparation tab before proceeding here!"})
-          }
-        })
-        
-        
-        req(objectives())
-        
-        data <- read.table(pareto_path, header = FALSE, stringsAsFactors = FALSE,sep = deli(pareto_path))
-        new_col_data <- objectives()
-        colnames(data) = new_col_data
-        fit(data)
-        fit1(fit() %>% rownames_to_column("optimum"))
-        yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
-        f_scaled(yo)
 
-        yo2 <- pull_high_range(fit())
-        rng_plt(yo2)
-        
-        yo2 <- pull_high_range(fit(),num_order=T)
-        rng_plt_axes(yo2)
-        
-        # output$uploaded_pareto <- renderText({"All Files found.
-        #                                        You can now examine the Pareto front.
-        #                                        How does it change when the objective ranges are modified?"})
-        
-        
-       ## adapt sliders in ahp and configure tab
-          if(!(initial_update_done$initial)){ #making sure this only runs once
-          min_max <-data.frame(t(sapply(data, function(x) range(x, na.rm = TRUE))))
-          names(min_max) =c("min","max")
-          range_value = NULL
-         
-          new_defaults <- default_vals()
-          
-          for (i in 1:4) {
-            var_name <- paste0("steps", i)
-            
-            #step_val also fails on small distances
-            if (pmin(abs(min_max$min[i]),abs(min_max$max[i])) <= 1 || abs(min_max$max[i]-min_max$min[i]) <= 1) {              
-              
-              min_max$max[i] = min_max$max[i] * 1000
-              min_max$min[i] = min_max$min[i] * 1000
-              
-              range_value = append(range_value,(rownames(min_max[i, ])))
-              
-            }
-          
-          if (abs(min_max$min[i]) > 100) {
-            min_max$max[i] = ceiling(min_max$max[i])
-            min_max$min[i] = floor(min_max$min[i])
-          }
-            
-          step_val = 1 #otherwise keyboard arrows do not work properly
-          # ranger not particularly flexible, another option instead of /1000:
-          
-          # range_abs =  abs(min_max$max[i]- min_max$min[i])
-          #   
-          # if(range_abs > 10){
-          #   step_val = 1 #
-          # }else{
-          #   step_val = cal_step(ra = range_abs, n = 100)
-          #   }
-          
-          range_controlled(range_value)
-          
-          updateSliderInput(session, paste0("obj",i,"_ahp"), value = c(min_max$min[i],min_max$max[i]),min =min_max$min[i],max = min_max$max[i],step=step_val)
-          updateSliderInput(session, paste0("ran",i), value = c(min_max$min[i],min_max$max[i]),min =min_max$min[i],max = min_max$max[i],step=step_val)
-                 
-          
-          new_defaults[[paste0("ran",i)]] <- c(min_max$min[i], min_max$max[i]) 
-          
-          }
-          default_vals(new_defaults)
-          initial_update_done$initial = TRUE
-          }
-        
-       }else{#not even pareto_fitness available
-          output$config_needs_var = renderText({"Please provide pareto_fitness.txt and click Run Prep (OPTAIN workflow) or provide cluster_params.csv in the Data Preparation tab before proceeding here!"})
-            output$uploaded_pareto <- renderText({"To be able to proceed, please provide pareto_fitness.txt as well as the objective names in the previous tab."})
-            shinyjs::hide("main_analysis")
-            shinyjs::hide("all_ahp")
-            shinyjs::hide("ahp_analysis")
-            shinyjs::hide("config_all")
-            # shinyjs::hide("play_sidebar")
-            shinyjs::hide("tab_play1")
-            shinyjs::hide("tab_play2")
-      }
-    })
     
    
    if(file.exists("../input/units.RDS")){#shinyjs::hide(id="units")

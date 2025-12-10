@@ -1048,11 +1048,7 @@ ui <-
                        wellPanel(p("This tab allows you to analyse the cluster outputs and plot and compare the measure implementation across the pareto solutions selected in the clustering. The table shows those optima selected as representative for the different clusters. The plot on the right aligns with the one produced during the clustering.
                        It shows the location of the optima selected in the table. Please be aware that plotting the measure allocation takes around 20 seconds.")),
 
-                       sidebarLayout(
-                         sidebarPanel(id ="analysis_sidebar",
-                                      textOutput("analysis_no_clustering")),
-
-                         mainPanel(
+                        mainPanel(
                            textOutput("analysis_needs_var"),
                            id ="main_analysis",
                            div(id="analysis_random", #the whole right side of plots and extra stuff under plot can be hidden
@@ -1114,9 +1110,9 @@ ui <-
                                           downloadButton("download_clus_plot", "Download Plot"),
                                           radioButtons("dl_clur_format", NULL,  choices = c("PNG" = "png", "SVG" = "svg"),
                                                     selected = "png", inline = TRUE)
-                                        )))),
-
-                           actionButton("plt_opti", "Plot map of measure implementation under selected optima"), textOutput("no_row") %>% hidden(),
+                                        ))),actionButton("plt_opti", "Plot map of measure implementation under selected optima")),
+                           
+                           textOutput("no_row") %>% hidden(),
                            div(id="meas_low",textOutput("meas_low")),
                            div(id="plot_spinner",
                                uiOutput("comp_map")%>% withSpinner(color = "#F7A600", hide.ui = TRUE)),
@@ -1144,7 +1140,7 @@ ui <-
                                  div(class = "spinspin")
                                )  
                            )%>%hidden()
-                         )),
+                         ),
                        tags$script(HTML("
                         function toggleSidebar(show) {
                           if (show) {
