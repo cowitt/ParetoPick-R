@@ -310,7 +310,7 @@ ui <-
                      tabItem(tabName = "intro",
                              h2("Introduction and Background", style = "margin-top: 0; padding-top: 0;"),
                              
-                             mainPanel( div(
+                             mainPanel(width =12, div(
                                style = "width: 100%;; margin: 0 auto; text-align: justify; font-size:135%;",
                                p("This application analyses OPTAIN optimisation outputs and shall support decision making.
                                   While all solutions provided by the SWAT+ / COMOLA workflow are pareto-optimal (none of the objectives can be improved without losses
@@ -358,7 +358,7 @@ ui <-
                                                  ")), p(HTML("If you're working with data produced through SWAT+ and CoMOLA, please upload all data required in sections 1 & 2 and click <strong>Check Files</strong> and
                                                 (if all files have been found) <strong>Run Prep</strong>."))),
 
-                             mainPanel(
+                             mainPanel(width = 12,
                                
                                div("1. File Upload - Basic Functionality",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
@@ -801,7 +801,7 @@ ui <-
                      tabItem(tabName = "configure",
                              h2("Configure Cluster Settings", style = "margin-top: 0; padding-top: 0;"),
                            
-                     mainPanel(
+                     mainPanel(width = 12,
                        textOutput("config_needs_var"),
 
 
@@ -1046,7 +1046,7 @@ ui <-
                        wellPanel(p("This tab allows you to analyse the cluster outputs and plot and compare the measure implementation across the pareto solutions selected in the clustering. The table shows those optima selected as representative for the different clusters. The plot on the right aligns with the one produced during the clustering.
                        It shows the location of the optima selected in the table. Please be aware that plotting the measure allocation takes around 20 seconds.")),
 
-                        mainPanel(
+                        mainPanel(width = 12,
                            textOutput("analysis_needs_var"),
                            id ="main_analysis",
                            div(id="analysis_random", #the whole right side of plots and extra stuff under plot can be hidden
@@ -1057,7 +1057,11 @@ ui <-
 
                                     tags$div(textOutput("check_default"), style = "color: #D10000;"),
 
-                                    div(style = "overflow-x: auto;", DTOutput("antab"))),
+                                    div(style = "overflow-x: auto;", DTOutput("antab")),
+                                    fluidRow(
+                                    column(4,textInput("cluster_antab_name",label = NULL, value = "cluster_overview")),
+                                    column(2,downloadButton("save_antabcsv", "Download table as .csv")))
+                                    ),
                              column(6,
                                     tags$div("Select among plots.",style = "text-align: center;font-size: 125%;"),
                                     fluidRow(

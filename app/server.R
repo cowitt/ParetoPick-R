@@ -88,6 +88,7 @@ server <- function(input, output, session) {
   pca_available <- reactiveValues(button1_clicked = FALSE, button2_clicked = FALSE, button3_clicked = FALSE) #controls config.ini writing previous to clustering
   #results table
   check_files<- reactiveVal(NULL)
+  df_antab = reactiveVal(NULL)
   sols <- reactiveVal()
   sols2 <- reactiveVal() #for boxplot
   sols3 <- reactiveVal() #for objectives vs. cluster variables
@@ -2635,7 +2636,7 @@ server <- function(input, output, session) {
  
       if(!file.exists("../data/measure_location.csv")){
         output$meas_low <- renderText({
-          "measure_location.csv not found, please provide it in the data preparation tab."
+          "measure_location.csv not found, if you'd like to produce maps, please provide it in the data preparation tab."
         })}else{shinyjs::hide("meas_low")}
       
       observe({
@@ -2732,9 +2733,9 @@ server <- function(input, output, session) {
           df <- as.data.frame(df)
           colnames(df) <- names(sols())
           
-          df = df %>% select(`cluster number`, `cluster size`,outlier,objectives(), optimum)
+          df_antab(df %>% select(`cluster number`, `cluster size`,outlier,objectives(), optimum))
 
-          datatable(df,
+          datatable(df_antab(),
                     selection = list(mode = "multiple", target = 'row', max = 12),
                     rownames = FALSE,
                     
@@ -2750,6 +2751,16 @@ server <- function(input, output, session) {
           
         })
       })
+    
+    output$save_antabcsv <- downloadHandler(
+      filename = function(){
+        curt = format(Sys.time(), "_%Y%m%d")
+        paste0(input$cluster_antab_name, curt, ".csv")
+      },
+      content = function(file){
+        write.csv(df_antab(),file,row.names = F)
+      }
+    )
      
     ##three functions for output$par_plot_optima, depending on which checkbox is ticked
     
