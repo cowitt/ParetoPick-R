@@ -528,7 +528,7 @@ server <- function(input, output, session) {
     
     observeEvent(input$save_cluster_no,{
       save_cluster_params = file_cluster_params()$name
-      path_cluster_params = file.path(save_dir, save_cluster_params)
+      path_cluster_params = file.path(input_dir, save_cluster_params)
       file.copy(file_cluster_params()$path, path_cluster_params, overwrite = T)
       
       shinyjs::refresh()
@@ -2147,7 +2147,7 @@ server <- function(input, output, session) {
         
         checkFiles <- sapply(required_files, function(file) file.exists(file))
         
-        if (all(checkFiles) == F) {
+        if (all(checkFiles) == F && !file.exists("../input/cluster_params.csv")) {
           shinyjs::hide(id = "corr_content")
           shinyjs::show(id = "corr_notthere")
           shinyjs::hide(id = "corr_sidebar")

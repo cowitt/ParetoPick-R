@@ -354,7 +354,7 @@ ui <-
                        
                              wellPanel(  p(HTML("This tab requires you to provide the optimisation outputs.
                                                  Please refer to the Readme for examples of their individual structures.
-                                                 You can provide a limited set of outputs to only visualise your data and perform the AHP without measure sliders and map plotting (see the Readme and secions 3 and 4 on this tab for details).
+                                                 You can provide a limited set of outputs to use a limited set of functionalities (see the Readme and sections 3 to 5 on this tab for details). <strong>All functionalities require you to upload the file named under 1</strong>.
                                                  ")), p(HTML("If you're working with data produced through SWAT+ and CoMOLA, please upload all data required in sections 1 & 2 and click <strong>Check Files</strong> and
                                                 (if all files have been found) <strong>Run Prep</strong>."))),
 
@@ -393,7 +393,7 @@ ui <-
                                br(),
 
                                div(id="units",
-                                   "If you want you can supply the objectives' units, you can change them anytime:",
+                                   "Optionally, you can supply the objectives' units, they can be changed anytime later:",
                                    style= "text-align: left; font-size:115%",
                                    textInput("unit1","unit Objective 1", value = ""),
                                    textInput("unit2","unit Objective 2", value = ""),
@@ -451,7 +451,7 @@ ui <-
                                ######################################################################## Full Visualisation
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
-                               div("3. File Upload - Full Visualisation (not needed for OPTAIN)",
+                               div("3. File Upload - Full Visualisation (not OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                p("Only relevant if you have used a model workflow with outputs structured differently than CoMOLA and SWAT+ outputs. If you can reproduce 
                                  the following files according the Readme, you will be able to use all visualisations and the AHP including the measure sliders :",style =  "text-align: left; font-size:130%; width: 150%;"),
@@ -467,11 +467,11 @@ ui <-
                                ######################################################################## Clustering
                                hr(style = "border-top: 2px solid #03597F;"),
                                
-                               div("4. File Upload - Full Functionality (not OPTAIN)",
+                               div("4. File Upload - Full Cluster Functionality (not OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                
-                               p("Only relevant if you have used a model workflow with outputs structured differently than CoMOLA and SWAT+ outputs. If you can reproduce 
-                                 the following .csv file according the Readme, you will be able to use all visualisations and the AHP including the measure sliders and map plotting :",style =  "text-align: left; font-size:130%; width: 150%;"),
+                               p("Only relevant if you have used a model workflow with outputs structured differently. If you can reproduce 
+                                 the following .csv file according the Readme, you will be able to use the clustering, visualisations and AHP :",style =  "text-align: left; font-size:130%; width: 150%;"),
                                
                                div("cluster_params.csv", style = "text-align: left; font-size:115%"),
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
@@ -479,9 +479,9 @@ ui <-
                                ######################################################################## Full Connection to Decision Space
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
-                               div("5. File Upload - Full Connection to Decision Space (not needed for OPTAIN)",
+                               div("5. File Upload - Full Connection to Decision Space (not OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
-                               p("Only relevant if you have used a model workflow with outputs structured differently than CoMOLA and SWAT+ outputs. If you can reproduce 
+                               p("Only relevant if you have used a model workflow with outputs structured differently. If you can reproduce 
                                  the following files according the Readme, you will be able to use all visualisations and the AHP including the measure sliders and map plotting :",style =  "text-align: left; font-size:130%; width: 150%;"),
                                
                                div("1. hru.con",style = "text-align: left; font-size:115%"),
