@@ -174,7 +174,7 @@ The table below outlines the four levels of functionality, their differences and
 | Full Visualisation    | All sliders, Visualisations <br> & the AHP are working but neither <br> map plotting nor Clustering | pareto_fitness.txt <br> measure_location.csv <br> hru_in_optima.RDS |
 | Full Connection to Decision Space  | All sliders, maps & the AHP are working <br> only the clustering cannot be performed | pareto_fitness.txt <br> measure_location.csv <br> hru_in_optima.RDS <br> hru.con <br> hru.shp/.dbf/.prj/.shx |
 | Full Functionality - OPTAIN   | All sliders, maps, the AHP & the <br> clustering are working | All files named Above. <br> The Data Prep has to run before the <br> Clustering can be performed |
-| Full Functionality - not OPTAIN | All sliders, maps, the AHP & the <br> clustering are working | All files named Above. <br> plus cluster_params.csv |
+| Full Functionality - not OPTAIN | All sliders, maps, the AHP & the <br> clustering are working | All files named Above. <br> plus cluster_params.csv <br> you do not necessarily have to provide shapefiles <br> this functionality works without spatial visualisations  |
 
 cluster_params.csv is a file containing results of the multi-objective optimisation; each row should represent a Pareto optimal solution, column names can contain spaces and values should be numerical. In no particular order, the file should contain objective value columns as well as columns with information interesting for a cluster algorithm (such as decision space descriptors).  
 
