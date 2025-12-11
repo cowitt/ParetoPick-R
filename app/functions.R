@@ -1600,21 +1600,19 @@ get_mima <- function(df) {
 }
 
 ## check sliders and adapt var_corr_par accordingly
-check_sliders <- function(input_vals, default_vals, ranger = NULL) {  #input_vals as list made from input$ranx
-  touched <- sapply(1:4, function(s) {
-    !all(input_vals[[s]] == default_vals[[s]])
-  })
+check_sliders <- function(input_vals, default_vals, ranger = NULL, clus_p = "../input/var_corr_par.csv") {  #input_vals as list made from input$ranx
+  touched <- sapply(1:4, function(s) {!all(input_vals[[s]] == default_vals[[s]])})
   
   
   if (any(touched)) {
     #check which var_corr_par are available, if previously touched take fresh one, store it, change it and safe it under new name
-    if (file.exists("../input/var_corr_par_bu.csv")) {
-      whole = read.csv("../input/var_corr_par_bu.csv", check.names = F)
-    } else{#if never been reduced we read in original and create back up
-      whole = read.csv("../input/var_corr_par.csv", check.names = F)
-      write.csv(whole, file = "../input/var_corr_par_bu.csv", row.names = F) #now its changed a backup is needed
-    }
+    bu_path = sub("\\.csv$", "_bu.csv",clus_p)
     
+    if (!file.exists(bu_path)) { 
+      current = read.csv(clus_p, check.names = F)
+      write.csv(current, file = bu_path, row.names = F) #now its changed a backup is needed
+      } 
+    whole <- read.csv(bu_path, check.names = F)
     trs = whole
     
     if (!is.null(ranger)) {#basically what match_abs is doing too plus more columns
@@ -1625,16 +1623,18 @@ check_sliders <- function(input_vals, default_vals, ranger = NULL) {  #input_val
       valma = input_vals[[k]][2]
       valmi = input_vals[[k]][1]
       
+      col_name <- names(trs)[k]
+      
       if (k %in% indics) {
        valma = valma / 1000
        valmi = valmi / 1000
       }
-      trs =  trs %>% filter(trs[[k]] <= valma & trs[[k]] >= valmi)
+      trs =  trs %>% filter(trs[[col_name]] <= valma & trs[[col_name]] >= valmi)
     }
     
    
     
-    write.csv(trs,file="../input/var_corr_par.csv",row.names = F)
+    write.csv(trs,file=clus_p,row.names = F)
     
   } else{return(NULL)}
   

@@ -2079,12 +2079,13 @@ server <- function(input, output, session) {
         req(input$selements)
         all_var <<- readRDS("../input/all_var.RDS")
         
-        write_corr(vars = input$selements,cor_analysis = T, pca = F)
+        da <- !file.exists("../input/cluster_params.csv")
+        write_corr(vars = input$selements,cor_analysis = T, pca = F, isOptain = da)
         
-        check_align()#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain) 
+        check_align(var_path=clus_path())#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain) 
         
         check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), #rewrite var_corr_par if sliders have moved
-                      default_vals= default_vals(),ranger = range_controlled())
+                      default_vals= default_vals(),ranger = range_controlled(),clus_p = clus_path())
         
         ## run correlation
           cmd <- paste("../python_files/correlation_matrix.exe")
