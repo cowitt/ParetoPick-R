@@ -264,11 +264,12 @@ ui <-
                                     background: #fff !important;
                                   }
                                   
+         
                                   .checkbox label { 
                                     white-space: nowrap;
                                   }
-                                 
-                                      ')),
+                                  
+                                   ')),
 
                      useShinyjs(),
                    tags$script(src = "iframeResizer.contentWindow.min.js"),
@@ -359,10 +360,11 @@ ui <-
                                                 (if all files have been found) <strong>Run Prep</strong>."))),
 
                              mainPanel(width = 12,
-                               
+                                       div(
+                                         style = "width: 100%;margin: 0 auto; text-align: justify; font-size:140%;",# This describes style for all that don't specify themselves
                                div("1. File Upload - Basic Functionality",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
-                               div(p("Please provide pareto_fitness.txt as well as the objective names. These two files are sufficient to run the Visualisations and the AHP (without the measure sliders)."),style = "text-align: justify; font-size:140%; width: 150%;"),
+                               p("Please provide pareto_fitness.txt as well as the objective names. These two files are sufficient to run the Visualisations and the AHP (without the measure sliders)."),
                                # div(id="fitness_avail",
 
                                div("pareto_fitness.txt",style = "text-align: left; font-size:115%;",
@@ -372,7 +374,7 @@ ui <-
 
 
                                br(),
-                               div(p("If you would like to plot the status quo, sq_fitness.txt is also required:"), style = "text-align: justify; font-size:140%; width: 150%;"),
+                               p("If you would like to plot the status quo, sq_fitness.txt is also required:"),
                                div("sq_fitness.txt (optional)",style = "text-align: left; font-size:115%;",
                                    div(style = "margin-top: -15px;",fileInput("sq_in", "", accept = ".txt", placeholder=""),
 
@@ -382,7 +384,7 @@ ui <-
                                div( "The objective names should align with the first four columns of the pareto_fitness.txt file:",
                                  style = "text-align: left; font-size:115%",
                                  div("*Please note, you can only change these names later if you perform a Hard Reset below or by following the procedure described in the Readme.",
-                                     style="text-align: left; font-size:90%; width: 150%;"),
+                                     style="text-align: left; font-size:70%;"),
                                  textInput("short1", "Objective 1\n (Column 1)"),
                                  textInput("short2", "Objective 2\n (Column 2)"),
                                  textInput("short3", "Objective 3\n (Column 3)"),
@@ -393,7 +395,7 @@ ui <-
                                br(),
 
                                div(id="units",
-                                   "Optionally, you can supply the objectives' units, they can be changed anytime later:",
+                                   "Optionally, you can supply the objectives' units, they can be changed at any time:",
                                    style= "text-align: left; font-size:115%",
                                    textInput("unit1","unit Objective 1", value = ""),
                                    textInput("unit2","unit Objective 2", value = ""),
@@ -414,7 +416,7 @@ ui <-
                                div("2. File Upload - Full Functionality (OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use the full functionality of this tool. (This is also possible if you can reproduce a number of files, see below). Please provide the following files. 
-                                 Their names have to align with what is given here:",style =  "text-align: left; font-size:140%; width:150%"),
+                                 Their names have to align with what is given here:"),
 
                                #file numbers are jumbled but just here
                                div("1. pareto_genomes.txt",style = "text-align: left; font-size:115%"),
@@ -454,8 +456,8 @@ ui <-
                                div("3. File Upload - Cluster Functionality (not OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                
-                               p("Only relevant if you have used a model workflow with outputs structured differently. If you can reproduce 
-                                 the following .csv file according the Readme, you will be able to use the clustering, visualisations and AHP :",style =  "text-align: left; font-size:130%; width: 150%;"),
+                               p("If you have used another model workflow than OPTAIN but you can reproduce 
+                                 the following .csv file according the Readme, you will be able to use the clustering, visualisations and AHP :"),
                                
                                div("cluster_params.csv", style = "text-align: left; font-size:115%"),
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
@@ -464,8 +466,7 @@ ui <-
                                hr(style = "border-top: 2px solid #03597F;"),
                                div("4.1 File Upload - Decision space (not OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
-                               p("Only relevant if you have used a model workflow with outputs structured differently. If you can reproduce 
-                                 the following files according the Readme, you will be able to use all visualisations and the AHP including the measure sliders :",style =  "text-align: left; font-size:130%; width: 150%;"),
+                               p("If you have used another model workflow than OPTAIN but you can reproduce the following files according the Readme, you will be able to use all visualisations and the AHP including the measure sliders :"),
                                
                                div("1. measure_location.csv",style = "text-align: left; font-size:115%"),
                                div(style = "margin-top: -15px;",fileInput("measure_loc", "", accept = ".csv", placeholder="")),
@@ -480,7 +481,7 @@ ui <-
                                div("4.2 File Upload - Full Visualisation (not OPTAIN)",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                p("If additionally, you can reproduce 
-                                 the following files according the Readme, you will be able to use all visualisations with both slider types and the AHP including the map plotting :",style =  "text-align: left; font-size:130%; width: 150%;"),
+                                 the following files according the Readme, you will be able to use all visualisations with both slider types and the AHP including the map plotting :"),
                                
                                div("1. hru.con",style = "text-align: left; font-size:115%"),
                                div(style = "margin-top: -15px;",fileInput("hru_con", "", accept = ".con", placeholder="")),
@@ -511,8 +512,8 @@ ui <-
                                ,
                                br(),br(),
                                
-                               div("For some applications it makes sense to obscure the catchment location. Please click here if you would like to anonymise your catchment.", 
-                                   style = "text-align: left; font-size:120%; margin-top: 10px; width: 150%;"),
+                               div("For some applications it makes sense to obscure the catchment location. Please click here if you would like to anonymise your case study location", 
+                                   style = "text-align: left; font-size:120%; margin-top: 10px;"),
                                
                                checkboxInput("anomap",label = "Hide identifying map features/basemap", value = FALSE),#set to TRUE in LE
                                br(), br(),
@@ -531,7 +532,7 @@ ui <-
                                    actionButton("reset_btn", "Hard Reset",style = "color: white; background-color: red; font-size: 15px; padding: 8px 8px; border-radius: 5px;"),
                                    textOutput("reset_status"))
 
-                             )# DATA PREP MAIN PANEL END
+                             ))# DATA PREP MAIN PANEL END
                      ),
                ## PLAY AROUND TAB ####
                tabItem(tabName = "play_around",
@@ -1052,7 +1053,7 @@ ui <-
                            div(id="analysis_random", #the whole right side of plots and extra stuff under plot can be hidden
                            fluidRow(
                              column(6,
-                                    div(id="table_an_title","Optima Representative for Clusters",style="text-align; center;font-size: 150%;"),
+                                    div(id="table_an_title","Optima Representative for Clusters",style="width: 100%; text-align; center;font-size: 150%;"),
                                     htmlOutput("tabtext"),
 
                                     tags$div(textOutput("check_default"), style = "color: #D10000;"),
@@ -1063,14 +1064,14 @@ ui <-
                                     column(2,downloadButton("save_antabcsv", "Download table as .csv")))
                                     ),
                              column(6,
-                                    tags$div("Select among plots.",style = "text-align: center;font-size: 125%;"),
+                                    tags$div("Select among plots.",style = "width: 100%; text-align: center;font-size: 125%;"),
                                     fluidRow(
-                                      column(12,
+                                     
                                       checkboxInput("show_pareto",label="Plot 1: Pareto solutions representative for the clusters.",value=TRUE),
                                       checkboxInput("show_pca_vs_var",label="Plot 2: Objectives (X-axis) versus cluster variables (Y-axis, colour, size) (select from drop down)",value=FALSE),
                                       checkboxInput("show_boxplot",label="Plot 3: The objectives' within-cluster distribution (select one from table)",value=FALSE),
                                       checkboxInput("show_share_con",label="Plot 4: The individual measures' share in total considered area (select several from table)",value=FALSE)
-                                      )),
+                                      ),
                                     plotOutput("par_plot_optima"),
 
 
