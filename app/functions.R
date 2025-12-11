@@ -8,7 +8,7 @@
 ## correlation plot
 plt_corr = function(corr,labelcol = "black",labelorder='alphabet',meth = 'square', tpe = 'lower'){
 corma = as.matrix(corr)
-plt = corrplot(corma, method = meth, order =labelorder, tl.col = labelcol, type=tpe, diag=FALSE, tl.cex=1.6, cl.cex = 1.6)
+plt = try(corrplot(corma, method = meth, order =labelorder, tl.col = labelcol, type=tpe, diag=FALSE, tl.cex=1.6, cl.cex = 1.6))
 return(plt)
 }
 
