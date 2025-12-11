@@ -206,13 +206,12 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
 
 ## 6.2 Planned Features for Version 1.1.0
   * write/load full scenario run from previous uses
-  * option to download maps as .svg
   * optimum number display in AHP
-  * dynamic clustering with other variables, different var_corr_par.csv unlinked from SWAT+ and CoMOLA  
   * (OPTAIN-specific) remove superfluous priority file writing, replace hru.con requirement for lat lon 
   * conversion to full R
 
 Other
+  * this Readme needs a better eplanation of the levels of functionality, aligned with the Data Preparation tab as a table
   * dynamic regression line with R2 in scatter plot in red, other R2 in blue
   * optima selection via direct number input
   * add information on objectives on hover through link to glossary
