@@ -528,8 +528,8 @@ server <- function(input, output, session) {
     file_cluster_params(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
     
     observeEvent(input$save_cluster_no,{
-      save_cluster_params = file_cluster_params()$name
-      path_cluster_params = file.path(input_dir, save_cluster_params)
+      # save_cluster_params = file_cluster_params()$name
+      path_cluster_params = file.path(input_dir, "cluster_params.csv")
       file.copy(file_cluster_params()$path, path_cluster_params, overwrite = T)
       
       shinyjs::refresh()

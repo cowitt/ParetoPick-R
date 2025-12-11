@@ -453,13 +453,13 @@ ui <-
                                ######################################################################## Full Visualisation
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
-                               div("3. File Upload - Cluster Functionality (not OPTAIN)",
+                               div("3. File Upload - Clustering",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                
-                               p("If you have used another model workflow than OPTAIN but you can reproduce 
-                                 the following .csv file according the Readme, you will be able to use the clustering, visualisations and AHP :"),
+                               p("If you have used another model workflow than OPTAIN and/or want to explore different cluster parameters but you can reproduce 
+                                 an .csv file following the Readme, you will be able to use the clustering, visualisations and AHP :"),
                                
-                               div("cluster_params.csv", style = "text-align: left; font-size:115%"),
+                               div(".csv file with cluster parameters", style = "text-align: left; font-size:115%"),
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
                                actionButton("save_cluster_no","Save file"),
                                ######################################################################## Clustering
