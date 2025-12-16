@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Quick Start Guide</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Quick Start Guide</h1>
+
+
+
+<div id="installing-the-package" class="section level1">
+<h1>Installing the package</h1>
+<p>Since <strong>quanteda</strong> is available on <a href="https://CRAN.R-project.org/package=quanteda">CRAN</a>, you can
+install by using your GUI’s R package installer, or execute:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;quanteda&quot;</span>)</span></code></pre></div>
+<p>See an instructions at <a href="https://github.com/quanteda/quanteda" class="uri">https://github.com/quanteda/quanteda</a> to install the
+(development) GitHub version.</p>
+<div id="additional-recommended-packages" class="section level2">
+<h2>Additional recommended packages:</h2>
+<p>The following packages contain modularised functions that were
+formerly part of <strong>quanteda</strong>, and we recommend that you
+always install them along with <strong>quanteda</strong>:</p>
+<ul>
+<li><a href="https://github.com/quanteda/quanteda.textmodels"><strong>quanteda.textmodels</strong></a>:
+Functions for scaling and classifying textual data.<br />
+</li>
+<li><a href="https://github.com/quanteda/quanteda.textstats"><strong>quanteda.textstats</strong></a>:
+Statistics for textual data.<br />
+</li>
+<li><a href="https://github.com/quanteda/quanteda.textplots"><strong>quanteda.textplots</strong></a>:
+Statistics for textual data.</li>
+</ul>
+<p>The following packages work well with or extend
+<strong>quanteda</strong> and we recommend that you also install
+them:</p>
+<ul>
+<li><p><a href="https://github.com/quanteda/readtext"><strong>readtext</strong></a>:
+An easy way to read text data into R, from almost any input
+format.</p></li>
+<li><p><a href="https://github.com/quanteda/spacyr"><strong>spacyr</strong></a>:
+NLP using the <a href="https://spacy.io">spaCy</a> library, including
+part-of-speech tagging, entity recognition, and dependency
+parsing.</p></li>
+<li><p><a href="https://github.com/quanteda/quanteda.corpora"><strong>quanteda.corpora</strong></a>:
+Additional textual data for use with <strong>quanteda</strong>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;quanteda/quanteda.corpora&quot;</span>)</span></code></pre></div></li>
+<li><p><a href="https://github.com/kbenoit/quanteda.dictionaries"><strong>quanteda.dictionaries</strong></a>:
+Various dictionaries for use with <strong>quanteda</strong>, including
+the function <code>liwcalike()</code>, an R implementation of the <a href="https://www.liwc.app">Linguistic Inquiry and Word Count</a>
+approach to text analysis.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;kbenoit/quanteda.dictionaries&quot;</span>)</span></code></pre></div></li>
+</ul>
+</div>
+</div>
+<div id="creating-a-corpus" class="section level1">
+<h1>Creating a Corpus</h1>
+<p>You load the package to access to functions and data in the
+package.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;quanteda&quot;</span>)</span></code></pre></div>
+<div id="currently-available-corpus-sources" class="section level2">
+<h2>Currently available corpus sources</h2>
+<p><strong>quanteda</strong> has a simple and powerful companion package
+for loading texts: <a href="https://github.com/quanteda/readtext"><strong>readtext</strong></a>.
+The main function in this package, <code>readtext()</code>, takes a file
+or fileset from disk or a URL, and returns a type of data.frame that can
+be used directly with the <code>corpus()</code> constructor function, to
+create a <strong>quanteda</strong> corpus object.</p>
+<p><code>readtext()</code> works on:</p>
+<ul>
+<li>text (<code>.txt</code>) files;</li>
+<li>comma-separated-value (<code>.csv</code>) files;</li>
+<li>XML formatted data;</li>
+<li>data from the Facebook API, in JSON format;</li>
+<li>data from the Twitter API, in JSON format; and</li>
+<li>generic JSON data.</li>
+</ul>
+<p>The corpus constructor command <code>corpus()</code> works directly
+on:</p>
+<ul>
+<li>a vector of character objects, for instance that you have already
+loaded into the workspace using other tools;</li>
+<li>a <code>VCorpus</code> corpus object from the <strong>tm</strong>
+package.</li>
+<li>a data.frame containing a text column and any other document-level
+metadata.</li>
+</ul>
+<div id="building-a-corpus-from-a-character-vector" class="section level3">
+<h3>Building a corpus from a character vector</h3>
+<p>The simplest case is to create a corpus from a vector of texts
+already in memory in R. This gives the advanced R user complete
+flexibility with his or her choice of text inputs, as there are almost
+endless ways to get a vector of texts into R.</p>
+<p>If we already have the texts in this form, we can call the corpus
+constructor function directly. We can demonstrate this on the built-in
+character object of the texts about immigration policy extracted from
+the 2010 election manifestos of the UK political parties (called
+<code>data_char_ukimmig2010</code>).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>corp_uk <span class="ot">&lt;-</span> <span class="fu">corpus</span>(data_char_ukimmig2010)  <span class="co"># build a new corpus from the texts</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">summary</span>(corp_uk)</span></code></pre></div>
+<pre><code>## Corpus consisting of 9 documents, showing 9 documents:
+## 
+##          Text Types Tokens Sentences
+##           BNP  1125   3280        88
+##     Coalition   142    260         4
+##  Conservative   251    499        15
+##        Greens   322    679        21
+##        Labour   298    683        29
+##        LibDem   251    483        14
+##            PC    77    114         5
+##           SNP    88    134         4
+##          UKIP   346    723        26</code></pre>
+<p>If we wanted, we could add some document-level variables – what
+quanteda calls <em>docvars</em> – to this corpus.</p>
+<p>We can do this using the R’s <code>names()</code> function to get the
+names of the character vector <code>data_char_ukimmig2010</code>, and
+assign this to a document variable (<em>docvar</em>).</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">docvars</span>(corp_uk, <span class="st">&quot;Party&quot;</span>) <span class="ot">&lt;-</span> <span class="fu">names</span>(data_char_ukimmig2010)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">docvars</span>(corp_uk, <span class="st">&quot;Year&quot;</span>) <span class="ot">&lt;-</span> <span class="dv">2010</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">summary</span>(corp_uk)</span></code></pre></div>
+<pre><code>## Corpus consisting of 9 documents, showing 9 documents:
+## 
+##          Text Types Tokens Sentences        Party Year
+##           BNP  1125   3280        88          BNP 2010
+##     Coalition   142    260         4    Coalition 2010
+##  Conservative   251    499        15 Conservative 2010
+##        Greens   322    679        21       Greens 2010
+##        Labour   298    683        29       Labour 2010
+##        LibDem   251    483        14       LibDem 2010
+##            PC    77    114         5           PC 2010
+##           SNP    88    134         4          SNP 2010
+##          UKIP   346    723        26         UKIP 2010</code></pre>
+</div>
+<div id="loading-in-files-using-the-readtext-package" class="section level3">
+<h3>Loading in files using the readtext package</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">require</span>(readtext)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co"># Twitter json</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>dat_json <span class="ot">&lt;-</span> <span class="fu">readtext</span>(<span class="st">&quot;social_media/zombies/tweets.json&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>corp_twitter <span class="ot">&lt;-</span> <span class="fu">corpus</span>(dat_json)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="fu">summary</span>(corp_twitter, <span class="dv">5</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co"># generic json - needs a textfield specifier</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>dat_sotu <span class="ot">&lt;-</span> <span class="fu">readtext</span>(<span class="st">&quot;corpora/sotu/sotu.json&quot;</span>, <span class="at">text_field =</span> <span class="st">&quot;text&quot;</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus</span>(dat_sotu), <span class="dv">5</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co"># text file</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>dat_txtone <span class="ot">&lt;-</span> <span class="fu">readtext</span>(<span class="st">&quot;corpora/project_gutenberg/pg2701.txt&quot;</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus</span>(dat_txtone), <span class="dv">5</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co"># multiple text files</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>dat_txtmultiple1 <span class="ot">&lt;-</span> <span class="fu">readtext</span>(<span class="st">&quot;corpora/inaugural/*.txt&quot;</span>)</span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus</span>(dat_txtmultiple1), <span class="dv">5</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co"># multiple text files with docvars from filenames</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>dat_txtmultiple2 <span class="ot">&lt;-</span> <span class="fu">readtext</span>(<span class="st">&quot;corpora/inaugural/*.txt&quot;</span>,</span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a>                             <span class="at">docvarsfrom =</span> <span class="st">&quot;filenames&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;-&quot;</span>,</span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a>                             <span class="at">docvarnames =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>, <span class="st">&quot;President&quot;</span>))</span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus</span>(dat_txtmultiple2), <span class="dv">5</span>)</span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co"># XML data</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a>dat_xml <span class="ot">&lt;-</span> <span class="fu">readtext</span>(<span class="st">&quot;xmlData/plant_catalog.xml&quot;</span>, <span class="at">text_field =</span> <span class="st">&quot;COMMON&quot;</span>)</span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus</span>(dat_xml), <span class="dv">5</span>)</span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co"># csv file</span></span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="fu">data.frame</span>(<span class="at">inaug_speech =</span> <span class="fu">as.character</span>(data_corpus_inaugural),</span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a>                     <span class="fu">docvars</span>(data_corpus_inaugural)),</span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a>          <span class="at">file =</span> <span class="st">&quot;/tmp/inaug_texts.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a>dat_csv <span class="ot">&lt;-</span> <span class="fu">readtext</span>(<span class="st">&quot;/tmp/inaug_texts.csv&quot;</span>, <span class="at">text_field =</span> <span class="st">&quot;inaug_speech&quot;</span>)</span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus</span>(dat_csv), <span class="dv">5</span>)</span></code></pre></div>
+</div>
+</div>
+<div id="working-with-a-quanteda-corpus" class="section level2">
+<h2>Working with a quanteda corpus</h2>
+<div id="corpus-principles" class="section level3">
+<h3>Corpus principles</h3>
+<p>A corpus is designed to be a “library” of original documents that
+have been converted to plain, UTF-8 encoded text, and stored along with
+meta-data at the corpus level and at the document-level. We have a
+special name for document-level meta-data: <em>docvars</em>. These are
+variables or features that describe attributes of each document.</p>
+<p>A corpus is designed to be a more or less static container of texts
+with respect to processing and analysis. This means that the texts in
+corpus are not designed to be changed internally through (for example)
+cleaning or pre-processing steps, such as stemming or removing
+punctuation. Rather, texts can be extracted from the corpus as part of
+processing, and assigned to new objects, but the idea is that the corpus
+will remain as an original reference copy so that other analyses – for
+instance those in which stems and punctuation were required, such as
+analysing a reading ease index – can be performed on the same
+corpus.</p>
+<p>A corpus is a special form of character vector, meaning most
+functions that work with a character input will also work on a corpus.
+But a corpus object (as do other <strong>quanteda</strong> core objects)
+has its own convenient print method.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">print</span>(data_corpus_inaugural)</span></code></pre></div>
+<pre><code>## Corpus consisting of 59 documents and 4 docvars.
+## 1789-Washington :
+## &quot;Fellow-Citizens of the Senate and of the House of Representa...&quot;
+## 
+## 1793-Washington :
+## &quot;Fellow citizens, I am again called upon by the voice of my c...&quot;
+## 
+## 1797-Adams :
+## &quot;When it was first perceived, in early times, that no middle ...&quot;
+## 
+## 1801-Jefferson :
+## &quot;Friends and Fellow Citizens: Called upon to undertake the du...&quot;
+## 
+## 1805-Jefferson :
+## &quot;Proceeding, fellow citizens, to that qualification which the...&quot;
+## 
+## 1809-Madison :
+## &quot;Unwilling to depart from examples of the most revered author...&quot;
+## 
+## [ reached max_ndoc ... 53 more documents ]</code></pre>
+<p>To coerce a corpus to a plain character type, stripping its special
+attributes, use <code>as.character()</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">as.character</span>(data_corpus_inaugural)[<span class="dv">2</span>]</span></code></pre></div>
+<pre><code>##                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1793-Washington 
+## &quot;Fellow citizens, I am again called upon by the voice of my country to execute the functions of its Chief Magistrate. When the occasion proper for it shall arrive, I shall endeavor to express the high sense I entertain of this distinguished honor, and of the confidence which has been reposed in me by the people of united America.\n\nPrevious to the execution of any official act of the President the Constitution requires an oath of office. This oath I am now about to take, and in your presence: That if it shall be found during my administration of the Government I have in any instance violated willingly or knowingly the injunctions thereof, I may (besides incurring constitutional punishment) be subject to the upbraidings of all who are now witnesses of the present solemn ceremony.\n\n &quot;</code></pre>
+<p>To summarize the texts from a corpus, we can call a
+<code>summary()</code> method defined for a corpus.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">summary</span>(data_corpus_inaugural, <span class="at">n =</span> <span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## Corpus consisting of 59 documents, showing 5 documents:
+## 
+##             Text Types Tokens Sentences Year  President FirstName
+##  1789-Washington   625   1537        23 1789 Washington    George
+##  1793-Washington    96    147         4 1793 Washington    George
+##       1797-Adams   826   2577        37 1797      Adams      John
+##   1801-Jefferson   717   1923        41 1801  Jefferson    Thomas
+##   1805-Jefferson   804   2380        45 1805  Jefferson    Thomas
+##                  Party
+##                   none
+##                   none
+##             Federalist
+##  Democratic-Republican
+##  Democratic-Republican</code></pre>
+<p>We can save the output from the summary command as a data frame, and
+plot some basic descriptive statistics with this information:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>tokeninfo <span class="ot">&lt;-</span> <span class="fu">summary</span>(data_corpus_inaugural)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>tokeninfo<span class="sc">$</span>Year <span class="ot">&lt;-</span> <span class="fu">docvars</span>(data_corpus_inaugural, <span class="st">&quot;Year&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="fu">with</span>(tokeninfo, <span class="fu">plot</span>(Year, Tokens, <span class="at">type =</span> <span class="st">&quot;b&quot;</span>, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> .<span class="dv">7</span>))</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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AFSMjBMgAAEIQAACEIAABCCQXgIoAOltO0oOAQhAAAIQgAAEIACBigmgAFSMjBMgAAEIQAACEIAABCCQXgIoAOltO0oOAQhAAAIQgAAEIACBigmgAFSMjBMgAAEIQAACEIAABCCQXgIoAOltO0oOAQhAAAIQgAAEIACBigmgAFSMjBMgAAEIQAACEIAABCCQXgIoAOltO0oOAQhAAAIQgAAEIACBigmgAFSMjBMgAAEIQAACEIAABCCQXgIoAOltO0oOAQhAoC4E9ttvPzPHHHOYZ555pmR+xx9/vDv+9NNPlzzOTghAAAIQSBeBdp6VdBWZ0kIAAhCAQD0JTJ8+3fTq1cssuuiiZsKECWbOOefMZT9+/Hiz3nrrmSFDhpgLLrggt58NCEAAAhBILwFmANLbdpQcAhCAQF0ILLzwwuaiiy4yr732mjn33HNzec6ePdscdNBBpkePHuass87K7WcDAhCAAATSTQAFIN3tR+khAAEI1IXAXnvtZQYOHGjOPvts8+abb7o8NeL/6quvmmuvvdZ07Ngxd53vvvvOHHnkkWbZZZc1Xbp0MYMGDTJTp07NHdfGO++8Y3beeWfTvXt307lzZ7PmmmuaG2+8MZdm3LhxZoMNNjAPPPCA6datm+nXr5/54osvcsfZgAAEIACB+AhgAhQfW3KGAAQgkCoC7733nundu7fZdNNNzciRI80KK6xgBg8ebC6++OJcPWQ1qo77pEmTzGGHHWZWW201d/ytt94yb7zxhllwwQXNjBkzXMdfZkWaQfjpp5/MqFGjnI+BFApd49577zU77LCD6/yvu+665ocffjB33XVX7jpsQAACEIBAfAQ6xJc1OUMAAhCAQJoILLPMMm4G4JhjjjHTpk0ziy22mBk6dGheFW677TbXkb/nnnvMNtts445tvfXWbiZAMwYyFXryySfN/PPP70b8laekf//+pmfPnuapp55yCoD2/fzzz+bggw82f/zjH/UVgQAEIACBBhFAAWgQaC4DAQhAIA0EfvOb37iO+3PPPWceffRRM8888+QV+/HHH3ede5n+vPDCC7ljq6++uuv4a4dMiWQCJJk5c6YzKVKEofbt25vvv//e7ff/yfQHgQAEIACBxhJAAWgsb64GAQhAINEE1ElXp/zFF180ffv2LSrru+++a77++msjs51Ckb2/L1dccYUZPny4MwtSiNG1117byHyoMPDcUkst5Z/CJwQgAAEINIhA+wZdh8tAAAIQgEALEFhggQWcff+3335r5Awc/Js4caKr4fXXX28OP/xws8kmm5ixY8eaL7/80jn76mChAiDlAIEABCAAgcYSQAFoLG+uBgEIQCDVBOTAq1kAdfZlHqQ/RQjSOgFXXXWVq9u//vUvZ+c/YsQIs9lmm7k0r7zyiuv8y+4fgQAEIACB5hJAAWguf64OAQhAIFUEFPlHkX7U4b///vuNFhE7/fTTXahQRQeSbLjhhkZRgWT3/8svvzhzon333dcdK/QBcDv5BwEIQAACDSWAD0BDcXMxCEAAAukmsNBCCzlzHkXvGTBggGnXrp2RA7BG+9daay1XuQMPPNA88cQTLpyoFAApDFpgTOsAyLkYgQAEIACB5hJgHYDm8ufqEIAABFJLQLb9P/74o1l88cVL1kGj/VrcSwt9IRCAAAQgkBwCKADJaQtKAgEIQAACEIAABCAAgdgJ4AMQO2IuAAEIQAACEIAABCAAgeQQQAFITltQEghAAAIQgAAEIAABCMROAAUgdsRcAAIQgAAEIAABCEAAAskhgAKQnLagJBCAAAQgAAEIQAACEIidAApA7Ii5AAQgAAEIQAACEIAABJJDAAUgOW1BSSAAAQhAAAIQgAAEIBA7ARSA2BFzAQhAAAIQgAAEIAABCCSHAApActqCkkAAAhCAAAQgAAEIQCB2AigAsSPmAhCAAAQgAAEIQAACEEgOARSA5LQFJYEABCAAAQhAAAIQgEDsBFAAYkfMBSAAAQhAAAIQgAAEIJAcAigAyWkLSgIBCEAAAhCAAAQgAIHYCaAAxI6YC0AAAhCAAAQgAAEIQCA5BFAAktMWlAQCEIAABCAAAQhAAAKxE0ABiB0xF4AABCAAAQhAAAIQgEByCKAAJKctKAkEIAABCEAAAhCAAARiJ4ACEDtiLgABCEAAAhCAAAQgAIHkEEABSE5bUBIIQAACEIAABCAAAQjETgAFIHbEXAACEIAABCAAAQhAAALJIYACkJy2oCQQgAAEIAABCEAAAhCInQAKQOyIuQAEIAABCEAAAhCAAASSQwAFIDltQUkgAAEIQAACEIAABCAQO4H/Ay1+Ke+DhiCIAAAAAElFTkSuQmCC" /><!-- --></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># longest inaugural address: William Henry Harrison</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>tokeninfo[<span class="fu">which.max</span>(tokeninfo<span class="sc">$</span>Tokens), ]</span></code></pre></div>
+<pre><code>##             Text Types Tokens Sentences Year President     FirstName Party
+## 14 1841-Harrison  1896   9125       210 1841  Harrison William Henry  Whig</code></pre>
+</div>
+</div>
+<div id="tools-for-handling-corpus-objects" class="section level2">
+<h2>Tools for handling corpus objects</h2>
+<div id="adding-two-corpus-objects-together" class="section level3">
+<h3>Adding two corpus objects together</h3>
+<p>The <code>+</code> operator provides a simple method for
+concatenating two corpus objects. If they contain different sets of
+document-level variables, these will be stitched together in a fashion
+that guarantees that no information is lost. Corpus-level meta-data is
+also concatenated.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>corp1 <span class="ot">&lt;-</span> <span class="fu">head</span>(data_corpus_inaugural, <span class="dv">2</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>corp2 <span class="ot">&lt;-</span> <span class="fu">tail</span>(data_corpus_inaugural, <span class="dv">2</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>corp3 <span class="ot">&lt;-</span> corp1 <span class="sc">+</span> corp2</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="fu">summary</span>(corp3)</span></code></pre></div>
+<pre><code>## Corpus consisting of 4 documents, showing 4 documents:
+## 
+##             Text Types Tokens Sentences Year  President FirstName      Party
+##  1789-Washington   625   1537        23 1789 Washington    George       none
+##  1793-Washington    96    147         4 1793 Washington    George       none
+##       2017-Trump   582   1660        88 2017      Trump Donald J. Republican
+##       2021-Biden   812   2766       216 2021      Biden Joseph R. Democratic</code></pre>
+</div>
+<div id="subsetting-corpus-objects" class="section level3">
+<h3>Subsetting corpus objects</h3>
+<p>There is a method of the <code>corpus_subset()</code> function
+defined for corpus objects, where a new corpus can be extracted based on
+logical conditions applied to <em>docvars</em>:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus_subset</span>(data_corpus_inaugural, Year <span class="sc">&gt;</span> <span class="dv">1990</span>))</span></code></pre></div>
+<pre><code>## Corpus consisting of 8 documents, showing 8 documents:
+## 
+##          Text Types Tokens Sentences Year President FirstName      Party
+##  1993-Clinton   642   1833        81 1993   Clinton      Bill Democratic
+##  1997-Clinton   773   2436       111 1997   Clinton      Bill Democratic
+##     2001-Bush   621   1806        97 2001      Bush George W. Republican
+##     2005-Bush   772   2312        99 2005      Bush George W. Republican
+##    2009-Obama   938   2689       110 2009     Obama    Barack Democratic
+##    2013-Obama   814   2317        88 2013     Obama    Barack Democratic
+##    2017-Trump   582   1660        88 2017     Trump Donald J. Republican
+##    2021-Biden   812   2766       216 2021     Biden Joseph R. Democratic</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus_subset</span>(data_corpus_inaugural, President <span class="sc">==</span> <span class="st">&quot;Adams&quot;</span>))</span></code></pre></div>
+<pre><code>## Corpus consisting of 2 documents, showing 2 documents:
+## 
+##        Text Types Tokens Sentences Year President   FirstName
+##  1797-Adams   826   2577        37 1797     Adams        John
+##  1825-Adams  1003   3147        74 1825     Adams John Quincy
+##                  Party
+##             Federalist
+##  Democratic-Republican</code></pre>
+</div>
+</div>
+<div id="exploring-corpus-texts" class="section level2">
+<h2>Exploring corpus texts</h2>
+<p>The <code>kwic</code> function (keywords-in-context) performs a
+search for a word and allows us to view the contexts in which it
+occurs:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>data_tokens_inaugural <span class="ot">&lt;-</span> <span class="fu">tokens</span>(data_corpus_inaugural)</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a><span class="fu">kwic</span>(data_tokens_inaugural, <span class="at">pattern =</span> <span class="st">&quot;terror&quot;</span>)</span></code></pre></div>
+<pre><code>## Keyword-in-context with 8 matches.                                                                    
+##     [1797-Adams, 1324]              fraud or violence, by | terror |
+##  [1933-Roosevelt, 111] nameless, unreasoning, unjustified | terror |
+##  [1941-Roosevelt, 285]      seemed frozen by a fatalistic | terror |
+##    [1961-Kennedy, 850]    alter that uncertain balance of | terror |
+##     [1981-Reagan, 811]     freeing all Americans from the | terror |
+##   [1997-Clinton, 1047]        They fuel the fanaticism of | terror |
+##   [1997-Clinton, 1647]  maintain a strong defense against | terror |
+##     [2009-Obama, 1619]     advance their aims by inducing | terror |
+##                                   
+##  , intrigue, or venality          
+##  which paralyzes needed efforts to
+##  , we proved that this            
+##  that stays the hand of           
+##  of runaway living costs.         
+##  . And they torment the           
+##  and destruction. Our children    
+##  and slaughtering innocents, we</code></pre>
+<p>Patterns in <strong>quanteda</strong> can take the form of “glob”
+patterns (the default), regular expressions, or fixed expressions, set
+through the <code>valuetype</code> argument.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">kwic</span>(data_tokens_inaugural, <span class="at">pattern =</span> <span class="st">&quot;terror&quot;</span>, <span class="at">valuetype =</span> <span class="st">&quot;regex&quot;</span>)</span></code></pre></div>
+<pre><code>## Keyword-in-context with 12 matches.                                                                            
+##     [1797-Adams, 1324]                   fraud or violence, by |  terror   |
+##  [1933-Roosevelt, 111]      nameless, unreasoning, unjustified |  terror   |
+##  [1941-Roosevelt, 285]           seemed frozen by a fatalistic |  terror   |
+##    [1961-Kennedy, 850]         alter that uncertain balance of |  terror   |
+##    [1961-Kennedy, 972]               of science instead of its |  terrors  |
+##     [1981-Reagan, 811]          freeing all Americans from the |  terror   |
+##    [1981-Reagan, 2187]        understood by those who practice | terrorism |
+##   [1997-Clinton, 1047]             They fuel the fanaticism of |  terror   |
+##   [1997-Clinton, 1647]       maintain a strong defense against |  terror   |
+##     [2009-Obama, 1619]          advance their aims by inducing |  terror   |
+##     [2017-Trump, 1117] civilized world against radical Islamic | terrorism |
+##      [2021-Biden, 544]             , white supremacy, domestic | terrorism |
+##                                   
+##  , intrigue, or venality          
+##  which paralyzes needed efforts to
+##  , we proved that this            
+##  that stays the hand of           
+##  . Together let us explore        
+##  of runaway living costs.         
+##  and prey upon their neighbors    
+##  . And they torment the           
+##  and destruction. Our children    
+##  and slaughtering innocents, we   
+##  , which we will eradicate        
+##  that we must confront and</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">kwic</span>(data_tokens_inaugural, <span class="at">pattern =</span> <span class="st">&quot;communist*&quot;</span>)</span></code></pre></div>
+<pre><code>## Keyword-in-context with 2 matches.                                                                  
+##   [1949-Truman, 832] the actions resulting from the | Communist  |
+##  [1961-Kennedy, 510]     required - not because the | Communists |
+##                            
+##  philosophy are a threat to
+##  may be doing it,</code></pre>
+<p>Using <code>phrase()</code> we can also look up multi-word
+expressions.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="co"># show context of the first six occurrences of &quot;United States&quot;</span></span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="fu">kwic</span>(data_tokens_inaugural, <span class="at">pattern =</span> <span class="fu">phrase</span>(<span class="st">&quot;United States&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a>    <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## Keyword-in-context with 6 matches.                                                                             
+##  [1789-Washington, 433:434]            of the people of the | United States |
+##  [1789-Washington, 529:530]          more than those of the | United States |
+##       [1797-Adams, 524:525]     saw the Constitution of the | United States |
+##     [1797-Adams, 1716:1717]      to the Constitution of the | United States |
+##     [1797-Adams, 2480:2481] support the Constitution of the | United States |
+##   [1805-Jefferson, 441:442]       sees a taxgatherer of the | United States |
+##                                       
+##  a Government instituted by themselves
+##  . Every step by which                
+##  in a foreign country.                
+##  , and a conscientious determination  
+##  , I entertain no doubt               
+##  ? These contributions enable us</code></pre>
+<p>In the above summary, <code>Year</code> and <code>President</code>
+are variables associated with each document. We can access such
+variables with the <code>docvars()</code> function.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co"># inspect the document-level variables</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">docvars</span>(data_corpus_inaugural))</span></code></pre></div>
+<pre><code>##   Year  President FirstName                 Party
+## 1 1789 Washington    George                  none
+## 2 1793 Washington    George                  none
+## 3 1797      Adams      John            Federalist
+## 4 1801  Jefferson    Thomas Democratic-Republican
+## 5 1805  Jefferson    Thomas Democratic-Republican
+## 6 1809    Madison     James Democratic-Republican</code></pre>
+<p>More corpora are available from the <a href="https://github.com/quanteda/quanteda.corpora">quanteda.corpora</a>
+package.</p>
+</div>
+</div>
+<div id="tokenizing-texts" class="section level1">
+<h1>Tokenizing texts</h1>
+<p>To simply tokenize a text, quanteda provides a powerful command
+called <code>tokens()</code>. This produces an intermediate object,
+consisting of a list of tokens in the form of character vectors, where
+each element of the list corresponds to an input document.</p>
+<p><code>tokens()</code> is deliberately conservative, meaning that it
+does not remove anything from the text unless told to do so.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>txt <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">text1 =</span> <span class="st">&quot;This is $10 in 999 different ways,</span><span class="sc">\n</span><span class="st"> up and down; left and right!&quot;</span>,</span>
+<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>         <span class="at">text2 =</span> <span class="st">&quot;@koheiw7 working: on #quanteda 2day</span><span class="sc">\t</span><span class="st">4ever, http://textasdata.com?page=123.&quot;</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a><span class="fu">tokens</span>(txt)</span></code></pre></div>
+<pre><code>## Tokens consisting of 2 documents.
+## text1 :
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;10&quot;        &quot;in&quot;        &quot;999&quot;      
+##  [7] &quot;different&quot; &quot;ways&quot;      &quot;,&quot;         &quot;up&quot;        &quot;and&quot;       &quot;down&quot;     
+## [ ... and 5 more ]
+## 
+## text2 :
+## [1] &quot;@koheiw7&quot;                        &quot;working&quot;                        
+## [3] &quot;:&quot;                               &quot;on&quot;                             
+## [5] &quot;#quanteda&quot;                       &quot;2day&quot;                           
+## [7] &quot;4ever&quot;                           &quot;,&quot;                              
+## [9] &quot;http://textasdata.com?page=123.&quot;</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="fu">tokens</span>(txt, <span class="at">remove_numbers =</span> <span class="cn">TRUE</span>,  <span class="at">remove_punct =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 2 documents.
+## text1 :
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;in&quot;        &quot;different&quot; &quot;ways&quot;     
+##  [7] &quot;up&quot;        &quot;and&quot;       &quot;down&quot;      &quot;left&quot;      &quot;and&quot;       &quot;right&quot;    
+## 
+## text2 :
+## [1] &quot;@koheiw7&quot;                        &quot;working&quot;                        
+## [3] &quot;on&quot;                              &quot;#quanteda&quot;                      
+## [5] &quot;2day&quot;                            &quot;4ever&quot;                          
+## [7] &quot;http://textasdata.com?page=123.&quot;</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="fu">tokens</span>(txt, <span class="at">remove_numbers =</span> <span class="cn">FALSE</span>, <span class="at">remove_punct =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 2 documents.
+## text1 :
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;10&quot;        &quot;in&quot;        &quot;999&quot;      
+##  [7] &quot;different&quot; &quot;ways&quot;      &quot;up&quot;        &quot;and&quot;       &quot;down&quot;      &quot;left&quot;     
+## [ ... and 2 more ]
+## 
+## text2 :
+## [1] &quot;@koheiw7&quot;                        &quot;working&quot;                        
+## [3] &quot;on&quot;                              &quot;#quanteda&quot;                      
+## [5] &quot;2day&quot;                            &quot;4ever&quot;                          
+## [7] &quot;http://textasdata.com?page=123.&quot;</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="fu">tokens</span>(txt, <span class="at">remove_numbers =</span> <span class="cn">TRUE</span>,  <span class="at">remove_punct =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 2 documents.
+## text1 :
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;in&quot;        &quot;different&quot; &quot;ways&quot;     
+##  [7] &quot;,&quot;         &quot;up&quot;        &quot;and&quot;       &quot;down&quot;      &quot;;&quot;         &quot;left&quot;     
+## [ ... and 3 more ]
+## 
+## text2 :
+## [1] &quot;@koheiw7&quot;                        &quot;working&quot;                        
+## [3] &quot;:&quot;                               &quot;on&quot;                             
+## [5] &quot;#quanteda&quot;                       &quot;2day&quot;                           
+## [7] &quot;4ever&quot;                           &quot;,&quot;                              
+## [9] &quot;http://textasdata.com?page=123.&quot;</code></pre>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a><span class="fu">tokens</span>(txt, <span class="at">remove_numbers =</span> <span class="cn">FALSE</span>, <span class="at">remove_punct =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 2 documents.
+## text1 :
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;10&quot;        &quot;in&quot;        &quot;999&quot;      
+##  [7] &quot;different&quot; &quot;ways&quot;      &quot;,&quot;         &quot;up&quot;        &quot;and&quot;       &quot;down&quot;     
+## [ ... and 5 more ]
+## 
+## text2 :
+## [1] &quot;@koheiw7&quot;                        &quot;working&quot;                        
+## [3] &quot;:&quot;                               &quot;on&quot;                             
+## [5] &quot;#quanteda&quot;                       &quot;2day&quot;                           
+## [7] &quot;4ever&quot;                           &quot;,&quot;                              
+## [9] &quot;http://textasdata.com?page=123.&quot;</code></pre>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a><span class="fu">tokens</span>(txt, <span class="at">remove_numbers =</span> <span class="cn">FALSE</span>, <span class="at">remove_punct =</span> <span class="cn">FALSE</span>, <span class="at">remove_separators =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 2 documents.
+## text1 :
+##  [1] &quot;This&quot;      &quot; &quot;         &quot;is&quot;        &quot; &quot;         &quot;$&quot;         &quot;10&quot;       
+##  [7] &quot; &quot;         &quot;in&quot;        &quot; &quot;         &quot;999&quot;       &quot; &quot;         &quot;different&quot;
+## [ ... and 18 more ]
+## 
+## text2 :
+##  [1] &quot;@koheiw7&quot;  &quot; &quot;         &quot;working&quot;   &quot;:&quot;         &quot; &quot;         &quot;on&quot;       
+##  [7] &quot; &quot;         &quot;#quanteda&quot; &quot; &quot;         &quot;2day&quot;      &quot;\t&quot;        &quot;4ever&quot;    
+## [ ... and 3 more ]</code></pre>
+<p>We also have the option to tokenize characters:</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="fu">tokens</span>(<span class="st">&quot;Great website: http://textasdata.com?page=123.&quot;</span>, <span class="at">what =</span> <span class="st">&quot;character&quot;</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 1 document.
+## text1 :
+##  [1] &quot;G&quot; &quot;r&quot; &quot;e&quot; &quot;a&quot; &quot;t&quot; &quot;w&quot; &quot;e&quot; &quot;b&quot; &quot;s&quot; &quot;i&quot; &quot;t&quot; &quot;e&quot;
+## [ ... and 32 more ]</code></pre>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="fu">tokens</span>(<span class="st">&quot;Great website: http://textasdata.com?page=123.&quot;</span>, <span class="at">what =</span> <span class="st">&quot;character&quot;</span>,</span>
+<span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a>         <span class="at">remove_separators =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 1 document.
+## text1 :
+##  [1] &quot;G&quot; &quot;r&quot; &quot;e&quot; &quot;a&quot; &quot;t&quot; &quot; &quot; &quot;w&quot; &quot;e&quot; &quot;b&quot; &quot;s&quot; &quot;i&quot; &quot;t&quot;
+## [ ... and 34 more ]</code></pre>
+<p>and sentences:</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a><span class="co"># sentence level       </span></span>
+<span id="cb51-2"><a href="#cb51-2" tabindex="-1"></a><span class="fu">tokens</span>(<span class="fu">c</span>(<span class="st">&quot;Kurt Vongeut said; only assholes use semi-colons.&quot;</span>,</span>
+<span id="cb51-3"><a href="#cb51-3" tabindex="-1"></a>         <span class="st">&quot;Today is Thursday in Canberra:  It is yesterday in London.&quot;</span>,</span>
+<span id="cb51-4"><a href="#cb51-4" tabindex="-1"></a>         <span class="st">&quot;En el caso de que no puedas ir con ellos, ¿quieres ir con nosotros?&quot;</span>),</span>
+<span id="cb51-5"><a href="#cb51-5" tabindex="-1"></a>          <span class="at">what =</span> <span class="st">&quot;sentence&quot;</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 3 documents.
+## text1 :
+## [1] &quot;Kurt Vongeut said; only assholes use semi-colons.&quot;
+## 
+## text2 :
+## [1] &quot;Today is Thursday in Canberra:  It is yesterday in London.&quot;
+## 
+## text3 :
+## [1] &quot;En el caso de que no puedas ir con ellos, ¿quieres ir con nosotros?&quot;</code></pre>
+<div id="pre-processing-tokens" class="section level3">
+<h3>“Pre-processing” tokens</h3>
+<p>A common step at the tokenisation stage is to apply certain
+transformations to the text such as removal of punctuation, numbers, or
+symbols, removing “stopwords”, removing URLs, etc. Other options might
+involve rules for how to treat hyphenated words (splitting versus
+preserving them) or whether or how to treat special characters such as
+those found in social media (hashtags starting with “#” or usernames
+starting with “@”).</p>
+<p>The approach taken in <strong>quanteda</strong> to what is common
+known as “pre-processing” the texts involves three core principles.</p>
+<ol style="list-style-type: decimal">
+<li><p>No transformations should be applied directly to the corpus
+object (except for cleaning out non-textual elements or correcting
+errors). The corpus should remain a complete representation of the
+original documents.</p></li>
+<li><p>Tokenisation through the default <strong>quanteda</strong>
+tokeniser involves only two forms of token manipulation: removals and
+splits. By default, the tokeniser is very conservative, removing only
+separators by default.</p>
+<ol style="list-style-type: lower-alpha">
+<li><p><em>Removals</em> take the the form of <code>remove_*</code>
+arguments – e.g., <code>remove_punct</code> for removing punctuation
+characters – that remove classes of characters or tokens, such as URLs.
+With the sole exception of <code>remove_separators = TRUE</code>, all of
+these removals are <code>FALSE</code> by default.</p></li>
+<li><p><em>Splits</em> take the form of two arguments,
+<code>split_hyphens</code> and <code>split_tags</code>, both
+<code>FALSE</code> by default. “Tags” in this case means whether to
+break up social media hashtags or whether to preserve them.</p></li>
+</ol></li>
+<li><p>Other transformations, including (word-based) patterns or
+removals, case transformations, n-gram formation, chunking, etc. all
+take place through additional functions, such as
+<code>tokens_tolower()</code> to lower-case tokens or tokens_remove()`
+to remove patterns such as stopwords.</p></li>
+</ol>
+<p>Pre-defined stopwords are available defined for numerous languages,
+accessed through the <code>stopwords()</code> function (which re-exports
+the <a href="https://github.com/quanteda/stopwords">stopwords</a>
+package function <code>stopwords()</code>):</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">stopwords</span>(<span class="st">&quot;en&quot;</span>), <span class="dv">20</span>)</span></code></pre></div>
+<pre><code>##  [1] &quot;i&quot;          &quot;me&quot;         &quot;my&quot;         &quot;myself&quot;     &quot;we&quot;        
+##  [6] &quot;our&quot;        &quot;ours&quot;       &quot;ourselves&quot;  &quot;you&quot;        &quot;your&quot;      
+## [11] &quot;yours&quot;      &quot;yourself&quot;   &quot;yourselves&quot; &quot;he&quot;         &quot;him&quot;       
+## [16] &quot;his&quot;        &quot;himself&quot;    &quot;she&quot;        &quot;her&quot;        &quot;hers&quot;</code></pre>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">stopwords</span>(<span class="st">&quot;ru&quot;</span>), <span class="dv">10</span>)</span></code></pre></div>
+<pre><code>##  [1] &quot;и&quot;   &quot;в&quot;   &quot;во&quot;  &quot;не&quot;  &quot;что&quot; &quot;он&quot;  &quot;на&quot;  &quot;я&quot;   &quot;с&quot;   &quot;со&quot;</code></pre>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">stopwords</span>(<span class="st">&quot;ar&quot;</span>, <span class="at">source =</span> <span class="st">&quot;misc&quot;</span>), <span class="dv">10</span>)</span></code></pre></div>
+<pre><code>##  [1] &quot;فى&quot;  &quot;في&quot;  &quot;كل&quot;  &quot;لم&quot;  &quot;لن&quot;  &quot;له&quot;  &quot;من&quot;  &quot;هو&quot;  &quot;هي&quot;  &quot;قوة&quot;</code></pre>
+</div>
+<div id="splitting-and-compounding-tokens" class="section level3">
+<h3>Splitting and compounding tokens</h3>
+<p>With <code>tokens_compound()</code>, we can concatenate multi-word
+expressions and keep them as a single feature in subsequent
+analyses:</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" tabindex="-1"></a><span class="fu">tokens</span>(<span class="st">&quot;New York City is located in the United States.&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb59-2"><a href="#cb59-2" tabindex="-1"></a>    <span class="fu">tokens_compound</span>(<span class="at">pattern =</span> <span class="fu">phrase</span>(<span class="fu">c</span>(<span class="st">&quot;New York City&quot;</span>, <span class="st">&quot;United States&quot;</span>)))</span></code></pre></div>
+<pre><code>## Tokens consisting of 1 document.
+## text1 :
+## [1] &quot;New_York_City&quot; &quot;is&quot;            &quot;located&quot;       &quot;in&quot;           
+## [5] &quot;the&quot;           &quot;United_States&quot; &quot;.&quot;</code></pre>
+<p>Conversely, the function <code>tokens_split()</code> can split tokens
+by a pattern.</p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" tabindex="-1"></a><span class="fu">tokens</span>(<span class="st">&quot;one~two~three&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb61-2"><a href="#cb61-2" tabindex="-1"></a>    <span class="fu">tokens_split</span>(<span class="at">separator =</span> <span class="st">&quot;~&quot;</span>)</span></code></pre></div>
+<pre><code>## Tokens consisting of 1 document.
+## text1 :
+## [1] &quot;one&quot;   &quot;two&quot;   &quot;three&quot;</code></pre>
+</div>
+</div>
+<div id="constructing-a-document-feature-matrix" class="section level1">
+<h1>Constructing a document-feature matrix</h1>
+<p>In order to perform statistical analysis such as document scaling, we
+must extract a matrix associating values for certain features with each
+document. In quanteda, we use the <code>dfm()</code> function to produce
+such a matrix. “dfm” is short for <em>document-feature matrix</em>, and
+always refers to documents in rows and “features” as columns. We fix
+this dimensional orientation because it is standard in data analysis to
+have a unit of analysis as a row, and features or variables pertaining
+to each unit as columns. We call them “features” rather than terms,
+because features are more general than terms: they can be defined as raw
+terms, stemmed terms, the parts of speech of terms, terms after
+stopwords have been removed, or a dictionary class to which a term
+belongs. Features can be entirely general, such as ngrams or syntactic
+dependencies, and we leave this open-ended.</p>
+<p>The <code>dfm()</code> function is slightly less conservative than
+the <code>tokens()</code> function, applying one transformation by
+default: converting the texts to lower case, via the default
+<code>tolower = TRUE</code>.</p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" tabindex="-1"></a>corp_inaug_post1990 <span class="ot">&lt;-</span> <span class="fu">corpus_subset</span>(data_corpus_inaugural, Year <span class="sc">&gt;</span> <span class="dv">1990</span>)</span>
+<span id="cb63-2"><a href="#cb63-2" tabindex="-1"></a></span>
+<span id="cb63-3"><a href="#cb63-3" tabindex="-1"></a><span class="co"># make a dfm</span></span>
+<span id="cb63-4"><a href="#cb63-4" tabindex="-1"></a>dfmat_inaug_post1990 <span class="ot">&lt;-</span> corp_inaug_post1990 <span class="sc">|&gt;</span></span>
+<span id="cb63-5"><a href="#cb63-5" tabindex="-1"></a>    <span class="fu">tokens</span>() <span class="sc">|&gt;</span></span>
+<span id="cb63-6"><a href="#cb63-6" tabindex="-1"></a>    <span class="fu">dfm</span>()</span>
+<span id="cb63-7"><a href="#cb63-7" tabindex="-1"></a><span class="fu">print</span>(dfmat_inaug_post1990)</span></code></pre></div>
+<pre><code>## Document-feature matrix of: 8 documents, 2,691 features (73.83% sparse) and 4 docvars.
+##               features
+## docs           my fellow citizens   , today we celebrate the mystery  of
+##   1993-Clinton  7      5        2 139    10 52         3  89       1  46
+##   1997-Clinton  6      7        7 131     5 42         1 133       0  96
+##   2001-Bush     3      1        9 110     2 47         0  53       0  58
+##   2005-Bush     2      3        6 120     3 37         1 142       0 116
+##   2009-Obama    2      1        1 130     6 62         0 135       0  82
+##   2013-Obama    3      3        6  99     4 68         0 104       0  69
+## [ reached max_ndoc ... 2 more documents, reached max_nfeat ... 2,681 more features ]</code></pre>
+<div id="analysing-the-document-feature-matrix" class="section level3">
+<h3>Analysing the document-feature matrix</h3>
+<p>The dfm can be inspected in the Environment pane in RStudio, or by
+calling R’s <code>View()</code> function. Calling
+<code>textplot_wordcloud()</code> on a dfm will display a wordcloud.</p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" tabindex="-1"></a>dfmat_uk <span class="ot">&lt;-</span> <span class="fu">tokens</span>(data_char_ukimmig2010, <span class="at">remove_punct =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb65-2"><a href="#cb65-2" tabindex="-1"></a>  <span class="fu">tokens_remove</span>(<span class="fu">stopwords</span>(<span class="st">&quot;en&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb65-3"><a href="#cb65-3" tabindex="-1"></a>  <span class="fu">dfm</span>()</span>
+<span id="cb65-4"><a href="#cb65-4" tabindex="-1"></a>dfmat_uk</span></code></pre></div>
+<pre><code>## Document-feature matrix of: 9 documents, 1,547 features (83.78% sparse) and 0 docvars.
+##               features
+## docs           immigration unparalleled crisis bnp can solve current birth
+##   BNP                   21            1      2  13   1     2       4     4
+##   Coalition              6            0      0   0   0     0       1     0
+##   Conservative           3            0      0   0   2     0       0     0
+##   Greens                 8            0      0   0   1     0       0     0
+##   Labour                13            0      0   0   1     0       0     0
+##   LibDem                 5            0      0   0   2     0       0     0
+##               features
+## docs           rates indigenous
+##   BNP              2          5
+##   Coalition        0          0
+##   Conservative     0          0
+##   Greens           0          0
+##   Labour           0          0
+##   LibDem           0          0
+## [ reached max_ndoc ... 3 more documents, reached max_nfeat ... 1,537 more features ]</code></pre>
+<p>To access a list of the most frequently occurring features, we can
+use <code>topfeatures()</code>:</p>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" tabindex="-1"></a><span class="co"># 20 most frequent words</span></span>
+<span id="cb67-2"><a href="#cb67-2" tabindex="-1"></a><span class="fu">topfeatures</span>(dfmat_uk, <span class="dv">20</span>)</span></code></pre></div>
+<pre><code>## immigration     british      people      asylum     britain          uk 
+##          66          37          35          29          28          27 
+##      system  population     country         new  immigrants      ensure 
+##          27          21          20          19          17          17 
+##       shall citizenship      social    national         bnp     illegal 
+##          17          16          14          14          13          13 
+##        work     percent 
+##          13          12</code></pre>
+</div>
+<div id="grouping-documents-by-document-variable" class="section level3">
+<h3>Grouping documents by document variable</h3>
+<p>Often, we are interested in analysing how texts differ according to
+substantive factors which may be encoded in the document variables,
+rather than simply by the boundaries of the document files. We can group
+documents that share the same value for a document variable using
+<code>dfm_group()</code>. When the variables for selection in functions
+such as <code>dfm_group()</code> are document variables attached to the
+dfm, then they can be referred to directly.</p>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" tabindex="-1"></a>dfmat_pres <span class="ot">&lt;-</span> <span class="fu">tail</span>(data_corpus_inaugural, <span class="dv">20</span>) <span class="sc">|&gt;</span></span>
+<span id="cb69-2"><a href="#cb69-2" tabindex="-1"></a>  <span class="fu">tokens</span>(<span class="at">remove_punct =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb69-3"><a href="#cb69-3" tabindex="-1"></a>  <span class="fu">tokens_remove</span>(<span class="fu">stopwords</span>(<span class="st">&quot;en&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb69-4"><a href="#cb69-4" tabindex="-1"></a>  <span class="fu">dfm</span>() <span class="sc">|&gt;</span></span>
+<span id="cb69-5"><a href="#cb69-5" tabindex="-1"></a>  <span class="fu">dfm_group</span>(<span class="at">groups =</span> Party)</span></code></pre></div>
+<p>We can sort the features of this dfm, by default in terms of greatest
+frequency first, and inspect it:</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" tabindex="-1"></a><span class="fu">dfm_sort</span>(dfmat_pres)</span></code></pre></div>
+<pre><code>## Document-feature matrix of: 2 documents, 4,371 features (32.21% sparse) and 1 docvar.
+##             features
+## docs          us world can people must new america nation freedom time
+##   Democratic 149    89  96     80   93  87      65     73      37   52
+##   Republican 140   107  84     89   68  66      83     62      84   58
+## [ reached max_nfeat ... 4,361 more features ]</code></pre>
+</div>
+<div id="dictionary-functions" class="section level2">
+<h2>Dictionary functions</h2>
+<p>For some applications we have prior knowledge of sets of words that
+are indicative of traits we would like to measure from the text. For
+example, a general list of positive words might indicate positive
+sentiment in a movie review, or we might have a dictionary of political
+terms which are associated with a particular ideological stance. In
+these cases, it is sometimes useful to treat these groups of words as
+equivalent for the purposes of analysis, and sum their counts into
+classes.</p>
+<p>For example, let’s look at how words associated with terrorism and
+words associated with the economy vary by President in the inaugural
+speeches corpus. From the original corpus, we select Presidents since
+Clinton:</p>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" tabindex="-1"></a>corp_inaug_post1991 <span class="ot">&lt;-</span> <span class="fu">corpus_subset</span>(data_corpus_inaugural, Year <span class="sc">&gt;</span> <span class="dv">1991</span>)</span></code></pre></div>
+<p>Now we define a demonstration dictionary:</p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" tabindex="-1"></a>dict <span class="ot">&lt;-</span> <span class="fu">dictionary</span>(<span class="fu">list</span>(<span class="at">terror =</span> <span class="fu">c</span>(<span class="st">&quot;terrorism&quot;</span>, <span class="st">&quot;terrorists&quot;</span>, <span class="st">&quot;threat&quot;</span>),</span>
+<span id="cb73-2"><a href="#cb73-2" tabindex="-1"></a>                        <span class="at">economy =</span> <span class="fu">c</span>(<span class="st">&quot;jobs&quot;</span>, <span class="st">&quot;business&quot;</span>, <span class="st">&quot;grow&quot;</span>, <span class="st">&quot;work&quot;</span>)))</span></code></pre></div>
+<p>We can use the dictionary when making the dfm:</p>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" tabindex="-1"></a>dfmat_inaug_post1991_dict <span class="ot">&lt;-</span> <span class="fu">tokens</span>(corp_inaug_post1991) <span class="sc">|&gt;</span></span>
+<span id="cb74-2"><a href="#cb74-2" tabindex="-1"></a>  <span class="fu">tokens_lookup</span>(<span class="at">dictionary =</span> dict) <span class="sc">|&gt;</span></span>
+<span id="cb74-3"><a href="#cb74-3" tabindex="-1"></a>  <span class="fu">dfm</span>()</span>
+<span id="cb74-4"><a href="#cb74-4" tabindex="-1"></a>dfmat_inaug_post1991_dict</span></code></pre></div>
+<pre><code>## Document-feature matrix of: 8 documents, 2 features (12.50% sparse) and 4 docvars.
+##               features
+## docs           terror economy
+##   1993-Clinton      0       8
+##   1997-Clinton      1       8
+##   2001-Bush         0       4
+##   2005-Bush         1       6
+##   2009-Obama        1      10
+##   2013-Obama        1       6
+## [ reached max_ndoc ... 2 more documents ]</code></pre>
+<p>The constructor function <code>dictionary()</code> also works with
+several common “foreign” dictionary formats: the LIWC and Provalis
+Research’s Wordstat format. For instance, we can load the LIWC and apply
+this to the Presidential inaugural speech corpus:</p>
+<div class="sourceCode" id="cb76"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" tabindex="-1"></a>dictliwc <span class="ot">&lt;-</span> <span class="fu">dictionary</span>(<span class="at">file =</span> <span class="st">&quot;LIWC2001_English.dic&quot;</span>, <span class="at">format =</span> <span class="st">&quot;LIWC&quot;</span>)</span>
+<span id="cb76-2"><a href="#cb76-2" tabindex="-1"></a>dfmat_inaug_subset <span class="ot">&lt;-</span> <span class="fu">tokens</span>(data_corpus_inaugural[<span class="dv">52</span><span class="sc">:</span><span class="dv">58</span>]) <span class="sc">|&gt;</span> </span>
+<span id="cb76-3"><a href="#cb76-3" tabindex="-1"></a>                      <span class="fu">dfm</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb76-4"><a href="#cb76-4" tabindex="-1"></a>                      <span class="fu">dfm_lookup</span>(<span class="at">dictionary =</span> dictliwc)</span>
+<span id="cb76-5"><a href="#cb76-5" tabindex="-1"></a>dfmat_inaug_subset[, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code></pre></div>
+<pre><code>## Document-feature matrix of: 7 documents, 10 features (1.43% sparse) and 4 docvars.
+##               features
+## docs           Pronoun  I  We Self You Other Negate Assent Article Preps
+##   1993-Clinton     179 15 124  139  12    12     25      2     115   211
+##   1997-Clinton     188  8 134  142   0    27     27      4     194   310
+##   2001-Bush        176 15 111  126   8    16     40      2     104   208
+##   2005-Bush        171 10  92  102  25    20     25      5     174   307
+##   2009-Obama       243  5 156  161  17    34     40      2     185   294
+##   2013-Obama       219  7 168  175   5    21     42      1     148   265
+## [ reached max_ndoc ... 1 more document ]</code></pre>
+</div>
+</div>
+<div id="further-examples" class="section level1">
+<h1>Further examples</h1>
+<p>See the Further Examples article at <a href="https://quanteda.io" class="uri">https://quanteda.io</a>.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

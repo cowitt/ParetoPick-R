@@ -14,11 +14,11 @@ foo1 <- function(x) {
 }
 
 ## check if any packages are missing (not only here but also for external convert_optain)
-foo1(c("configr", "corrplot", "DT", "fs", "fst", 
+foo1(c("cluster","configr", "corrplot", "DT","fpc", "fs", "fst", 
        "geosphere","geohashTools", "ggplot2","ggtext", "gridExtra",
        "ini", "leaflet","leaflet.extras", "leafsync",
        "mapview", "patchwork", "plotly",  "processx", 
-       "quanteda",   "RColorBrewer",   "reticulate",
+       "quanteda",  "reshape2", "RColorBrewer",   "reticulate",
        "scales", "sf", "shiny", "shinycssloaders", "shinydashboard",
        "shinyFiles", "shinyjs","shinythemes",  "shinyWidgets",  "sp",
        "spdep",    "tidyverse",  "tmap",  "viridis", "webshot"))

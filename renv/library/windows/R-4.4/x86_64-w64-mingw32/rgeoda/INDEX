@@ -1,0 +1,113 @@
+LISA-class              LISA class (Internally Used)
+Weight-class            Weight class (Internally Used)
+as.data.frame.geoda     convert rgeoda instance to data.frame
+as.geoda                Create an instance of geoda-class from either
+                        an 'sf' or 'sp' object
+as.matrix.Weight        spatial weights to matrix
+azp_greedy              A greedy algorithm to solve the AZP problem
+azp_sa                  A simulated annealing algorithm to solve the
+                        AZP problem
+azp_tabu                A tabu algorithm to solve the AZP problem
+create_weights          Create an empty weights
+distance_weights        Distance-based Spatial Weights
+eb_rates                Empirical Bayes(EB) Rate
+gda_distance_weights    (For internally use and test only)
+                        Distance-based Spatial Weights
+gda_kernel_knn_weights
+                        (For internally use and test only) K-NN Kernel
+                        Spatial Weights
+gda_kernel_weights      (For internally use and test only)
+                        Distance-based Kernel Spatial Weights
+gda_knn_weights         (For internally use and test only) K-Nearest
+                        Neighbors-based Spatial Weights
+gda_min_distthreshold   (For internally use and test only) Minimum
+                        Distance Threshold for Distance-based Weights
+gda_queen_weights       (For internally use and test only) Queen
+                        Contiguity Spatial Weights
+gda_rook_weights        (For internally use and test only) Rook
+                        Contiguity Spatial Weights
+geoda-class             'geoda' class
+geoda_open              Create an instance of geoda-class by reading
+                        from an ESRI Shapefile dataset
+get_neighbors           Neighbors of one observation
+get_neighbors_weights   Weights values of the neighbors of one
+                        observation
+has_isolates            Isolation/Island in Spatial Weights
+hinge15_breaks          (Box) Hinge15 Breaks
+hinge30_breaks          (Box) Hinge30 Breaks
+is_symmetric            Symmetry of Weights Matrix
+join_count_ratio        Join Count Ratio
+kernel_knn_weights      K-NN Kernel Spatial Weights
+kernel_weights          Distance-based Kernel Spatial Weights
+knn_weights             K-Nearest Neighbors-based Spatial Weights
+lisa_bo                 Bonferroni bound value of local spatial
+                        autocorrelation
+lisa_clusters           Get local cluster indicators
+lisa_colors             Get cluster colors
+lisa_fdr                False Discovery Rate value of local spatial
+                        autocorrelation
+lisa_labels             Get cluster labels
+lisa_num_nbrs           Get numbers of neighbors for all observations
+lisa_pvalues            Get pseudo-p values of LISA
+lisa_values             Get LISA values
+local_bijoincount       Bivariate Local Join Count Statistics
+local_bimoran           Bivariate Local Moran Statistics
+local_g                 Local Getis-Ord's G Statistics
+local_geary             Local Geary Statistics
+local_gstar             Local Getis-Ord's G* Statistics
+local_joincount         Local Join Count Statistics
+local_moran             Local Moran Statistics
+local_moran_eb          Local Moran with Empirical Bayes(EB) Rate
+local_multigeary        Local Multivariate Geary Statistics
+local_multijoincount    (Multivariate) Colocation Local Join Count
+                        Statistics
+local_multiquantilelisa
+                        Multivariate Quantile LISA Statistics
+local_quantilelisa      Quantile LISA Statistics
+make_spatial            Make Spatial
+max_neighbors           Maximum Neighbors of Spatial Weights
+maxp_greedy             A greedy algorithm to solve the max-p-region
+                        problem
+maxp_sa                 A simulated annealing algorithm to solve the
+                        max-p-region problem
+maxp_tabu               A tabu-search algorithm to solve the
+                        max-p-region problem
+mean_neighbors          Mean Neighbors of Spatial Weights
+median_neighbors        Median Neighbors of Spatial Weights
+min_distthreshold       Minimum Distance Threshold for Distance-based
+                        Weights
+min_neighbors           Minimum Neighbors of Spatial Weights
+natural_breaks          Natural Breaks (Jenks)
+neighbor_match_test     Local Neighbor Match Test
+p_GeoDa-class           p_GeoDa
+p_GeoDaTable-class      p_GeoDaTable
+p_GeoDaWeight-class     p_GeoDaWeight
+p_LISA-class            p_LISA
+percentile_breaks       Percentile Breaks
+quantile_breaks         Quantile Breaks
+queen_weights           Queen Contiguity Spatial Weights
+read_gal                Read a .GAL file
+read_gwt                Read a .GWT file
+read_swm                Read a .SWM file
+redcap                  Regionalization with dynamically constrained
+                        agglomerative clustering and partitioning
+rook_weights            Rook Contiguity Spatial Weights
+save_weights            Save Spatial Weights
+schc                    Spatially Constrained Hierarchical Clucstering
+                        (SCHC)
+set_neighbors           Set neighbors of an observation
+set_neighbors_with_weights
+                        Set neighbors and weights values of an
+                        observation
+sf_to_geoda             Create an instance of geoda-class from a 'sf'
+                        object
+skater                  Spatial C(K)luster Analysis by Tree Edge
+                        Removal
+sp_to_geoda             Create an instance of geoda-class from a 'sp'
+                        object
+spatial_lag             Spatial Lag
+spatial_validation      Spatial Validation
+stddev_breaks           Standard Deviation Breaks
+summary.Weight          Summary of Spatial Weights
+update_weights          Update meta data of a spatial weights
+weights_sparsity        Sparsity of Spatial Weights

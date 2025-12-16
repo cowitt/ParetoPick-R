@@ -27,6 +27,24 @@ server <- function(input, output, session) {
   rng_plt <- reactiveVal(NULL) #getting the highest range across dataframe
   rng_plt_axes <- reactiveVal(NULL) #getting matching axis labels for highest range
   pca_remove <- reactiveVal(NULL) #variables removed from pca
+  pca_rv = reactiveValues(input_file = NULL,
+                          min_components = NULL, #pca min tested
+                          max_components = NULL, #pca max tested
+                          var_1 = NULL, var2= NULL, var3= NULL, var4= NULL,
+                          num_variables_to_plot= NULL,
+                          var_1_label= NULL, var_2_label= NULL, var_3_label= NULL, var_4_label= NULL,
+                          handle_outliers_boolean = NULL,
+                          deviations_min = NULL,
+                          deviations_step = NULL,
+                          deviations_max = NULL,
+                          count_min = NULL,
+                          count_max = NULL,
+                          outlier_to_cluster_ratio = NULL,
+                          fixed_cluster_boolean = NULL,
+                          fixed_clusters = NULL,
+                          
+                          min_clusters = NULL,
+                          max_clusters = NULL)
   stq <- reactiveVal(NULL) #status quo
   
   #data prep
@@ -73,7 +91,7 @@ server <- function(input, output, session) {
     settings_text(settings)
   }
   play_running <- reactiveVal(NULL)#spinner in visualisation/play around tab
-  
+  write_corr_rv = reactiveValues(columns = NULL, col_correlation_matrix = NULL, input_file = NULL)
   pca_ini <- read_pca()
   pca_table <- reactiveVal(pca_ini)
   pca_in <- reactiveValues(data = read_pca()) #this only reads config$columns, NULL if opening for the first time
@@ -2080,38 +2098,54 @@ server <- function(input, output, session) {
         all_var <<- readRDS("../input/all_var.RDS")
         
         da <- !file.exists("../input/cluster_params.csv")
-        write_corr(vars = input$selements,cor_analysis = T, pca = F, isOptain = da)
-        
-        check_align(var_path=clus_path())#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain) 
+        write_corr_converted(rv = write_corr_rv,vars = input$selements,cor_analysis = T, pca = F, isOptain = da)
+
+        if(da){check_align_converted(var_path=clus_path(), rv = write_corr_rv)}#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain) 
         
         check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), #rewrite var_corr_par if sliders have moved
                       default_vals= default_vals(),ranger = range_controlled(),clus_p = clus_path())
         
         ## run correlation
-          cmd <- paste("../python_files/correlation_matrix.exe")
-          result <- system(cmd, intern = TRUE)
+          # cmd <- paste("../python_files/correlation_matrix.exe")
+          # result <- system(cmd, intern = TRUE)
+        correlation_converted(var_path = clus_path(), considered = write_corr_rv$col_correlation_matrix)
         
         corr <<- read.csv("../output/correlation_matrix.csv", row.names = 1) #global because of re-rendering of plot
         high_corr = find_high_corr(corr,threshold=0.7, tab=T, strike=NULL) 
-       
+        #### >>> end correlation - start PCA
         pca_content = all_var[!(all_var %in% unique(high_corr$variable1))]
 
         if(file.exists("../input/units.RDS")){axiselected(readRDS("../input/units.RDS"))}else{axiselected(c("-","-","-","-"))}
         axis_high_range <- axiselected()[rng_plt_axes()]#reorder axis labels
         #prep pca
-        write_corr(pca_content = pca_content,pca=T, cor_analysis = F)
-        write_pcanum(pcamin=length(pca_content),pcamax=length(pca_content))
-        write_pca_ini(var1=rng_plt()[1],var2=rng_plt()[2],var3=rng_plt()[3],var4=rng_plt()[4],
-                      var1_lab=paste0(rng_plt()[1]," [",axis_high_range[1],"]"),
-                      var2_lab=paste0(rng_plt()[2]," [",axis_high_range[2],"]"),
-                      var3_lab=paste0(rng_plt()[3]," [",axis_high_range[3],"]"),
-                      var4_lab=paste0(rng_plt()[4]," [",axis_high_range[4],"]"))
-        write_outl(handle_outliers_boolean = "false")
-        write_cluster(fixed_cluster_boolean="true",fixed_clusters=15)
+        write_corr_converted(rv = write_corr_rv,pca_content = pca_content,pca=T, cor_analysis = F)
+
+        write_pca_converted(pca_rv = pca_rv, 
+                            pcamin=length(pca_content),pcamax=length(pca_content), #capture old function write_pcanum
+                            var1=rng_plt()[1],var2=rng_plt()[2],var3=rng_plt()[3],var4=rng_plt()[4], #write_pca_ini
+                            var1_lab=paste0(rng_plt()[1]," [",axis_high_range[1],"]"),
+                            var2_lab=paste0(rng_plt()[2]," [",axis_high_range[2],"]"),
+                            var3_lab=paste0(rng_plt()[3]," [",axis_high_range[3],"]"),
+                            var4_lab=paste0(rng_plt()[4]," [",axis_high_range[4],"]"),
+                            handle_outliers_boolean = F,
+                            fixed_cluster_boolean=T,fixed_clusters=15)
+        # write_pcanum(pcamin=length(pca_content),pcamax=length(pca_content))
+        # write_pca_ini(var1=rng_plt()[1],var2=rng_plt()[2],var3=rng_plt()[3],var4=rng_plt()[4],
+                      # var1_lab=paste0(rng_plt()[1]," [",axis_high_range[1],"]"),
+                      # var2_lab=paste0(rng_plt()[2]," [",axis_high_range[2],"]"),
+                      # var3_lab=paste0(rng_plt()[3]," [",axis_high_range[3],"]"),
+                      # var4_lab=paste0(rng_plt()[4]," [",axis_high_range[4],"]"))
+        # write_outl(handle_outliers_boolean = "false")
+        # write_cluster(fixed_cluster_boolean="true",fixed_clusters=15)
+       
         ##run clustering
-         cmd = paste("../python_files/kmeans.exe")
-         result = system(cmd,intern=TRUE)
-         default_running(FALSE) 
+        
+         # cmd = paste("../python_files/kmeans.exe")
+         # result = system(cmd,intern=TRUE)
+         # default_running(FALSE) 
+        kmeans_converted(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path())
+          
+        
         }else{
           
           output$corr_notthere_config <- renderText({corr_file_check()}) #default not run when there are files missing
@@ -2241,20 +2275,23 @@ server <- function(input, output, session) {
         
           req(input$selements,objectives())
           all_var <<- readRDS("../input/all_var.RDS")
-          clp <- clus_path() != "../input/cluster_params.csv"
-          write_corr(vars = input$selements,cor_analysis = T, pca = F, isOptain = clp)
-          
-          check_align(var_path=clus_path())#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain)
+          clp <<- clus_path() != "../input/cluster_params.csv"
+
+          write_corr_converted(rv = write_corr_rv,vars = input$selements,cor_analysis = T, pca = F, isOptain = clp)
          
+          if(clp){check_align_converted(var_path=clus_path(), rv = write_corr_rv)}
+          
           check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), 
                         default_vals= default_vals(),ranger = range_controlled())   
           
           ## run the Python script
-          cmd <- paste("../python_files/correlation_matrix.exe")
+          # cmd <- paste("../python_files/correlation_matrix.exe")
           
           ## capture python output
-          result <- system(cmd, intern = TRUE)
+          # result <- system(cmd, intern = TRUE)
     
+          correlation_converted(var_path = clus_path(), considered = write_corr_rv$col_correlation_matrix)
+          
           corr <<- read.csv("../output/correlation_matrix.csv", row.names = 1) #global because of re-rendering of plot
           output$corrplot <- renderPlot({plt_corr(corr)})
           
@@ -2503,7 +2540,7 @@ server <- function(input, output, session) {
   
   ## cluster specs
   observeEvent(input$write_clust, {
-    fixbool = ifelse(input$clusyn == "No", "true", "false")
+    fixbool = ifelse(input$clusyn == "No", TRUE, FALSE)
     if (input$clusyn == "No") {
       write_cluster(fixed_clusters = input$clus_fix,fixed_cluster_boolean = fixbool)
       } else{

@@ -1,0 +1,235 @@
+.leafsidebar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  overflow: hidden;
+  z-index: 2000;
+  transition: width 500ms;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+}
+.leafsidebar.collapsed {
+  width: 40px;
+}
+
+.leafsidebar-left {
+  left: 0;
+}
+.leafsidebar-right {
+  right: 0;
+}
+
+.leafsidebar-tabs {
+  top: 0;
+  bottom: 0;
+  height: inherit;
+  background-color: #fff;
+}
+.leafsidebar-left .leafsidebar-tabs {
+  left: 0;
+}
+.leafsidebar-right .leafsidebar-tabs {
+  right: 0;
+}
+.leafsidebar-tabs,
+.leafsidebar-tabs > ul {
+  position: absolute;
+  width: 40px;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+.leafsidebar-tabs > li,
+.leafsidebar-tabs > ul > li {
+  width: 100%;
+  height: 40px;
+  color: #333;
+    font-size: 12pt;
+  overflow: hidden;
+  transition: all 80ms;
+}
+.leafsidebar-tabs > li:hover,
+.leafsidebar-tabs > ul > li:hover {
+  color: #000;
+    background-color: #eee;
+}
+.leafsidebar-tabs > li.active,
+.leafsidebar-tabs > ul > li.active {
+  color: #fff;
+    background-color: #0074d9;
+}
+.leafsidebar-tabs > li.disabled,
+.leafsidebar-tabs > ul > li.disabled {
+  color: rgba(51, 51, 51, 0.4);
+}
+.leafsidebar-tabs > li.disabled:hover,
+.leafsidebar-tabs > ul > li.disabled:hover {
+  background: transparent;
+}
+.leafsidebar-tabs > li.disabled > a,
+.leafsidebar-tabs > ul > li.disabled > a {
+  cursor: default;
+}
+.leafsidebar-tabs > li > a,
+.leafsidebar-tabs > ul > li > a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  line-height: 40px;
+  color: inherit;
+  text-decoration: none;
+  text-align: center;
+}
+.leafsidebar-tabs > ul + ul {
+  bottom: 0;
+}
+
+.leafsidebar-content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.leafsidebar-left .leafsidebar-content {
+  left: 40px;
+  right: 0;
+}
+.leafsidebar-right .leafsidebar-content {
+  left: 0;
+  right: 40px;
+}
+.leafsidebar.collapsed > .leafsidebar-content {
+  overflow-y: hidden;
+}
+
+.leafsidebar-pane {
+  display: none;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  padding: 10px 20px;
+}
+.leafsidebar-pane.active {
+  display: block;
+}
+
+.leafsidebar-header {
+  margin: -10px -20px 0;
+  height: 40px;
+  padding: 0 20px;
+  line-height: 40px;
+  font-size: 14.4pt;
+  color: #fff;
+    background-color: #0074d9;
+}
+.leafsidebar-right .leafsidebar-header {
+  padding-left: 40px;
+}
+
+.leafsidebar-close {
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  cursor: pointer;
+}
+.leafsidebar-left .leafsidebar-close {
+  right: 0;
+}
+.leafsidebar-right .leafsidebar-close {
+  left: 0;
+}
+
+.sidebar-map .leaflet-left {
+  left: 40px !important;
+}
+.sidebar-map .leaflet-right {
+  right: 40px !important;
+}
+
+.leafsidebar.leaflet-touch {
+  box-shadow: none;
+}
+
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .leafsidebar {
+    width: 305px;
+  }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+  .leafsidebar {
+    width: 390px;
+  }
+}
+@media (min-width: 1200px) {
+  .leafsidebar {
+    width: 460px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .leafsidebar-pane {
+    min-width: 265px;
+  }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+  .leafsidebar-pane {
+    min-width: 350px;
+  }
+}
+@media (min-width: 1200px) {
+  .leafsidebar-pane {
+    min-width: 420px;
+  }
+}
+
+@media (min-width: 768px) {
+  .leafsidebar {
+    border-radius: 4px;
+  }
+  .leafsidebar.leaflet-touch {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar-map .leaflet-control-container .leaflet-left {
+    transition: left 500ms;
+  }
+  .sidebar-map .leaflet-control-container .leaflet-right {
+    transition: right 500ms;
+  }
+
+  .sidebar-map .leaflet-left.extended {
+    left: 460px;
+  }
+  .sidebar-map .leaflet-right.extended {
+    right: 460px;
+  }
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .sidebar-map .leaflet-left.extended {
+    left: 305px;
+  }
+  .sidebar-map .leaflet-right.extended {
+    right: 305px;
+  }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+  .sidebar-map .leaflet-left.extended {
+    left: 390px;
+  }
+  .sidebar-map .leaflet-right.extended {
+    right: 390px;
+  }
+}
+@media (min-width: 1200px) {
+  .sidebar-map .leaflet-left.extended {
+    left: 460px;
+  }
+  .sidebar-map .leaflet-right.extended {
+    right: 460px;
+  }
+}

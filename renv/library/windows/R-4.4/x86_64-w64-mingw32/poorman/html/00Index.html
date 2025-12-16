@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head><title>R: A Poor Man's Dependency Free Recreation of 'dplyr'</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+<h1> A Poor Man's Dependency Free Recreation of 'dplyr'
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;poorman&rsquo; version 0.2.7</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+<li><a href="../doc/index.html">User guides, package vignettes and other documentation.</a></li>
+<li><a href="../NEWS">Package NEWS</a>.</li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<p style="text-align: center;">
+<a href="#A">A</a>
+<a href="#B">B</a>
+<a href="#C">C</a>
+<a href="#D">D</a>
+<a href="#E">E</a>
+<a href="#F">F</a>
+<a href="#G">G</a>
+<a href="#H">H</a>
+<a href="#I">I</a>
+<a href="#L">L</a>
+<a href="#M">M</a>
+<a href="#N">N</a>
+<a href="#P">P</a>
+<a href="#R">R</a>
+<a href="#S">S</a>
+<a href="#T">T</a>
+<a href="#U">U</a>
+<a href="#W">W</a>
+<a href="#misc">misc</a>
+</p>
+
+
+<h2><a id="A">-- A --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="across.html">across</a></td>
+<td>Apply a function (or functions) across multiple columns</td></tr>
+<tr><td style="width: 25%;"><a href="count.html">add_count</a></td>
+<td>Count observations by group</td></tr>
+<tr><td style="width: 25%;"><a href="count.html">add_tally</a></td>
+<td>Count observations by group</td></tr>
+<tr><td style="width: 25%;"><a href="select_helpers.html">all_of</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="filter_joins.html">anti_join</a></td>
+<td>Filtering joins filter rows from 'x' based on the presence or absence of matches in 'y':</td></tr>
+<tr><td style="width: 25%;"><a href="select_helpers.html">any_of</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="arrange.html">arrange</a></td>
+<td>Arrange rows by variables</td></tr>
+</table>
+
+<h2><a id="B">-- B --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="between.html">between</a></td>
+<td>Do values in a numeric vector fall in specified range?</td></tr>
+<tr><td style="width: 25%;"><a href="bind.html">bind</a></td>
+<td>Efficiently bind multiple 'data.frame's by row and column</td></tr>
+<tr><td style="width: 25%;"><a href="bind.html">bind_cols</a></td>
+<td>Efficiently bind multiple 'data.frame's by row and column</td></tr>
+<tr><td style="width: 25%;"><a href="bind.html">bind_rows</a></td>
+<td>Efficiently bind multiple 'data.frame's by row and column</td></tr>
+</table>
+
+<h2><a id="C">-- C --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="case_when.html">case_when</a></td>
+<td>A General Vetorised if()</td></tr>
+<tr><td style="width: 25%;"><a href="coalesce.html">coalesce</a></td>
+<td>Find first non-missing element</td></tr>
+<tr><td style="width: 25%;"><a href="rownames.html">column_to_rownames</a></td>
+<td>Tools for working with row names</td></tr>
+<tr><td style="width: 25%;"><a href="select_helpers.html">contains</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="context.html">context</a></td>
+<td>Context dependent expressions</td></tr>
+<tr><td style="width: 25%;"><a href="count.html">count</a></td>
+<td>Count observations by group</td></tr>
+<tr><td style="width: 25%;"><a href="cummean.html">cumall</a></td>
+<td>Cumulative versions of any, all, and mean</td></tr>
+<tr><td style="width: 25%;"><a href="cummean.html">cumany</a></td>
+<td>Cumulative versions of any, all, and mean</td></tr>
+<tr><td style="width: 25%;"><a href="window_rank.html">cume_dist</a></td>
+<td>Windowed Rank Functions</td></tr>
+<tr><td style="width: 25%;"><a href="cummean.html">cummean</a></td>
+<td>Cumulative versions of any, all, and mean</td></tr>
+<tr><td style="width: 25%;"><a href="context.html">cur_column</a></td>
+<td>Context dependent expressions</td></tr>
+<tr><td style="width: 25%;"><a href="context.html">cur_data</a></td>
+<td>Context dependent expressions</td></tr>
+<tr><td style="width: 25%;"><a href="context.html">cur_data_all</a></td>
+<td>Context dependent expressions</td></tr>
+<tr><td style="width: 25%;"><a href="context.html">cur_group</a></td>
+<td>Context dependent expressions</td></tr>
+<tr><td style="width: 25%;"><a href="context.html">cur_group_id</a></td>
+<td>Context dependent expressions</td></tr>
+<tr><td style="width: 25%;"><a href="context.html">cur_group_rows</a></td>
+<td>Context dependent expressions</td></tr>
+</table>
+
+<h2><a id="D">-- D --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="window_rank.html">dense_rank</a></td>
+<td>Windowed Rank Functions</td></tr>
+<tr><td style="width: 25%;"><a href="desc.html">desc</a></td>
+<td>Descending order</td></tr>
+<tr><td style="width: 25%;"><a href="distinct.html">distinct</a></td>
+<td>Subset distinct/unique rows</td></tr>
+</table>
+
+<h2><a id="E">-- E --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="select_helpers.html">ends_with</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="select_helpers.html">everything</a></td>
+<td>Select Helpers</td></tr>
+</table>
+
+<h2><a id="F">-- F --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="fill.html">fill</a></td>
+<td>Fill in missing values with previous or next value</td></tr>
+<tr><td style="width: 25%;"><a href="filter.html">filter</a></td>
+<td>Return rows with matching conditions</td></tr>
+<tr><td style="width: 25%;"><a href="filter_joins.html">filter_joins</a></td>
+<td>Filtering joins filter rows from 'x' based on the presence or absence of matches in 'y':</td></tr>
+<tr><td style="width: 25%;"><a href="nth.html">first</a></td>
+<td>Extract the first, last or nth value from a vector</td></tr>
+<tr><td style="width: 25%;"><a href="mutate_joins.html">full_join</a></td>
+<td>Mutating Joins</td></tr>
+</table>
+
+<h2><a id="G">-- G --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="glimpse.html">glimpse</a></td>
+<td>Get a glimpse of your data</td></tr>
+<tr><td style="width: 25%;"><a href="group_metadata.html">groups</a></td>
+<td>Grouping metadata</td></tr>
+<tr><td style="width: 25%;"><a href="group_by.html">group_by</a></td>
+<td>Group by one or more variables</td></tr>
+<tr><td style="width: 25%;"><a href="group_by_drop_default.html">group_by_drop_default</a></td>
+<td>Default value for .drop argument of group_by</td></tr>
+<tr><td style="width: 25%;"><a href="group_cols.html">group_cols</a></td>
+<td>Select Grouping Variables</td></tr>
+<tr><td style="width: 25%;"><a href="group_metadata.html">group_data</a></td>
+<td>Grouping metadata</td></tr>
+<tr><td style="width: 25%;"><a href="group_metadata.html">group_indices</a></td>
+<td>Grouping metadata</td></tr>
+<tr><td style="width: 25%;"><a href="group_split.html">group_keys</a></td>
+<td>Split data.frame by groups</td></tr>
+<tr><td style="width: 25%;"><a href="group_metadata.html">group_metadata</a></td>
+<td>Grouping metadata</td></tr>
+<tr><td style="width: 25%;"><a href="group_metadata.html">group_rows</a></td>
+<td>Grouping metadata</td></tr>
+<tr><td style="width: 25%;"><a href="group_metadata.html">group_size</a></td>
+<td>Grouping metadata</td></tr>
+<tr><td style="width: 25%;"><a href="group_split.html">group_split</a></td>
+<td>Split data.frame by groups</td></tr>
+<tr><td style="width: 25%;"><a href="group_metadata.html">group_vars</a></td>
+<td>Grouping metadata</td></tr>
+</table>
+
+<h2><a id="H">-- H --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="rownames.html">has_rownames</a></td>
+<td>Tools for working with row names</td></tr>
+</table>
+
+<h2><a id="I">-- I --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="across.html">if_all</a></td>
+<td>Apply a function (or functions) across multiple columns</td></tr>
+<tr><td style="width: 25%;"><a href="across.html">if_any</a></td>
+<td>Apply a function (or functions) across multiple columns</td></tr>
+<tr><td style="width: 25%;"><a href="if_else.html">if_else</a></td>
+<td>Vectorised if</td></tr>
+<tr><td style="width: 25%;"><a href="mutate_joins.html">inner_join</a></td>
+<td>Mutating Joins</td></tr>
+</table>
+
+<h2><a id="L">-- L --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="lag.html">lag</a></td>
+<td>Compute lagged or leading values</td></tr>
+<tr><td style="width: 25%;"><a href="nth.html">last</a></td>
+<td>Extract the first, last or nth value from a vector</td></tr>
+<tr><td style="width: 25%;"><a href="select_helpers.html">last_col</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="lag.html">lead</a></td>
+<td>Compute lagged or leading values</td></tr>
+<tr><td style="width: 25%;"><a href="mutate_joins.html">left_join</a></td>
+<td>Mutating Joins</td></tr>
+<tr><td style="width: 25%;"><a href="lst.html">lst</a></td>
+<td>Build a list</td></tr>
+</table>
+
+<h2><a id="M">-- M --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="select_helpers.html">matches</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="window_rank.html">min_rank</a></td>
+<td>Windowed Rank Functions</td></tr>
+<tr><td style="width: 25%;"><a href="mutate.html">mutate</a></td>
+<td>Create or transform variables</td></tr>
+<tr><td style="width: 25%;"><a href="mutate.html">mutate.data.frame</a></td>
+<td>Create or transform variables</td></tr>
+<tr><td style="width: 25%;"><a href="mutate_joins.html">mutate_joins</a></td>
+<td>Mutating Joins</td></tr>
+</table>
+
+<h2><a id="N">-- N --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="context.html">n</a></td>
+<td>Context dependent expressions</td></tr>
+<tr><td style="width: 25%;"><a href="na_if.html">na_if</a></td>
+<td>Convert values to NA</td></tr>
+<tr><td style="width: 25%;"><a href="near.html">near</a></td>
+<td>Compare two numeric vectors</td></tr>
+<tr><td style="width: 25%;"><a href="nest_by.html">nest_by</a></td>
+<td>Nest By</td></tr>
+<tr><td style="width: 25%;"><a href="nth.html">nth</a></td>
+<td>Extract the first, last or nth value from a vector</td></tr>
+<tr><td style="width: 25%;"><a href="window_rank.html">ntile</a></td>
+<td>Windowed Rank Functions</td></tr>
+<tr><td style="width: 25%;"><a href="select_helpers.html">num_range</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="n_distinct.html">n_distinct</a></td>
+<td>Count the number of unique values in a set of vectors</td></tr>
+<tr><td style="width: 25%;"><a href="group_metadata.html">n_groups</a></td>
+<td>Grouping metadata</td></tr>
+</table>
+
+<h2><a id="P">-- P --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="peek_vars.html">peek_vars</a></td>
+<td>Peek at variables in the selection context</td></tr>
+<tr><td style="width: 25%;"><a href="window_rank.html">percent_rank</a></td>
+<td>Windowed Rank Functions</td></tr>
+<tr><td style="width: 25%;"><a href="pipe.html">pipe</a></td>
+<td>Forward-pipe operator</td></tr>
+<tr><td style="width: 25%;"><a href="pivot_longer.html">pivot_longer</a></td>
+<td>Pivot data from wide to long</td></tr>
+<tr><td style="width: 25%;"><a href="pivot_wider.html">pivot_wider</a></td>
+<td>Pivot data from long to wide</td></tr>
+<tr><td style="width: 25%;"><a href="pull.html">pull</a></td>
+<td>Pull out a single variable</td></tr>
+</table>
+
+<h2><a id="R">-- R --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="recode.html">recode</a></td>
+<td>Recode values</td></tr>
+<tr><td style="width: 25%;"><a href="recode.html">recode_factor</a></td>
+<td>Recode values</td></tr>
+<tr><td style="width: 25%;"><a href="relocate.html">relocate</a></td>
+<td>Change column order</td></tr>
+<tr><td style="width: 25%;"><a href="rownames.html">remove_rownames</a></td>
+<td>Tools for working with row names</td></tr>
+<tr><td style="width: 25%;"><a href="rename.html">rename</a></td>
+<td>Rename columns</td></tr>
+<tr><td style="width: 25%;"><a href="rename.html">rename_with</a></td>
+<td>Rename columns</td></tr>
+<tr><td style="width: 25%;"><a href="replace_na.html">replace_na</a></td>
+<td>Replace missing values</td></tr>
+<tr><td style="width: 25%;"><a href="mutate_joins.html">right_join</a></td>
+<td>Mutating Joins</td></tr>
+<tr><td style="width: 25%;"><a href="rownames.html">rowid_to_column</a></td>
+<td>Tools for working with row names</td></tr>
+<tr><td style="width: 25%;"><a href="rownames.html">rownames</a></td>
+<td>Tools for working with row names</td></tr>
+<tr><td style="width: 25%;"><a href="rownames.html">rownames_to_column</a></td>
+<td>Tools for working with row names</td></tr>
+<tr><td style="width: 25%;"><a href="window_rank.html">row_number</a></td>
+<td>Windowed Rank Functions</td></tr>
+</table>
+
+<h2><a id="S">-- S --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="select.html">select</a></td>
+<td>Subset columns using their names and types</td></tr>
+<tr><td style="width: 25%;"><a href="select_helpers.html">select_helpers</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="filter_joins.html">semi_join</a></td>
+<td>Filtering joins filter rows from 'x' based on the presence or absence of matches in 'y':</td></tr>
+<tr><td style="width: 25%;"><a href="slice.html">slice</a></td>
+<td>Subset rows by position</td></tr>
+<tr><td style="width: 25%;"><a href="slice.html">slice_head</a></td>
+<td>Subset rows by position</td></tr>
+<tr><td style="width: 25%;"><a href="slice.html">slice_max</a></td>
+<td>Subset rows by position</td></tr>
+<tr><td style="width: 25%;"><a href="slice.html">slice_min</a></td>
+<td>Subset rows by position</td></tr>
+<tr><td style="width: 25%;"><a href="slice.html">slice_sample</a></td>
+<td>Subset rows by position</td></tr>
+<tr><td style="width: 25%;"><a href="slice.html">slice_tail</a></td>
+<td>Subset rows by position</td></tr>
+<tr><td style="width: 25%;"><a href="select_helpers.html">starts_with</a></td>
+<td>Select Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="summarise.html">summarise</a></td>
+<td>Reduce multiple values down to a single value</td></tr>
+<tr><td style="width: 25%;"><a href="summarise.html">summarize</a></td>
+<td>Reduce multiple values down to a single value</td></tr>
+</table>
+
+<h2><a id="T">-- T --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="count.html">tally</a></td>
+<td>Count observations by group</td></tr>
+<tr><td style="width: 25%;"><a href="mutate.html">transmute</a></td>
+<td>Create or transform variables</td></tr>
+</table>
+
+<h2><a id="U">-- U --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="group_by.html">ungroup</a></td>
+<td>Group by one or more variables</td></tr>
+<tr><td style="width: 25%;"><a href="union_all.html">union_all</a></td>
+<td>Union All</td></tr>
+<tr><td style="width: 25%;"><a href="unite.html">unite</a></td>
+<td>Unite Multiple Columns Into One</td></tr>
+</table>
+
+<h2><a id="W">-- W --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="where.html">where</a></td>
+<td>Select variables with a function</td></tr>
+<tr><td style="width: 25%;"><a href="window_rank.html">window_rank</a></td>
+<td>Windowed Rank Functions</td></tr>
+<tr><td style="width: 25%;"><a href="with_groups.html">with_groups</a></td>
+<td>Perform an operation with temporary groups</td></tr>
+</table>
+
+<h2><a id="misc">-- misc --</a></h2>
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="pipe.html">%&gt;%</a></td>
+<td>Forward-pipe operator</td></tr>
+</table>
+</div></body></html>
