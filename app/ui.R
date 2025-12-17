@@ -269,6 +269,15 @@ ui <-
                                     white-space: nowrap;
                                   }
                                   
+                                  .modal-dialog {
+      width: 95vw !important;
+      max-width: 95vw !important;
+    }
+    .modal-body {
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+                                  
                                    ')),
 
                      useShinyjs(),
@@ -949,6 +958,10 @@ ui <-
                                )),
                                actionButton("runPCA", "Run PCA and Cluster Analysis"),
                                withSpinner(uiOutput("cluster_spin"),color= "#F7A600"),  # Spinner style (1-8)
+                               conditionalPanel(
+                                 condition = "input.runPCA > 0",  # true after first click
+                                 verbatimTextOutput("cluster_happening")
+                               ),
                                textOutput("pca_available")  ,
                                uiOutput("pca_mess"),
                                div(
@@ -1029,11 +1042,12 @@ ui <-
                                                condition = "input.clusyn == 'No'",
                                                numericInput("clus_fix", "Fixed number of Clusters", value = 15)
                                              ),
-                                             actionButton("write_clust", "Confirm Cluster Number"),
+                                             actionButton("write_clust", "Confirm Cluster Number")
 
                                              # PCA printing Background Processes
-                                             conditionalPanel(condition = "output.isElementVisible == true",div("Python Background Processes",style = "text-align: left; font-size:150%"),
-                                                              verbatimTextOutput("pca_status")))
+                                             # conditionalPanel(condition = "output.isElementVisible == true",div("Python Background Processes",style = "text-align: left; font-size:150%"),
+                                                              # verbatimTextOutput("pca_status"))
+                                             )
 
                                ) ## PCA MAIN PANEL END
 

@@ -33,15 +33,15 @@ server <- function(input, output, session) {
                           var_1 = NULL, var2= NULL, var3= NULL, var4= NULL,
                           num_variables_to_plot= NULL,
                           var_1_label= NULL, var_2_label= NULL, var_3_label= NULL, var_4_label= NULL,
-                          handle_outliers_boolean = NULL,
+                          handle_outliers_boolean = F,
                           deviations_min = NULL,
-                          deviations_step = NULL,
+                          deviations_step = 0.2,
                           deviations_max = NULL,
                           count_min = NULL,
                           count_max = NULL,
                           outlier_to_cluster_ratio = NULL,
-                          fixed_cluster_boolean = NULL,
-                          fixed_clusters = NULL,
+                          fixed_cluster_boolean = T,
+                          fixed_clusters = 15,
                           
                           min_clusters = NULL,
                           max_clusters = NULL)
@@ -99,7 +99,7 @@ server <- function(input, output, session) {
   #empty pca table
   output$pca_incl <- renderTable({pca_table()}, rownames = T, colnames = F)
   
-  pca_status <- reactiveVal("")
+  # pca_status <- reactiveVal("")
   pca_spin <- reactiveVal(NULL)#spinner in cluster tab
   axiselected = reactiveVal(read_config_plt(obj=F,axis=T)) #can potentially remove this initialisation
   max_pca <- reactiveVal()# required for max pc field
@@ -2088,6 +2088,7 @@ server <- function(input, output, session) {
       
       ##default correlation/cluster run
       observeEvent(input$run_defaults, {
+        req(clus_path())
         req(rng_plt())
         if(is.null(corr_file_check())){
         
@@ -2143,7 +2144,7 @@ server <- function(input, output, session) {
          # cmd = paste("../python_files/kmeans.exe")
          # result = system(cmd,intern=TRUE)
          # default_running(FALSE) 
-        kmeans_converted(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path())
+        its_cluster_time(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmeans")
           
         
         }else{
@@ -2276,7 +2277,7 @@ server <- function(input, output, session) {
           req(input$selements,objectives())
           all_var <<- readRDS("../input/all_var.RDS")
           clp <<- clus_path() != "../input/cluster_params.csv"
-
+          #input_path is set here so not needed in next step
           write_corr_converted(rv = write_corr_rv,vars = input$selements,cor_analysis = T, pca = F, isOptain = clp)
          
           if(clp){check_align_converted(var_path=clus_path(), rv = write_corr_rv)}
@@ -2333,10 +2334,8 @@ server <- function(input, output, session) {
 
     pca_in$data = pca_content
     
-    write_corr(pca_content = pca_in$data,
-               pca = T,
-               cor_analysis = F)#this is also called into the pca tab on startup
-    
+    write_corr_converted(rv = write_corr_rv, pca_content = pca_in$data, cor_analysis = F, pca = T)#this is also called into the pca tab on startup
+
     nonoval = paste(pca_remove(), collapse = ", ")
     
   # display confirmed selection in the Correlation Analysis tab
@@ -2382,8 +2381,7 @@ server <- function(input, output, session) {
     max_pca(get_num_pca())
     updateNumericInput(session, "pca_max", value = max_pca(), max=max_pca()) #requires pca_content to exist
       
-    preselected = read_config_plt(obj = T, axis = F)
-   
+    preselected = read_rv_plt(obj = T, axis = F, rv = pca_rv)
     choices = c("off", choices)
     all_choices(choices)
 
@@ -2423,7 +2421,8 @@ server <- function(input, output, session) {
     updateSelectInput(session, "element3", choices = choices3, selected = selected3)
     updateSelectInput(session, "element4", choices = choices4, selected = selected4)
   })
-    
+
+ 
     observeEvent(input$confirm_axis,{ 
       pca_available$button1_clicked = TRUE
     
@@ -2436,10 +2435,11 @@ server <- function(input, output, session) {
     
     empty_count2 <- sum(input$axisx == "", input$axisy == "", input$colour == "", input$size == "")
     if (empty_count2 == 0){
-      write_pca_ini(var1=input$element1,var2=input$element2,var3=input$element3,var4=input$element4,
+  
+      write_labels(pca_rv = pca_rv, var1=input$element1,var2=input$element2,var3=input$element3,var4=input$element4,
                     var1_lab=input$axisx,var2_lab=input$axisy,var3_lab=input$colour,var4_lab=input$size)
     }
-    
+
     output$axis_text <- renderText({
       
       if (empty_count2 >= 1) {
@@ -2459,9 +2459,9 @@ server <- function(input, output, session) {
     
     empty_count <- sum(input$element1 == "off", input$element2 == "off", input$element3 == "off", input$element4 == "off")
     if (empty_count < 2){
-      write_pca_ini(var1=input$element1,var2=input$element2,var3=input$element3,var4=input$element4,
+      write_labels(pca_rv = pca_rv,var1=input$element1,var2=input$element2,var3=input$element3,var4=input$element4,
                     var1_lab=input$axisx,var2_lab=input$axisy,var3_lab=input$colour,var4_lab=input$size)
-      write_quali_ini(var1=input$element1,var2=input$element2,var3=input$element3,var4=input$element4)
+      # write_quali_ini(var1=input$element1,var2=input$element2,var3=input$element3,var4=input$element4)
     }
   
   output$selected_elements <- renderText({
@@ -2495,11 +2495,10 @@ server <- function(input, output, session) {
       })
     }
   })
-  
   observeEvent(input$runPCA,{
     pca_spin(TRUE) #spinner
     # python status
-    output$pca_status <- renderText({pca_status()})
+    # output$pca_status <- renderText({pca_status()})
     pca_content <<- readRDS("../input/pca_content.RDS")
     
     output$pca_mess <- renderUI({
@@ -2512,17 +2511,65 @@ server <- function(input, output, session) {
     isElementVisible(TRUE)
     
     ## prepare config.ini
-    write_corr(pca_content = pca_content,pca=T, cor_analysis = F)# columns
+    write_corr_converted(rv = write_corr_rv,pca_content = pca_content,pca=T, cor_analysis = F)# columns
     
     #rewrite var_corr_par if sliders have moved (user coming straight to this tab w/o using correlation)
     check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), 
                   default_vals= default_vals(),ranger = range_controlled())
     
     # command to run the Python script
-    # if(input$pcamethod=="k-means"){pca_script <- "../python_files/kmeans.py"}else{pca_script <- "../python_files/kmedoid.py"}
-    if(input$pcamethod=="k-means"){pca_script <- "../python_files/kmeans.exe"}else{pca_script <- "../python_files/kmedoid.exe"}
+    # if(input$pcamethod=="k-means"){pca_script <- "../python_files/kmeans.exe"}else{pca_script <- "../python_files/kmedoid.exe"}
+    if(input$pcamethod=="k-means") {
+      
+      clusterr = its_cluster_time(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmeans")
+      
+      output$cluster_happening <- renderPrint({   cat(clusterr$text)  })
+      
+    } else{
+     
+        clusterr = its_cluster_time( rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmedoid")
+        
+        output$cluster_happening <- renderPrint({ cat(clusterr$text)})
+    }
     
-    run_python_script(path_script=pca_script,pca_status)
+    ## window with plots
+    
+    output$download_scat_clus = downloadHandler(
+      filename = function(){
+        curt = format(Sys.time(), "_%Y%m%d")
+        paste0("scatter_cluster", curt, ".png")
+      },
+      content = function(file){
+        ggsave(file, plot = clusterr$plots$p1, width = 12, height = 8, dpi = 600)
+      }
+    )
+    
+    output$download_violin = downloadHandler(
+      filename = function(){
+        curt = format(Sys.time(), "_%Y%m%d")
+        paste0("violin_cluster", curt, ".png")
+      },
+      content = function(file){
+        renderPlot({grid::grid.draw(clusterr$plots$p2)}, height = 600)
+        ggsave(file, plot = clusterr$plots$p2, width = 12, height = 8, dpi = 600)
+      }
+    )
+    
+    showModal(modalDialog(
+      title = "Representative Solutions",
+      fluidRow(
+        column(12, renderPlot({clusterr$plots$p1}, height = 600),
+               downloadButton("download_scat_clus", "Download Plot")),
+        column(12, renderPlot({
+          grid::grid.draw(clusterr$plots$p2)}, height = 600),
+          downloadButton("download_violin", "Download Plot"))
+        ),
+      size = "xl",
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+    
+   
     pca_spin(FALSE) #spinner
     })
   
@@ -2542,9 +2589,18 @@ server <- function(input, output, session) {
   observeEvent(input$write_clust, {
     fixbool = ifelse(input$clusyn == "No", TRUE, FALSE)
     if (input$clusyn == "No") {
-      write_cluster(fixed_clusters = input$clus_fix,fixed_cluster_boolean = fixbool)
+      #old write_cluster()
+      pca_rv$fixed_clusters_boolean = fixbool
+      pca_rv$fixed_clusters = input$clus_fix
+      
+      pca_rv$min_clusters = 0
+      pca_rv$max_clusters = 0
+      
       } else{
-      write_cluster(min_cluster = input$clus_min,max_cluster = input$clus_max,fixed_cluster_boolean = fixbool)
+        pca_rv$fixed_clusters_boolean = fixbool
+
+        pca_rv$min_clusters = input$clus_min
+        pca_rv$max_clusters = input$clus_max
       }
     update_settings()
   })
@@ -2586,13 +2642,14 @@ server <- function(input, output, session) {
     }
   })
   
+  
   observeEvent(input$write_outl, {
-    outlbool = ifelse(input$outlyn == "No","false","true")
+    outlbool = ifelse(input$outlyn == "No",F,T)
     if(input$outlyn == "Yes"){
-      write_outl(handle_outliers_boolean=outlbool,deviations_min=input$sd_min,deviations_max=input$sd_max, 
+      write_outl_converted(pca_rv = pca_rv, handle_outliers_boolean=outlbool,deviations_min=input$sd_min,deviations_max=input$sd_max,
                  count_min=input$count_min,count_max=input$count_max,outlier_to_cluster_ratio=input$outlier_ratio )
     }else{
-      write_outl(handle_outliers_boolean=outlbool)#bool is turning on all others, if false all others are ignored/default value works
+      write_outl_converted(pca_rv = pca_rv, handle_outliers_boolean=outlbool)#bool is turning on all others, if false all others are ignored/default value works
     }
     update_settings()
   })
@@ -2608,7 +2665,9 @@ server <- function(input, output, session) {
   ## pca min/max specs
   observeEvent(input$pcaminmax,{
     pca_available$button3_clicked = TRUE
-    write_pcanum(pcamin=input$pca_min,pcamax=input$pca_max)
+    # write_pcanum(pcamin=input$pca_min,pcamax=input$pca_max)
+    pca_rv$min_components = input$pca_min
+    pca_rv$max_components = input$pca_max
     update_settings()
   })
   output$pca_settings_summary <- renderUI({HTML(settings_text())})

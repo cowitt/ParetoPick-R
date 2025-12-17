@@ -235,6 +235,22 @@ correlation_converted = function(var_path = "../input/var_corr_par.csv", conside
 }
 
 ##
+write_labels = function(pca_rv = pca_rv, var1 = "", var2 = "", var3 = "", var4 = "",
+                        var1_lab= "", var2_lab = "", var3_lab = "", var4_lab = ""){
+  pca_rv$var_1 <- ifelse(var1 == "off", "", var1)
+  pca_rv$var_2 <- ifelse(var2 == "off", "", var2)
+  pca_rv$var_3 <- ifelse(var3 == "off", "", var3)
+  pca_rv$var_4 <- ifelse(var4 == "off", "", var4)
+  
+  off_count <- sum(c(var1, var2, var3, var4) == "off")
+  pca_rv$num_variables_to_plot <- 4 - off_count
+  pca_rv$var_1_label <- ifelse(var1_lab == "off", "", var1_lab)
+  pca_rv$var_2_label <- ifelse(var2_lab == "off", "", var2_lab)
+  pca_rv$var_3_label <- ifelse(var3_lab == "off", "", var3_lab)
+  pca_rv$var_4_label <- ifelse(var4_lab == "off", "", var4_lab)
+}
+
+
 write_pca_ini <- function(var1 = "", var2 = "", var3 = "", var4 = "",
                           var1_lab= "", var2_lab = "", var3_lab = "", var4_lab = "",inipath="../input/config.ini") {
   if (!file.exists(inipath)) {
@@ -378,6 +394,18 @@ write_cluster<- function(min_cluster=0,max_cluster=0,fixed_cluster_boolean=T,fix
 }
 
 ##
+write_outl_converted = function(pca_rv = pca_rv, handle_outliers_boolean=F,deviations_min=3,deviations_max=3,
+                                count_min=3,count_max=3,outlier_to_cluster_ratio=0.5){
+  pca_rv$handle_outliers_boolean = handle_outliers_boolean
+  pca_rv$deviations_min = deviations_min
+  pca_rv$deviations_max = deviations_max
+  pca_rv$count_min = count_min
+  pca_rv$count_max = count_max
+  pca_rv$outlier_to_cluster_ratio = outlier_to_cluster_ratio
+}
+
+
+
 write_outl <- function(handle_outliers_boolean="false",deviations_min=3,deviations_max=3,
                         count_min=3,count_max=3,outlier_to_cluster_ratio=0.5,inipath="../input/config.ini"){
   
@@ -429,6 +457,26 @@ read_pca = function(inipath="../input/config.ini"){
 }
 
 ## 
+read_rv_plt = function(obj = T, axis = F, rv){
+  if(all(sapply(reactiveValuesToList(rv), is.null))){return(NULL)}
+  
+  if(obj){
+    var1 = rv$var_1
+    var2 = rv$var_2
+    var3 = rv$var_3
+    var4 = rv$var_4
+  }else if(axis){
+    var1 = rv$var_1_label
+    var2 = rv$var_2_label
+    var3 = rv$var_3_label
+    var4 = rv$var_4_label
+  }else{stop("either obj or axis has to be TRUE")}
+    
+    return(c(var1,var2,var3,var4))
+  
+}
+
+
 read_config_plt = function(obj=T,axis=F,inipath="../input/config.ini"){
   
   if (!file.exists(inipath)) {
@@ -626,24 +674,24 @@ add_perc_stq = function(df, stq) {
 
 #### kmeans clustering ####
 
-## remove outliers for kmeans_converted()
+## remove outliers for its_cluster_time()
 
 remove_outliers <- function(data, deviation, count) {
-  # Calculate z-scores
+  # z-scores
   z_scores <- scale(data)
   
-  # Find outliers (points where 'count' or more variables are beyond 'deviation' std devs)
+  # find outliers (points where 'count' or more variables are beyond 'deviation' std devs)
   outliers <- abs(z_scores) > deviation
   outliers_count <- rowSums(outliers)
   
-  # Keep data points with fewer than 'count' outlying variables
+  # keep data points with fewer than 'count' outlying variables
   data_no_outliers <- data[outliers_count < count, ]
   num_outliers <- sum(outliers_count >= count)
   
   return(list(data_no_outliers = data_no_outliers, num_outliers = num_outliers))
 }
 
-## kmeans for kmeans_converted()
+## actual kmeans
 
 kmeans_clustering <- function(pca_data, num_clusters) {
   set.seed(58)
@@ -651,7 +699,24 @@ kmeans_clustering <- function(pca_data, num_clusters) {
   return(list(labels = kmeans_result$cluster, centers = kmeans_result$centers))
 }
 
-## find closest Pareto solution to centroid for kmeans_converted()
+## actual kmedoid
+
+kmedoids_clustering <- function(pca_data, input_data, num_clusters) {
+  # PAM (Partitioning Around Medoids) for k-medoids clustering
+  pam_result <- pam(pca_data, k = num_clusters, diss = FALSE, metric = "euclidean")
+  
+  # medoid indices in the original input_data
+  medoid_indices <- rownames(input_data)[pam_result$id.med]
+  
+  return(list(
+    labels = pam_result$clustering,
+    centers = pam_result$medoids,
+    medoid_indices = medoid_indices
+  ))
+}
+
+
+## find closest Pareto solution to centroid for its_cluster_time()
 
 find_closest_pareto_solution <- function(centroid, input_data) {
   distances <- apply(input_data, 1, function(x) sqrt(sum((x - centroid)^2)))
@@ -661,9 +726,10 @@ find_closest_pareto_solution <- function(centroid, input_data) {
   
 }
 
-## rerun kmeans multiple times for kmeans_converted()
+## rerun kmeans multiple times for its_cluster_time()
 
 run_kmeans_multiple_times <- function(pca_data, min_clusters, max_clusters, input_data, pca_object, fixed_clusters_boolean, fixed_clusters) {
+  text_output = c()
   best_score <- -1
   best_labels <- NULL
   best_centroids <- NULL
@@ -677,7 +743,7 @@ run_kmeans_multiple_times <- function(pca_data, min_clusters, max_clusters, inpu
     dbi <- sum(cluster.stats(dist(input_data), best_labels)$average.within) / 
       sum(cluster.stats(dist(input_data), best_labels)$average.between)
     
-    cat(sprintf("Clusters: %d, Input Data Silhouette Score: %.4f, Davies Bouldin Score: %.4f\n", 
+    text_output= c(text_output,sprintf("Clusters: %d, Input Data Silhouette Score: %.4f, Davies Bouldin Score: %.4f\n", 
                 fixed_clusters, best_score, dbi))
   } else {
     for (num_clusters in min_clusters:max_clusters) {
@@ -689,7 +755,7 @@ run_kmeans_multiple_times <- function(pca_data, min_clusters, max_clusters, inpu
       dbi <- sum(cluster.stats(dist(input_data), labels)$average.within) / 
         sum(cluster.stats(dist(input_data), labels)$average.between)
       
-      cat(sprintf("Clusters: %d, Input Data Silhouette Score: %.4f, Davies Bouldin Score: %.4f\n", 
+      text_output= c(text_output,sprintf("Clusters: %d, Input Data Silhouette Score: %.4f, Davies Bouldin Score: %.4f\n", 
                   num_clusters, sil_score, dbi))
       
       if (sil_score > best_score) {
@@ -705,39 +771,103 @@ run_kmeans_multiple_times <- function(pca_data, min_clusters, max_clusters, inpu
   representative_solutions_index <- c()
   
   # transform centroids back to original space
-  # input_axes_centroids <- best_centroids %*% t(pca_object$rotation) + 
-    # matrix(rep(pca_object$center, nrow(best_centroids)), 
-           # nrow = nrow(best_centroids), byrow = TRUE)
+  n_pcs_used <- ncol(best_centroids) #number of PCs used
   
-  
-  input_axes_centroids <- sweep(
-    sweep(best_centroids %*% t(pca_object$rotation), 2, pca_object$scale, "*"),
-    2, pca_object$center, "+"
-  )
+  # only using those PCs, multiply by transpose of rotation matrix
+  rotated <- best_centroids %*% t(pca_object$rotation[, 1:n_pcs_used])
+  # multiply by each original sd
+  unscaled <- rotated * matrix(rep(pca_object$scale, nrow(best_centroids)),
+                               nrow = nrow(best_centroids), byrow = TRUE)
+  # add back the original mean of each variable
+  input_axes_centroids <- unscaled + 
+    matrix(rep(pca_object$center, nrow(best_centroids)),
+           nrow = nrow(best_centroids), byrow = TRUE)
+ 
   
   for (i in 1:nrow(input_axes_centroids)) {
     result <- find_closest_pareto_solution(input_axes_centroids[i, ], input_data)
     representative_solutions[[i]] <- result$solution
     representative_solutions_index <- c(representative_solutions_index, result$index)
   }
+  # text_output = paste(text_output, collapse = "\n")
   
   return(list(
     labels = best_labels,
     rep_solutions_index = representative_solutions_index,
     rep_solutions = representative_solutions,
-    score = best_score
+    score = best_score,
+    text = text_output
+
   ))
 }
 
-## create non-integer sequence for kmeans_converted()
+## rerun kmedoid multiple times for its_cluster_time()
+
+run_kmedoids_multiple_times <- function(pca_data, min_clusters, max_clusters, input_data, pca_object, fixed_clusters_boolean, fixed_clusters) {
+  text_output = c()
+  best_score <- -1
+  best_labels <- NULL
+  best_medoids <- NULL
+  best_medoids_index <- NULL
+  
+  if (fixed_clusters_boolean) {
+    result <- kmedoids_clustering(pca_data, input_data, fixed_clusters)
+    best_labels <- result$labels
+    best_medoids <- result$centers
+    best_medoids_index <- result$medoid_indices
+    best_score <- silhouette(best_labels, dist(input_data))[, 3] %>% mean()
+    
+    # Davies-Bouldin Index (simplified version)
+    dbi <- sum(cluster.stats(dist(input_data), best_labels)$average.within) / 
+      sum(cluster.stats(dist(input_data), best_labels)$average.between)
+    
+    text_output = c(text_output,sprintf("Clusters: %d, Input Data Silhouette Score: %.4f, Davies Bouldin Score: %.4f\n", 
+                fixed_clusters, best_score, dbi))
+  } else {
+    for (num_clusters in min_clusters:max_clusters) {
+      result <- kmedoids_clustering(pca_data, input_data, num_clusters)
+      labels <- result$labels
+      medoids <- result$centers
+      medoids_index <- result$medoid_indices
+      
+      sil_score <- silhouette(labels, dist(input_data))[, 3] %>% mean()
+      dbi <- sum(cluster.stats(dist(input_data), labels)$average.within) / 
+        sum(cluster.stats(dist(input_data), labels)$average.between)
+      
+      text_output = c(text_output,sprintf("Clusters: %d, Input Data Silhouette Score: %.4f, Davies Bouldin Score: %.4f\n", 
+                  num_clusters, sil_score, dbi))
+      
+      if (sil_score > best_score) {
+        best_score <- sil_score
+        best_labels <- labels
+        best_medoids <- medoids
+        best_medoids_index <- medoids_index
+      }
+    }
+  }
+  
+  # for k-medoids, the representative solutions are the medoids themselves
+  representative_solutions <- input_data[rownames(input_data) %in% best_medoids_index, ]
+  
+  return(list(
+    labels = best_labels,
+    rep_solutions_index = best_medoids_index,
+    rep_solutions = representative_solutions,
+    score = best_score,
+    text = text_output
+  ))
+}
+
+## create non-integer sequence for its_cluster_time()
 non_integer_range <- function(start, stop, step, precision = 10) {
   seq(start, stop, by = step) %>% round(precision)
 }
 
 
-## kmeans clustering
+## clustering main
 
-kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = "../input/var_corr_par.csv") {
+its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv, 
+                             var_path = "../input/var_corr_par.csv", ct = "kmeans") { #ct - cluster type either kmeans or kmedoid
   
   input_file <- rv$input_file
   columns <- corr_rv$columns
@@ -754,20 +884,28 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
   outlier_to_cluster_ratio <- rv$outlier_to_cluster_ratio
   min_components <- rv$min_components
   max_components <- rv$max_components
+  
+  if (max_components > length(columns)) {
+    max_components = length(columns)
+    if (min_components > max_components) {
+      min_components = max_components
+    }
+  }
+  
   num_variables_to_plot <- rv$num_variables_to_plot
   var_1 <- rv$var_1
   var_1_label <- rv$var_1_label
   var_2 <- rv$var_2
-  var_2_label <- rv$var_1_label
+  var_2_label <- rv$var_2_label
   var_3 <- rv$var_3
   var_3_label <- rv$var_3_label
   var_4 <- rv$var_4
   var_4_label <- rv$var_4_label
-  size_min <- 40
-  size_max <- 400
+  size_min <- 1.5
+  size_max <- 9
   # plot_frequency_maps <- get_config_value(config, "Frequency_Plots", "plot_frequency_maps", "logical")
   # rscript_package_path <- get_config_value(config, "Frequency_Plots", "rscript_package_path")
-  
+  text_output = c() #for collecting text
   input_path <- var_path
   raw_data <- read.csv(input_path, check.names =F)
   input_data <- raw_data[, columns, drop = FALSE]
@@ -777,7 +915,7 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
     dir.create(output_path, recursive = TRUE)
   }
   
-  # inititialise final results
+  # initialise final results
   final_score <- -1
   final_labels <- NULL
   final_rep_solutions <- NULL
@@ -790,7 +928,7 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
   if (handle_outliers_boolean) {
     # outliers case
     for (num_components in min_components:max_components) {
-      cat(sprintf("\nNumber of Principal Components: %d\n", num_components))
+      text_output=   c(text_output,sprintf("\nNumber of Principal Components: %d\n", num_components))
       
       # cache
       cache <- list()
@@ -798,43 +936,63 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
       for (d in non_integer_range(deviations_min, deviations_max, deviations_step)) {
         for (c in count_min:count_max) {
           
-          # Remove outliers
+          # remove outliers
           outlier_result <- remove_outliers(input_data, d, c)
           input_data_no_outliers <- outlier_result$data_no_outliers
           num_outliers <- outlier_result$num_outliers
           
-          # Create hash key for caching
+          # hash key for caching
           data_hash_key <- paste(sort(rownames(input_data_no_outliers)), collapse = "_")
           
           if (data_hash_key %in% names(cache)) {
-            cat(sprintf("\nnumber of extreme solutions: %d, deviations: %.2f, count: %d\n", 
+            text_output=  c(text_output,sprintf("\nnumber of extreme solutions: %d, deviations: %.2f, count: %d\n", 
                         num_outliers, d, c))
             cached_result <- cache[[data_hash_key]]
-            cat(sprintf("this input led to the same outliers produced as for deviations = %.2f and count = %d thus the clustering results are the same.\n", 
+            text_output=  c(text_output,sprintf("this input led to the same outliers produced as for deviations = %.2f and count = %d thus the clustering results are the same.\n", 
                         cached_result$d, cached_result$c))
-            cat(sprintf("Best Cluster Count: %d, Best Input Data Silhouette Score: %.4f\n", 
+            text_output=  c(text_output,sprintf("Best Cluster Count: %d, Best Input Data Silhouette Score: %.4f\n", 
                         cached_result$num_clusters, cached_result$silhouette_score))
             silhouette_score <- cached_result$silhouette_score
           } else {
             # remove outliers from raw data
             raw_data_no_outliers <- raw_data[rownames(raw_data) %in% rownames(input_data_no_outliers), ]
             
-            # perform PCA
+            # PCA
             pca_result <- prcomp(input_data_no_outliers, center = TRUE, scale. = TRUE)
             pca_data <- pca_result$x[, 1:num_components, drop = FALSE]
             
-            # perform clustering
-            cat(sprintf("\nnumber of extreme solutions: %d, deviations: %.2f, count: %d\n", 
+            # clustering
+            text_output=  c(text_output,sprintf("\nnumber of extreme solutions: %d, deviations: %.2f, count: %d\n", 
                         num_outliers, d, c))
-            clustering_result <- run_kmeans_multiple_times(pca_data, min_clusters, max_clusters, 
-                                                           input_data_no_outliers, pca_result, 
-                                                           fixed_clusters_boolean, fixed_clusters)
+            
+            if(ct == "kmeans") {
+              clustering_result <- run_kmeans_multiple_times(
+                pca_data,
+                min_clusters,
+                max_clusters,
+                input_data_no_outliers,
+                pca_result,
+                fixed_clusters_boolean,
+                fixed_clusters
+              )
+            } else {
+              clustering_result <- run_kmedoids_multiple_times(
+                pca_data,
+                min_clusters,
+                max_clusters,
+                input_data_no_outliers,
+                pca_result,
+                fixed_clusters_boolean,
+                fixed_clusters
+              )
+            }
             
             labels <- clustering_result$labels
             representative_solutions_index <- clustering_result$rep_solutions_index
             representative_solutions <- clustering_result$rep_solutions
             silhouette_score <- clustering_result$score
             
+            text_output = c(text_output, clustering_results$text)
             # cache results
             cache[[data_hash_key]] <- list(
               num_clusters = max(labels),
@@ -865,7 +1023,7 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
       stop("No acceptable representative solution set was found")
     }
     
-    cat(sprintf("\nBest Silhouette Score: %.4f, Number of Clusters: %d, Number of Extreme Solutions: %d, Num of PCA: %d\n", 
+    text_output=  c(text_output,sprintf("\nBest Silhouette Score: %.4f, Number of Clusters: %d, Number of Extreme Solutions: %d, Num of PCA: %d\n", 
                 final_score, length(final_rep_solutions_index), final_num_outliers, final_components))
     
     # add cluster labels and representative solution indicators
@@ -883,22 +1041,40 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
     all_data <- rbind(final_raw_data_no_outliers, outliers)
     
     # export to CSV
-    out_file_path <- file.path(output_path, "kmeans_data_w_clusters_representativesolutions_outliers.csv")
+    out_file_path <- file.path(output_path, paste0(ct,"_data_w_clusters_representativesolutions_outliers.csv"))
     write.csv(all_data, out_file_path, row.names = FALSE)
     
   } else {
     # no outlier handling case
     for (num_components in min_components:max_components) {
-      cat(sprintf("\nNumber of Principal Components: %d\n", num_components))
+      text_output=  c(text_output,sprintf("\nNumber of Principal Components: %d\n", num_components))
       
       # perform PCA
       pca_result <- prcomp(input_data, center = TRUE, scale. = TRUE)
       pca_data <- pca_result$x[, 1:num_components, drop = FALSE]
       
       # perform clustering
-      clustering_result <- run_kmeans_multiple_times(pca_data, min_clusters, max_clusters, 
-                                                     input_data, pca_result, 
-                                                     fixed_clusters_boolean, fixed_clusters)
+      if(ct == "kmeans") {
+        clustering_result <- run_kmeans_multiple_times(
+          pca_data,
+          min_clusters,
+          max_clusters,
+          input_data,
+          pca_result,
+          fixed_clusters_boolean,
+          fixed_clusters
+        )
+      } else {
+        clustering_result <- run_kmedoids_multiple_times(
+          pca_data,
+          min_clusters,
+          max_clusters,
+          input_data,
+          pca_result,
+          fixed_clusters_boolean,
+          fixed_clusters
+        )
+      }
       
       labels <- clustering_result$labels
       representative_solutions_index <- clustering_result$rep_solutions_index
@@ -914,7 +1090,7 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
       }
     }
     
-    cat(sprintf("\nBest Silhouette Score: %.4f, Number of Clusters: %d, Num of PCA: %d\n", 
+    text_output = c(text_output , sprintf("\nBest Silhouette Score: %.4f, Number of Clusters: %d, Num of PCA: %d\n", 
                 final_score, length(final_rep_solutions_index), final_components))
     
     # add cluster labels and representative solution indicators
@@ -924,13 +1100,13 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
       raw_data$Cluster[rownames(raw_data) %in% final_rep_solutions_index]
     
     # export to CSV
-    out_file_path <- file.path(output_path, "kmeans_data_w_clusters_representativesolutions.csv")
+    out_file_path <- file.path(output_path, paste0(ct,"_data_w_clusters_representativesolutions_outliers.csv"))
     write.csv(raw_data, out_file_path, row.names = FALSE)
     
     all_data <- raw_data
   }
   
-  # qualitative Clustering Analysis
+  # qualitative clustering analysis
   if (num_variables_to_plot == 2) {
     qualitative_clustering_columns <- c(var_1, var_2)
   } else if (num_variables_to_plot == 3) {
@@ -981,8 +1157,8 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
   colnames(df_transposed) <- df_grouped$Cluster
   
   # create and display table (simplified version)
-  print("Percentile Distribution of Solutions within Clusters:")
-  print(df_transposed)
+  text_output = c(text_output,"\nPercentile Distribution of Solutions within Clusters:\n")
+  text_output = c(text_output,"\n", df_transposed, "\n")
   
   # plot Representative Solutions
   rep_data <- all_data[!is.na(all_data$Representative_Solution), ]
@@ -996,29 +1172,56 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
   
   # create scatter plot
   if (num_variables_to_plot == 2) {
-    p <- ggplot(rep_data, aes(x = .data[[var_1]], y = .data[[var_2]])) +
+    ps <- ggplot(rep_data, aes(x = .data[[var_1]], y = .data[[var_2]])) +
       geom_point() +
       geom_text(aes(label = Representative_Solution), hjust = 0, vjust = 0) +
       labs(title = "Representative Solutions", x = var_1_label, y = var_2_label) +
-      theme_minimal()
+      theme_bw() +
+      theme(panel.background = element_blank(),
+            panel.grid.major = element_line(color = "lightgray", size = 0.3),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            axis.text = element_text(size = 12),
+            axis.title = element_text(size = 16),
+            legend.position = "right",
+            legend.text = element_text(size=13.5),
+            legend.title = element_text(size=15))
+    
   } else if (num_variables_to_plot == 3) {
-    p <- ggplot(rep_data, aes(x = .data[[var_1]], y = .data[[var_2]], color = .data[[var_3_label]])) +
+    ps <- ggplot(rep_data, aes(x = .data[[var_1]], y = .data[[var_2]], color = .data[[var_3_label]])) +
       geom_point() +
-      geom_text(aes(label = Representative_Solution), hjust = 0, vjust = 0) +
+      geom_text(aes(label = Representative_Solution), hjust = 0, vjust = 0, color = "black") +  # Override color
       labs(title = "Representative Solutions", x = var_1_label, y = var_2_label) +
       scale_color_viridis_c() +
-      theme_minimal()
+      theme_bw() +
+      theme(panel.background = element_blank(),
+            panel.grid.major = element_line(color = "lightgray", size = 0.3),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            axis.text = element_text(size = 12),
+            axis.title = element_text(size = 16),
+            legend.position = "right",
+            legend.text = element_text(size=13.5),
+            legend.title = element_text(size=15))
+    
   } else if (num_variables_to_plot == 4) {
-    p <- ggplot(rep_data, aes(x = .data[[var_1]], y = .data[[var_2]], color = .data[[var_3_label]], size = .data[[var_4_label]])) +
+    ps <- ggplot(rep_data, aes(x = .data[[var_1]], y = .data[[var_2]], color = .data[[var_3_label]], size = .data[[var_4_label]])) +
       geom_point() +
-      geom_text(aes(label = Representative_Solution), hjust = 0, vjust = 0) +
+      geom_text(aes(label = Representative_Solution), hjust = 0, vjust = 0, color = "black", size = 3) +  # Override both
       labs(title = "Representative Solutions", x = var_1_label, y = var_2_label) +
       scale_color_viridis_c() +
       scale_size_continuous(range = c(size_min, size_max)) +
-      theme_minimal()
+      theme_bw() +
+      theme(panel.background = element_blank(),
+            panel.grid.major = element_line(color = "lightgray", size = 0.3),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            axis.text = element_text(size = 12),
+            axis.title = element_text(size = 16),
+            legend.position = "right",
+            legend.text = element_text(size=13.5),
+            legend.title = element_text(size=15))  
   }
-  
-  print(p)
   
   # violin plots
   create_violin_plots <- function(data, variables, labels, clusters) {
@@ -1067,11 +1270,18 @@ kmeans_converted <- function(rv = pca_rv, corr_rv = write_corr_rv, var_path = ".
   
   # show violin plots
   if (length(violin_plots) > 0) {
-    do.call(grid.arrange, c(violin_plots, ncol = 2))
+    # do.call(grid.arrange, c(violin_plots, ncol = 2))
+    p2 = do.call(gridExtra::arrangeGrob, c(violin_plots, ncol = 2))
   }
   
+  text_output=  c(text_output,"Analysis completed successfully!\n")
   
-  cat("Analysis completed successfully!\n")
+  return(list(
+    text = text_output,
+    plots = list(p1 = ps, p2 = p2)
+    
+  ))#scatter, violin
+  
 }
 
 #### Python Caller ####
