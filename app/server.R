@@ -27,10 +27,11 @@ server <- function(input, output, session) {
   rng_plt <- reactiveVal(NULL) #getting the highest range across dataframe
   rng_plt_axes <- reactiveVal(NULL) #getting matching axis labels for highest range
   pca_remove <- reactiveVal(NULL) #variables removed from pca
-  pca_rv = reactiveValues(input_file = NULL,
+  
+  pca_rv = reactiveValues(input_file = NULL, #all variables for cluster function
                           min_components = NULL, #pca min tested
                           max_components = NULL, #pca max tested
-                          var_1 = NULL, var2= NULL, var3= NULL, var4= NULL,
+                          var_1 = NULL, var_2= NULL, var_3= NULL, var_4= NULL,
                           num_variables_to_plot= NULL,
                           var_1_label= NULL, var_2_label= NULL, var_3_label= NULL, var_4_label= NULL,
                           handle_outliers_boolean = F,
@@ -101,9 +102,9 @@ server <- function(input, output, session) {
   
   # pca_status <- reactiveVal("")
   pca_spin <- reactiveVal(NULL)#spinner in cluster tab
-  axiselected = reactiveVal(read_config_plt(obj=F,axis=T)) #can potentially remove this initialisation
+  axiselected = reactiveVal(NULL) 
   max_pca <- reactiveVal()# required for max pc field
-  pca_available <- reactiveValues(button1_clicked = FALSE, button2_clicked = FALSE, button3_clicked = FALSE) #controls config.ini writing previous to clustering
+  pca_available <- reactiveValues(button1_clicked = FALSE, button2_clicked = FALSE, button3_clicked = FALSE)
   #results table
   check_files<- reactiveVal(NULL)
   df_antab = reactiveVal(NULL)
@@ -290,9 +291,9 @@ server <- function(input, output, session) {
       updateTextInput(session,"col3", value = objectives()[3] )
       updateTextInput(session,"col4", value = objectives()[4] )
       
-      write_pca_ini(var1=input$short1,var2=input$short2,var3=input$short3,var4=input$short4,
-                    var1_lab="",var2_lab="",var3_lab="",var4_lab="")#save label for future use (pulled w/ read_config_plt in Data prep, pca and cluster)
-      
+      write_labels(pca_rv = pca_rv,var1=input$short1,var2=input$short2,var3=input$short3,var4=input$short4,
+                   var1_lab="",var2_lab="",var3_lab="",var4_lab="")#save label for use in same session, not stable as previously
+     
       if(file.exists(pareto_path)){
         
       data = read.table(pareto_path, header=F,stringsAsFactors=FALSE,sep = deli(pareto_path))
@@ -378,7 +379,7 @@ server <- function(input, output, session) {
       updateTextInput(session, "unit3", value = axiselected()[3])
       updateTextInput(session, "unit4", value = axiselected()[4])
       
-      write_uns(var1_lab= input$unit1, var2_lab = input$unit2, var3_lab = input$unit3, var4_lab = input$unit4,inipath="../input/config.ini")
+      write_uns_converted(rv = pca_rv, var1_lab= input$unit1, var2_lab = input$unit2, var3_lab = input$unit3, var4_lab = input$unit4)
       
       if(enouvea){
         shinyjs::refresh()
@@ -716,9 +717,6 @@ server <- function(input, output, session) {
               list.files(path = dir, full.names = TRUE)
             }))
             
-            file.copy("../data for container/config.ini", input_dir, overwrite = TRUE)
-            
-            
             if (length(remaining_files) == 0) {
               status <- "All files have been deleted."
               
@@ -1009,17 +1007,21 @@ server <- function(input, output, session) {
         updateTextInput(session, "unit4", value = axiselected()[4])
       }else{
         
-        #delete from config just to be sure
-        if(!is.null(objectives())){write_pca_ini(var1 = objectives()[1], var2 = objectives()[2], 
-                                                 var3 = objectives()[3], var4 = objectives()[4],
-                                                 var1_lab= "", var2_lab = "", var3_lab = "", 
-                                                 var4_lab = "",inipath="../input/config.ini")
-        }else{write_pca_ini(var1 = "", var2 = "", 
-                            var3 = "", var4 = "",
-                            var1_lab= "", var2_lab = "", var3_lab = "", 
-                            var4_lab = "",inipath="../input/config.ini")}
-
+        #delete from rv just to be sure
+        if(!is.null(objectives())){
        
+                             write_labels(pca_rv = pca_rv, var1 = objectives()[1], var2 = objectives()[2], 
+                                          var3 = objectives()[3], var4 = objectives()[4],
+                                          var1_lab= "", var2_lab = "", var3_lab = "",
+                                          var4_lab = "")
+                                    
+        }else{
+          
+          write_labels(pca_rv = pca_rv, var1 = "", var2 = "", 
+                       var3 = "", var4 = "",
+                       var1_lab= "", var2_lab = "", var3_lab = "",
+                       var4_lab = "")
+           }
       }
     })
 
@@ -2087,6 +2089,7 @@ server <- function(input, output, session) {
       })
       
       ##default correlation/cluster run
+      
       observeEvent(input$run_defaults, {
         req(clus_path())
         req(rng_plt())
@@ -2107,52 +2110,90 @@ server <- function(input, output, session) {
                       default_vals= default_vals(),ranger = range_controlled(),clus_p = clus_path())
         
         ## run correlation
-          # cmd <- paste("../python_files/correlation_matrix.exe")
-          # result <- system(cmd, intern = TRUE)
         correlation_converted(var_path = clus_path(), considered = write_corr_rv$col_correlation_matrix)
         
         corr <<- read.csv("../output/correlation_matrix.csv", row.names = 1) #global because of re-rendering of plot
         high_corr = find_high_corr(corr,threshold=0.7, tab=T, strike=NULL) 
+        
         #### >>> end correlation - start PCA
+        
         pca_content = all_var[!(all_var %in% unique(high_corr$variable1))]
 
         if(file.exists("../input/units.RDS")){axiselected(readRDS("../input/units.RDS"))}else{axiselected(c("-","-","-","-"))}
         axis_high_range <- axiselected()[rng_plt_axes()]#reorder axis labels
+        
         #prep pca
         write_corr_converted(rv = write_corr_rv,pca_content = pca_content,pca=T, cor_analysis = F)
 
         write_pca_converted(pca_rv = pca_rv, 
                             pcamin=length(pca_content),pcamax=length(pca_content), #capture old function write_pcanum
-                            var1=rng_plt()[1],var2=rng_plt()[2],var3=rng_plt()[3],var4=rng_plt()[4], #write_pca_ini
+                            var1=rng_plt()[1],var2=rng_plt()[2],var3=rng_plt()[3],var4=rng_plt()[4], #formerly write_pca_ini
                             var1_lab=paste0(rng_plt()[1]," [",axis_high_range[1],"]"),
                             var2_lab=paste0(rng_plt()[2]," [",axis_high_range[2],"]"),
                             var3_lab=paste0(rng_plt()[3]," [",axis_high_range[3],"]"),
                             var4_lab=paste0(rng_plt()[4]," [",axis_high_range[4],"]"),
                             handle_outliers_boolean = F,
                             fixed_cluster_boolean=T,fixed_clusters=15)
-        # write_pcanum(pcamin=length(pca_content),pcamax=length(pca_content))
-        # write_pca_ini(var1=rng_plt()[1],var2=rng_plt()[2],var3=rng_plt()[3],var4=rng_plt()[4],
-                      # var1_lab=paste0(rng_plt()[1]," [",axis_high_range[1],"]"),
-                      # var2_lab=paste0(rng_plt()[2]," [",axis_high_range[2],"]"),
-                      # var3_lab=paste0(rng_plt()[3]," [",axis_high_range[3],"]"),
-                      # var4_lab=paste0(rng_plt()[4]," [",axis_high_range[4],"]"))
-        # write_outl(handle_outliers_boolean = "false")
-        # write_cluster(fixed_cluster_boolean="true",fixed_clusters=15)
        
         ##run clustering
         
-         # cmd = paste("../python_files/kmeans.exe")
-         # result = system(cmd,intern=TRUE)
-         # default_running(FALSE) 
-        its_cluster_time(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmeans")
-          
+        clusterr = its_cluster_time(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmeans")
+        
+        
+        ## window with plots/Modaldialog
+        
+        output$download_scat_clus = downloadHandler(
+          filename = function(){
+            curt = format(Sys.time(), "_%Y%m%d")
+            paste0("scatter_cluster", curt, ".png")
+          },
+          content = function(file){
+            ggsave(file, plot = clusterr$plots$p1, width = 12, height = 8, dpi = 600)
+          }
+        )
+        
+        output$download_violin = downloadHandler(
+          filename = function(){
+            curt = format(Sys.time(), "_%Y%m%d")
+            paste0("violin_cluster", curt, ".png")
+          },
+          content = function(file){
+            renderPlot({grid::grid.draw(clusterr$plots$p2)}, height = 600)
+            ggsave(file, plot = clusterr$plots$p2, width = 12, height = 8, dpi = 600)
+          }
+        )
+        
+        showModal(modalDialog(
+          title = "Representative Solutions",
+          fluidRow(
+            column(12, renderPlot({clusterr$plots$p1}, height = 600),
+                   downloadButton("download_scat_clus", "Download Plot")),
+            column(12, renderPlot({
+              grid::grid.draw(clusterr$plots$p2)}, height = 600),
+              downloadButton("download_violin", "Download Plot"))
+          ),
+          tags$h4("Percentile Distribution of Solutions within Clusters"),
+          tags$br(),
+          tableOutput("cluster_table"),
+          size = "xl",
+          easyClose = TRUE,
+          footer = modalButton("Close")
+        ))
+        
+        output$cluster_table = renderTable({
+          clusterr$table
+        }, striped = TRUE, hover = TRUE, bordered = TRUE, rownames = T, colnames = T)
+        
+        #### ===> end of Modal dialog
+        
+        
+        
+        
+        default_running(FALSE) # cue for text output below
         
         }else{
-          
-          output$corr_notthere_config <- renderText({corr_file_check()}) #default not run when there are files missing
-          
-        }
-        
+            output$corr_notthere_config <- renderText({corr_file_check()}) #default not run when there are files missing
+                  }
         
       })
      
@@ -2285,12 +2326,7 @@ server <- function(input, output, session) {
           check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), 
                         default_vals= default_vals(),ranger = range_controlled())   
           
-          ## run the Python script
-          # cmd <- paste("../python_files/correlation_matrix.exe")
-          
-          ## capture python output
-          # result <- system(cmd, intern = TRUE)
-    
+        
           correlation_converted(var_path = clus_path(), considered = write_corr_rv$col_correlation_matrix)
           
           corr <<- read.csv("../output/correlation_matrix.csv", row.names = 1) #global because of re-rendering of plot
@@ -2497,8 +2533,7 @@ server <- function(input, output, session) {
   })
   observeEvent(input$runPCA,{
     pca_spin(TRUE) #spinner
-    # python status
-    # output$pca_status <- renderText({pca_status()})
+    
     pca_content <<- readRDS("../input/pca_content.RDS")
     
     output$pca_mess <- renderUI({
@@ -2510,7 +2545,7 @@ server <- function(input, output, session) {
     
     isElementVisible(TRUE)
     
-    ## prepare config.ini
+    ## prepare correlation rv (write_corr_rv)
     write_corr_converted(rv = write_corr_rv,pca_content = pca_content,pca=T, cor_analysis = F)# columns
     
     #rewrite var_corr_par if sliders have moved (user coming straight to this tab w/o using correlation)
@@ -2518,21 +2553,23 @@ server <- function(input, output, session) {
                   default_vals= default_vals(),ranger = range_controlled())
     
     # command to run the Python script
-    # if(input$pcamethod=="k-means"){pca_script <- "../python_files/kmeans.exe"}else{pca_script <- "../python_files/kmedoid.exe"}
     if(input$pcamethod=="k-means") {
       
       clusterr = its_cluster_time(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmeans")
       
       output$cluster_happening <- renderPrint({   cat(clusterr$text)  })
+      output$cluster_table <- renderTable({  clusterr$table})
+      
       
     } else{
      
         clusterr = its_cluster_time( rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmedoid")
         
         output$cluster_happening <- renderPrint({ cat(clusterr$text)})
+        
     }
     
-    ## window with plots
+    ## window with plots/Modaldialog
     
     output$download_scat_clus = downloadHandler(
       filename = function(){
@@ -2564,10 +2601,19 @@ server <- function(input, output, session) {
           grid::grid.draw(clusterr$plots$p2)}, height = 600),
           downloadButton("download_violin", "Download Plot"))
         ),
+      tags$h4("Percentile Distribution of Solutions within Clusters"),
+      tags$br(),
+      tableOutput("cluster_table"),
       size = "xl",
       easyClose = TRUE,
       footer = modalButton("Close")
     ))
+    
+    output$cluster_table = renderTable({
+      clusterr$table
+    }, striped = TRUE, hover = TRUE, bordered = TRUE, rownames = T, colnames = T)
+    
+    #### ===> end of Modal dialog
     
    
     pca_spin(FALSE) #spinner
@@ -2685,9 +2731,6 @@ server <- function(input, output, session) {
     if (!file.exists("../data/sq_fitness.txt")){shinyjs::disable("add_sq")}else{shinyjs::enable("add_sq")} 
     if (!file.exists("../input/units.RDS")){shinyjs::disable("unit_add2")}else{shinyjs::enable("unit_add2")} 
     
-    
-    
-    # preselected = read_config_plt(obj = T, axis = F)
     
     #update Analysis tab plot without "off"
     updateSelectInput(session, "x_var2",   choices = choices, selected = rng_plt()[1])
@@ -2865,7 +2908,7 @@ server <- function(input, output, session) {
     clus_res_plt = function(){
       req(objectives(),sols(), input$x_var2)
       
-      if(is.null(check_files())) { #sol is only useful if python has run
+      if(is.null(check_files())) { #sol is only useful if clustering has run
         return(sols(data.frame(Message = 
                                  'something went wrong - has the PCA run properly? 
                                   You can check the output folder for files with names containing "cluster" or
@@ -2901,7 +2944,7 @@ server <- function(input, output, session) {
     clus_vs_var = function(){
       req(objectives(),sols3(),input$x_var_pcs_vs,input$y_var_pcs_vs)
       
-      if(is.null(check_files())) { #sol is only useful if python has run
+      if(is.null(check_files())) { #sol is only useful if clustering done
         return(sols(data.frame(Message = 
                                  'something went wrong - has the PCA run properly? 
                                   You can check the output folder for files with names containing "cluster" or

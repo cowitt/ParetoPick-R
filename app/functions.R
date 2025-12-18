@@ -171,6 +171,7 @@ write_corr = function(vars,
   }
   
 }
+
 ## check if some variables have been removed by convert_optain
 check_align_converted = function(var_path="../input/var_corr_par.csv", rv){
   
@@ -190,29 +191,9 @@ check_align_converted = function(var_path="../input/var_corr_par.csv", rv){
     }
 }
 
-check_align = function(inipath="../input/config.ini",var_path="../input/var_corr_par.csv"){
-  
-  if (!file.exists(inipath) | !file.exists(var_path)) {
-    return(NULL)  
-  } 
-  
-  config <- read.ini(inipath)
-  
-  written <- config[[1]]$col_correlation_matrix
-  written <- strsplit(written, ", ")[[1]]
-  
-  var_corr = read.csv(var_path)
-  var_corr = colnames(var_corr)[5:ncol(var_corr)]
-  
-  che = setdiff(written,var_corr)
-  if(length(che)==0){return(NULL)}else{
-    written = setdiff(written, che)
-    config[[1]]$col_correlation_matrix = paste(written, collapse = ", ")
-    write.ini(config, inipath)
-  }
-}
 
 ##
+
 correlation_converted = function(var_path = "../input/var_corr_par.csv", considered = write_corr_rv$col_correlation_matrix){
   
   if(is.null(considered) | !file.exists(var_path)){return(NULL)}
@@ -248,29 +229,6 @@ write_labels = function(pca_rv = pca_rv, var1 = "", var2 = "", var3 = "", var4 =
   pca_rv$var_2_label <- ifelse(var2_lab == "off", "", var2_lab)
   pca_rv$var_3_label <- ifelse(var3_lab == "off", "", var3_lab)
   pca_rv$var_4_label <- ifelse(var4_lab == "off", "", var4_lab)
-}
-
-
-write_pca_ini <- function(var1 = "", var2 = "", var3 = "", var4 = "",
-                          var1_lab= "", var2_lab = "", var3_lab = "", var4_lab = "",inipath="../input/config.ini") {
-  if (!file.exists(inipath)) {
-    return(NULL)  
-  } 
-  config <- read.ini(inipath)
-  
-  config[[5]]$var_1 <- ifelse(var1 == "off", "", var1)
-  config[[5]]$var_2 <- ifelse(var2 == "off", "", var2)
-  config[[5]]$var_3 <- ifelse(var3 == "off", "", var3)
-  config[[5]]$var_4 <- ifelse(var4 == "off", "", var4)
-  
-  off_count <- sum(c(var1, var2, var3, var4) == "off")
-  config[[5]]$num_variables_to_plot <- 4 - off_count
-  config[[5]]$var_1_label <- ifelse(var1_lab == "off", "", var1_lab)
-  config[[5]]$var_2_label <- ifelse(var2_lab == "off", "", var2_lab)
-  config[[5]]$var_3_label <- ifelse(var3_lab == "off", "", var3_lab)
-  config[[5]]$var_4_label <- ifelse(var4_lab == "off", "", var4_lab)
-  write.ini(config, inipath) 
-  
 }
 
 ## fill pca rv (combine old functions write_pcanum(), write_pca_ini(), write_outl(), write_cluster())
@@ -335,18 +293,11 @@ write_pca_converted = function(pca_rv = pca_rv,
 }
 
 ## write only units
-write_uns <- function(var1_lab= "", var2_lab = "", var3_lab = "", var4_lab = "",inipath="../input/config.ini") {
-  if (!file.exists(inipath)) {
-    return(NULL)  
-  } 
-  config <- read.ini(inipath)
-  
-  config[[5]]$var_1_label <- ifelse(var1_lab == "off", "", var1_lab)
-  config[[5]]$var_2_label <- ifelse(var2_lab == "off", "", var2_lab)
-  config[[5]]$var_3_label <- ifelse(var3_lab == "off", "", var3_lab)
-  config[[5]]$var_4_label <- ifelse(var4_lab == "off", "", var4_lab)
-  write.ini(config, inipath) 
-  
+write_uns_converted = function(rv = pca_rv, var1_lab= "", var2_lab = "", var3_lab = "", var4_lab = ""){
+  rv$var_1_label <- ifelse(var1_lab == "off", "", var1_lab)
+  rv$var_2_label <- ifelse(var2_lab == "off", "", var2_lab)
+  rv$var_3_label <- ifelse(var3_lab == "off", "", var3_lab)
+  rv$var_4_label <- ifelse(var4_lab == "off", "", var4_lab)
 }
 
 ##
@@ -405,43 +356,7 @@ write_outl_converted = function(pca_rv = pca_rv, handle_outliers_boolean=F,devia
 }
 
 
-
-write_outl <- function(handle_outliers_boolean="false",deviations_min=3,deviations_max=3,
-                        count_min=3,count_max=3,outlier_to_cluster_ratio=0.5,inipath="../input/config.ini"){
-  
-  if (!file.exists(inipath)) {
-    return(NULL)  
-  }
-  
-  config <- read.ini(inipath)
-  
-  config[[3]]$handle_outliers_boolean = handle_outliers_boolean
-  config[[3]]$deviations_min = deviations_min
-  config[[3]]$deviations_max = deviations_max
-  config[[3]]$count_min = count_min
-  config[[3]]$count_max = count_max
-  config[[3]]$outlier_to_cluster_ratio = outlier_to_cluster_ratio
-  
-  write.ini(config, inipath)
-  
-}
-
-## 
-write_pcanum = function(pcamin,pcamax,inipath="../input/config.ini"){
-  if (!file.exists(inipath)) {
-    return(NULL)
-  }
-  config <- read.ini(inipath)
-  
-  config[[4]]$min_components = pcamin
-  config[[4]]$max_components = pcamax
-  write.ini(config, inipath)
-  
-  
-}
-
-
-#### Read Config Functions ####
+#### Read reactive value Functions ####
 
 ## config for pca on startup
 read_pca = function(inipath="../input/config.ini"){
@@ -473,30 +388,6 @@ read_rv_plt = function(obj = T, axis = F, rv){
   }else{stop("either obj or axis has to be TRUE")}
     
     return(c(var1,var2,var3,var4))
-  
-}
-
-
-read_config_plt = function(obj=T,axis=F,inipath="../input/config.ini"){
-  
-  if (!file.exists(inipath)) {
-    return(NULL)
-  }
-  
-  config <- read.ini(inipath)
-  
-  if(obj){
-  var1 = config[[5]]$var_1
-  var2 = config[[5]]$var_2
-  var3 = config[[5]]$var_3
-  var4 = config[[5]]$var_4}else if(axis){
-    var1 = config[[5]]$var_1_label
-    var2 = config[[5]]$var_2_label
-    var3 = config[[5]]$var_3_label
-    var4 = config[[5]]$var_4_label
-  }else{stop("either obj or axis has to be TRUE")}
-  
-  return(c(var1,var2,var3,var4))
   
 }
 
@@ -1156,10 +1047,7 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
   df_transposed <- t(df_grouped[, -1])
   colnames(df_transposed) <- df_grouped$Cluster
   
-  # create and display table (simplified version)
-  text_output = c(text_output,"\nPercentile Distribution of Solutions within Clusters:\n")
-  text_output = c(text_output,"\n", df_transposed, "\n")
-  
+
   # plot Representative Solutions
   rep_data <- all_data[!is.na(all_data$Representative_Solution), ]
   
@@ -1278,38 +1166,13 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
   
   return(list(
     text = text_output,
-    plots = list(p1 = ps, p2 = p2)
+    plots = list(p1 = ps, p2 = p2),
+    table = df_transposed # percentile dist. of solutions within clusters
     
   ))#scatter, violin
   
 }
 
-#### Python Caller ####
-
-run_python_script <- function(path_script="",pca_status) {
-  pca_status("")
-  p <- processx::process$new(
-    # "python",  #old - when running with .py files
-    # c(path_script),
-    path_script,
-    stdout = "|", stderr = NULL
-  )
-  
-  while (p$is_alive()) {
-    new_output <- p$read_output_lines()
-    # new_output <- c(new_output, p$read_error_lines())
-    if (length(new_output) > 0) {
-      pca_status(paste(pca_status(), paste(new_output, collapse = "\n"), sep = "\n"))
-    }
-    Sys.sleep(0.1)
-  }
-  
-  final_output <- p$read_all_output_lines()
-  # final_output <- c(final_output, p$read_all_error_lines())
-  if (length(final_output) > 0) {
-    pca_status(paste(pca_status(), paste(final_output, collapse = "\n"), sep = "\n"))
-  }
-}
 
 #### Plotting the optima ####
 ## get linear elements requiring a buffer
