@@ -184,11 +184,14 @@ check_align_converted = function(var_path="../input/var_corr_par.csv", rv){
   var_corr = read.csv(var_path)
   var_corr = colnames(var_corr)[5:ncol(var_corr)]
   
-  che = setdiff(written,var_corr)
-  if(length(che)==0){return(NULL)}else{
-    written = setdiff(written, che)
-    rv$col_correlation_matrix = written
-    }
+  if(length(var_corr) != length(written)){
+   
+    rv$col_correlation_matrix = intersect(written,var_corr)
+
+  }
+  
+  return(NULL)
+  
 }
 
 
@@ -300,31 +303,6 @@ write_uns_converted = function(rv = pca_rv, var1_lab= "", var2_lab = "", var3_la
   rv$var_4_label <- ifelse(var4_lab == "off", "", var4_lab)
 }
 
-##
-write_quali_ini = function(var1 = "", var2 = "", var3 = "", var4 = "",inipath="../input/config.ini"){
-  if (!file.exists(inipath)) {
-    return(NULL)  
-  } 
-   config <- read.ini(inipath)
-  
-    conf_clust = NULL
-    if (var1 != "off") {
-      conf_clust = append(conf_clust, var1)
-    }
-    if (var2 != "off") {
-      conf_clust = append(conf_clust, var2)
-    }
-    if (var3 != "off") {
-      conf_clust = append(conf_clust, var3)
-    }
-    if (var4 != "off") {
-      conf_clust = append(conf_clust, var4)
-    }
-    
-    config$Qualitative_Clustering$qualitative_clustering_columns = paste(conf_clust, collapse = ", ")
-    write.ini(config, inipath)
-
-}
 
 ##
 write_cluster<- function(min_cluster=0,max_cluster=0,fixed_cluster_boolean=T,fixed_clusters=7,

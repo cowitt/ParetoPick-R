@@ -164,12 +164,9 @@ server <- function(input, output, session) {
   meas_running <- reactiveVal(FALSE) #spinner in ahp tab
   fit_row <- reactiveVal()  
   fit_sorted <- reactiveVal()
+  
   ### Startup ####
-  if (file.exists("../input/var_corr_par_bu.csv")) { #if back up exists, the original needs replacing
-    file.remove("../input/var_corr_par.csv")
-    file.rename("../input/var_corr_par_bu.csv", "../input/var_corr_par.csv")
-  }
- 
+  
   #pull status quo
   observe({
     if (file.exists("../data/sq_fitness.txt")) {
@@ -756,7 +753,7 @@ server <- function(input, output, session) {
   #remove tab content if fitness not available
   observe({
     if (!file.exists(pareto_path)) {
-      output$config_needs_var = renderText({"Please provide pareto_fitness.txt and click Run Prep (OPTAIN workflow) or provide cluster_params.csv in the Data Preparation tab before proceeding here!"})
+      output$config_needs_var = renderText({"Please provide pareto_fitness.txt and click Run Prep (OPTAIN workflow) or provide a .csv with variables to cluster on in the Data Preparation tab before proceeding here!"})
       output$uploaded_pareto <- renderText({"To be able to proceed, please provide pareto_fitness.txt as well as the objective names in the previous tab."})
       shinyjs::hide("main_analysis")
       shinyjs::hide("all_ahp")
@@ -2023,6 +2020,7 @@ server <- function(input, output, session) {
   
 
   ### Configure ####
+  
   observe({
     optain = "../input/var_corr_par.csv"
     not_optain = "../input/cluster_params.csv"
@@ -2032,7 +2030,17 @@ server <- function(input, output, session) {
     }else if(file.exists(not_optain)){
       clus_path(not_optain)
     }
-    })
+  })
+  
+  observe({#if back up exists, the original needs replacing
+    req(clus_path())
+    if (file.exists(sub("\\.csv$", "_bu.csv",clus_path())
+    )) { 
+      file.remove(clus_path())
+      file.rename(sub("\\.csv$", "_bu.csv",clus_path()), clus_path())
+      
+    }})
+  
   
   observe({
     req(objectives())
@@ -2106,7 +2114,7 @@ server <- function(input, output, session) {
 
         if(da){check_align_converted(var_path=clus_path(), rv = write_corr_rv)}#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain) 
         
-        check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), #rewrite var_corr_par if sliders have moved
+        check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), #rewrite clus_path() if sliders have moved
                       default_vals= default_vals(),ranger = range_controlled(),clus_p = clus_path())
         
         ## run correlation
@@ -2218,58 +2226,65 @@ server <- function(input, output, session) {
           "../data/hru.shx",
           "../data/hru.dbf",
           "../data/hru.prj",
+          "../input/var_corr_par.csv",
           "../data/pareto_fitness.txt",
           "../input/object_names.RDS",
-          "../input/all_var.RDS"
+          "../input/all_var.RDS" #written in dataprep for OPTAIN, automated in non-OPTAIN
         )
         
         checkFiles <- sapply(required_files, function(file) file.exists(file))
         
-        if (all(checkFiles) == F && !file.exists("../input/cluster_params.csv")) {
-          shinyjs::hide(id = "corr_content")
-          shinyjs::show(id = "corr_notthere")
-          shinyjs::hide(id = "corr_sidebar")
-          neednames = ""
-          whatsmissing = ""
-          
-         
-        missing_files = required_files[!checkFiles]
-            if ("../input/object_names.RDS" %in% missing_files && length(missing_files) != 1) {
-              whatsmissing = "The following file(s) are missing and have to be provided in the Data Prep tab:<br/>"
-              
-              missing_files <- missing_files[missing_files != "../input/object_names.RDS"]
-              neednames = "To be able to proceed please also define the objective names in the Data Prep tab."
-              if ("../input/all_var.RDS" %in% missing_files){missing_files <- missing_files[! missing_files %in% "../input/all_var.RDS"]
-              }
-            } else if ("../input/object_names.RDS" %in% missing_files && length(missing_files) == 1){
-              whatsmissing = "All files have been provided, please specify the objective names in the previous tab."
-              
-            } else if ("../input/all_var.RDS" %in% missing_files && length(missing_files) != 1){
-              missing_files <- missing_files[! missing_files %in% "../input/all_var.RDS"]
-              
-              whatsmissing = "The following file(s) are missing and have to be provided in the Data Prep tab:<br/>"
-              neednames = "Please also define the objective names in the previous tab."
-              
-            }else if ("../input/all_var.RDS" %in% missing_files && length(missing_files) == 1){
-              missing_files <- missing_files[missing_files != "../input/all_var.RDS"]
-              
-              neednames = "Please (re)run the Data Preparation."
-              
-            }else{
-              whatsmissing = "The following file(s) are missing and have to be provided in the Data Prep tab:<br/>"
-              
-            }
-            
-            return(HTML(paste(
-              whatsmissing,
-              paste(sub('../data/', '', missing_files), collapse = "<br/> "), "<br/> ",neednames
-            )))
-         
-        }else{ shinyjs::show(id = "corr_content")
+        if (all(checkFiles) || file.exists("../input/cluster_params.csv")) {
+          shinyjs::show(id = "corr_content")
           shinyjs::show(id = "corr_sidebar")
           shinyjs::hide(id = "corr_notthere")
-          return(NULL)}
-      } 
+          return(NULL)
+        }
+        
+          shinyjs::hide(id = "corr_content")
+          shinyjs::hide(id = "corr_sidebar")
+          shinyjs::show(id = "corr_notthere")
+          
+          # neednames = ""
+          # whatsmissing = ""
+          
+          missing_files = required_files[!checkFiles]
+          
+          object_names_missing <- "../input/object_names.RDS" %in% missing_files
+          all_var_missing <- "../input/all_var.RDS" %in% missing_files
+          var_corr_par_missing <- "../input/var_corr_par.csv" %in% missing_files
+          
+          special_files <- c("../input/object_names.RDS", "../input/all_var.RDS", "../input/var_corr_par.csv")
+          regular_missing <- setdiff(missing_files, special_files)
+          
+          messages <- c()
+          
+          if (length(regular_missing) > 0) {
+            messages <- c(messages, 
+                          "The following file(s) are missing and have to be provided in the Data Prep tab:<br/>",
+                          paste(sub('../data/', '', regular_missing), collapse = "<br/>"))
+          }
+          
+          action_needed <- c()
+          
+          if (object_names_missing) {
+            action_needed <- c(action_needed, "define the objective names")
+          }
+          
+          if (all_var_missing || var_corr_par_missing) {
+            action_needed <- c(action_needed, "(re)run the Data Preparation or provide .csv file for clustering")
+          }
+          
+          if (length(action_needed) > 0) {
+            if (length(regular_missing) > 0) {
+              messages <- c(messages, "<br/>")
+            }
+            messages <- c(messages, paste("Please", paste(action_needed, collapse = " and "), "in the Data Prep tab."))
+          }
+          
+          return(HTML(paste(messages, collapse = "")))
+      }
+        
       
       observeEvent(input$tabs == "correlation_analysis", {
         output$corr_notthere <- renderText({corr_file_check()})
