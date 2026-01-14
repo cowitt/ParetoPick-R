@@ -861,7 +861,7 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
             representative_solutions <- clustering_result$rep_solutions
             silhouette_score <- clustering_result$score
             
-            text_output = c(text_output, clustering_results$text)
+            text_output = c(text_output, clustering_result$text)
             # cache results
             cache[[data_hash_key]] <- list(
               num_clusters = max(labels),
@@ -903,12 +903,15 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
     
     # create outliers dataframe
     outliers <- raw_data[!rownames(raw_data) %in% rownames(final_input_data_no_outliers), ]
-    outliers$Cluster <- "outlier"
-    outliers$Representative_Solution <- "outlier"
-    
-    # combine all data
-    all_data <- rbind(final_raw_data_no_outliers, outliers)
-    
+    if(nrow(outliers) > 0){
+      outliers$Cluster <- "outlier"
+      outliers$Representative_Solution <- "outlier"
+      # combine all data
+      all_data <- rbind(final_raw_data_no_outliers, outliers)
+      
+    }else{
+      all_data <- final_raw_data_no_outliers
+    }
     # export to CSV
     out_file_path <- file.path(output_path, paste0(ct,"_data_w_clusters_representativesolutions_outliers.csv"))
     write.csv(all_data, out_file_path, row.names = FALSE)
