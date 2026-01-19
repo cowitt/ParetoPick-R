@@ -1,1 +1,0 @@
-LeafletWidget.methods.addBingTiles=function(e,a,i){(function(){var t=i.apikey;delete i.apikey,this.layerManager.addLayer(L.bingLayer(t,i),"tile",e,a)}).call(this)};

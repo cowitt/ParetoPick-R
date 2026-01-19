@@ -1,7 +1,0 @@
-decode                  Decode Polyline
-encode                  Encode
-encodeCoordinates       Encode coordinates
-geometryRow             Geometry Row
-polyline_wkt            Polyline WKT
-sfAttributes            sf Attributes
-wkt_polyline            WKT Polyline
