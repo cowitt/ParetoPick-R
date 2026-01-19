@@ -15,7 +15,7 @@ The algorithm considers five variables:
 
 ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
 
-Python code: [S. White](https://github.com/SydneyEWhite)
+Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
 
 ### Alternative Clustering
 The tool can be used for model workflows that do not rely on SWAT+/CoMOLA, this requires to prepare and upload a simple .csv file containing variables for clustering. 
@@ -35,31 +35,17 @@ The tool can be used for model workflows that do not rely on SWAT+/CoMOLA, this 
 │   ├── server.R
 │   ├── global.R
 │   └── convert_optain.R
-├── python_files
-│   ├── kmeans.exe
-│   ├── kmedoid.exe
-│   ├── correlation_matrix.exe
-│   └── _internal
 ├── input
-│   └── config.ini
 ├── data
-├── data_for_container
-│   └── config.ini (for hard reset)
 └── output
 ```
 **Folder purposes:**
 - **app**: UI and server logic
-- **python_files**: Python executables for analysis
 - **input**: Configuration and processed data
 - **data**: User-supplied outputs from multi-objective optimisation
 - **output**: Analysis results and selected optima
-- **data_for_container**: Default configuration for reset functionality
-
 
 Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO [Strauch and Schürz, 2024](https://www.optain.eu/sites/default/files/delivrables/OPTAIN%20D5.1%20-%20Common%20optimisation%20protocol.pdf).
-
-
-*In the forthcoming portable version [OPTAIN_Pareto_Demo](https://github.com/MartynLLM/OPTAIN_Pareto_Demo), the app was converted into a fully R-based software and the python_files and data for container folders have been removed.
 
 
 ## 3.1 Files created during processing
@@ -71,7 +57,6 @@ Files supplied through by the user are stored in the data folder, these are the 
 * **hru_in_optima.RDS**: HRU-optimum connections
 * **all_var.RDS**: all clustering variables
 * **pca_content.RDS**: variables after correlation filtering
-* **config.ini**: Python process configuration
 * **buffers.RDS**: measures requiring buffer for map visibility
 * **units.RDS**: unit definitions
 
@@ -81,7 +66,7 @@ ParetoPick-R is built using a standard structure for dividing shiny functionalit
 Each script serves a specific purpose in the software’s architecture:
 * ui.R: This script establishes the UI of the app. It organises the app's layout, including input controls for sliders, clustering parameters and visualisation options. Additionally, it specifies the locations for displaying plots, tables, and clustering results.
 * server.R: This is the core backend functionality containing the server-side logic of the software. It captures user inputs, processes data, performs calculations and updates outputs. It relies on reactive expressions to efficiently manage data flow and calls external functions from functions.R alongside defining its own to create dynamic visualisations and tables.
-* functions.R: This script defines all custom functions used throughout the app. Most of them are used for formatting, data manipulation and plotting, while a few are for adapting config.ini to control the external Python processes. The codebase is easier to maintain when consolidating the most important and frequently used function definitions.
+* functions.R: This script defines all custom functions used throughout the app. Most of them are used for formatting, data manipulation and plotting, while a few are for adapting reactive values for the clustering. The codebase is easier to maintain when consolidating the most important and frequently used function definitions.
 * global.R: This short script defines global paths and app settings. It installs and/or loads packages and sets constants such as file paths, default parameters and any configuration options that need to be accessible across the entire app. It's kept concise to focus on app-wide settings.
 * convert_optain.R: This script is needed for the desktop version only. It handles all data preparation. It reads the required data files and prepares the input data for the clustering analysis.
 
@@ -211,8 +196,7 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
   * write/load full scenario run from previous uses
   * optimum number display in AHP
   * (OPTAIN-specific) remove superfluous priority file writing, replace hru.con requirement for lat lon 
-  * conversion to full R
-
+ 
 Other
   * this Readme needs a better eplanation of the levels of functionality, aligned with the Data Preparation tab as a table
   * dynamic regression line with R2 in scatter plot in red, other R2 in blue
