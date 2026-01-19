@@ -1,0 +1,11 @@
+gh_covering	gis_tools
+gh_decode	gh_decode
+gh_delta	utils
+gh_encode	gh_encode
+gh_neighbors	gh_neighbors
+gh_neighbours	gh_neighbors
+gh_to_sf	gis_tools
+gh_to_sp	gis_tools
+gh_to_spdf	gis_tools
+gh_to_spdf.data.frame	gis_tools
+gh_to_spdf.default	gis_tools

@@ -1,0 +1,56 @@
+across                  Apply a function (or functions) across multiple
+                        columns
+arrange                 Arrange rows by variables
+between                 Do values in a numeric vector fall in specified
+                        range?
+bind                    Efficiently bind multiple 'data.frame's by row
+                        and column
+case_when               A General Vetorised if()
+coalesce                Find first non-missing element
+context                 Context dependent expressions
+count                   Count observations by group
+cummean                 Cumulative versions of any, all, and mean
+desc                    Descending order
+distinct                Subset distinct/unique rows
+fill                    Fill in missing values with previous or next
+                        value
+filter                  Return rows with matching conditions
+filter_joins            Filtering joins filter rows from 'x' based on
+                        the presence or absence of matches in 'y':
+glimpse                 Get a glimpse of your data
+group_by                Group by one or more variables
+group_by_drop_default   Default value for .drop argument of group_by
+group_cols              Select Grouping Variables
+group_metadata          Grouping metadata
+group_split             Split data.frame by groups
+if_else                 Vectorised if
+lag                     Compute lagged or leading values
+lst                     Build a list
+mutate                  Create or transform variables
+mutate_joins            Mutating Joins
+n_distinct              Count the number of unique values in a set of
+                        vectors
+na_if                   Convert values to NA
+near                    Compare two numeric vectors
+nest_by                 Nest By
+nth                     Extract the first, last or nth value from a
+                        vector
+peek_vars               Peek at variables in the selection context
+pipe                    Forward-pipe operator
+pivot_longer            Pivot data from wide to long
+pivot_wider             Pivot data from long to wide
+pull                    Pull out a single variable
+recode                  Recode values
+relocate                Change column order
+rename                  Rename columns
+replace_na              Replace missing values
+rownames                Tools for working with row names
+select                  Subset columns using their names and types
+select_helpers          Select Helpers
+slice                   Subset rows by position
+summarise               Reduce multiple values down to a single value
+union_all               Union All
+unite                   Unite Multiple Columns Into One
+where                   Select variables with a function
+window_rank             Windowed Rank Functions
+with_groups             Perform an operation with temporary groups

@@ -1,0 +1,6 @@
+gh_decode               Geohash decoding
+gh_delta                Geohash utilities
+gh_encode               Geohash encoding
+gh_neighbors            Geohash neighborhoods
+gh_to_sp                Helpers for interfacing geohashes with sp/sf
+                        objects

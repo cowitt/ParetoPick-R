@@ -96,7 +96,11 @@ nswrm_priorities <- function(lu) {
 
 # genome_hru matches AEP with hrus, several hrus for each AEP (hru = obj_id)
   genome_hru <- read.csv("../data/measure_location.csv")
-
+  if (nrow(gen) != nrow(genome_hru)) {#CS6-inspired check for inconsistent MOO outputs
+    stop("Error: the measure_location.csv and pareto_genomes.txt files have different numbers of rows. Please check your input files - are they from the same model run?")
+  }
+  
+  
   print("check: read measure_location.csv...", quote = FALSE)
   
   #count the number of extra columns required

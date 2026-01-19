@@ -1,0 +1,34 @@
+config.help             Function to access external helps about
+                        configurations format or other related
+                        information
+config.list.merge       Merge list file (From config package),
+                        list.right will overwrite the element also
+                        existed in list.left
+config.sections.del     Delete sections in config, just do
+                        config[sections] <- NULL
+configr                 configr package
+convert.config          Covert configuration file from
+                        JSON/INI/YAML/TOML to JSON/INI/YAML
+eval.config             Read from the currently active configuration
+                        (JSON/INI/YAML/TOML be supported), 'retreiving
+                        either a single named value or all values as a
+                        config obj which have 'config', 'configtype',
+                        'file' 'property.
+eval.config.merge       Merge config parameter sets by sections.
+eval.config.sections    Get config file parameter sections
+fetch.config            Fetch configuration file and generate a merged
+                        list
+get.config.type         Get config file type retreiving json/ini/yaml
+                        or FALSE
+is.config.active        Test active configuration
+is.configfile.active    Test active configuration file
+is.ini.file             Function to check wheather file is INI format
+is.json.file            Function to check wheather file is JSON format
+is.toml.file            Function to check wheather file is TOML format
+is.yaml.file            Function to check wheather file is YAML format
+parse.extra             Parse the configuration var format, and replace
+                        it by extra.list values
+read.config             Read from the file (JSON/INI/YAML/TOML be
+                        supported), retreiving all values as a list.
+str2config              Parse configuration string to R list object.
+write.config            Write config in a file (JSON/YAML/INI)

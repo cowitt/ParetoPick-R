@@ -1,0 +1,16 @@
+# configr v0.3.5
+
+- add filename check
+
+# configr v0.3.4
+
+- new feature `global.vars.field` in parse.extra replacing global vars in configuration
+
+# configr v0.3.3
+
+- new function `str2config` to parse configuration string to R list object.
+- new function `config.help` to access external help resources, such as wiki, github, stackoverflow, etc.
+
+# configr v0.3.2.1
+
+- Support to write and convert json/ini/yaml to TOML format (Require python and python toml package).
