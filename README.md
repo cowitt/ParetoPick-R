@@ -196,6 +196,7 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
   * write/load full scenario run from previous uses
   * optimum number display in AHP
   * (OPTAIN-specific) remove superfluous priority file writing, replace hru.con requirement for lat lon 
+  * dynamic printing of progress during clustering
  
 Other
   * this Readme needs a better eplanation of the levels of functionality, aligned with the Data Preparation tab as a table
