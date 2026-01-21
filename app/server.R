@@ -2171,6 +2171,7 @@ server <- function(input, output, session) {
           }
         )
         
+        
         showModal(modalDialog(
           title = "Representative Solutions",
           fluidRow(
@@ -2567,22 +2568,19 @@ server <- function(input, output, session) {
     check_sliders(input_vals=list(input$ran1,input$ran2,input$ran3,input$ran4), 
                   default_vals= default_vals(),ranger = range_controlled())
     
-    # command to run the Python script
+    
+
+    # command to run the clustering
     if(input$pcamethod=="k-means") {
-      
-      clusterr = its_cluster_time(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmeans")
-      
-      output$cluster_happening <- renderPrint({   cat(clusterr$text)  })
-      output$cluster_table <- renderTable({  clusterr$table})
-      
+      clusterr = its_cluster_time(rv = pca_rv,corr_rv = write_corr_rv,var_path = clus_path(),ct = "kmeans")
       
     } else{
-     
-        clusterr = its_cluster_time( rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmedoid")
-        
-        output$cluster_happening <- renderPrint({ cat(clusterr$text)})
-        
+      clusterr = its_cluster_time(rv = pca_rv,corr_rv = write_corr_rv,var_path = clus_path(),ct = "kmedoid")
     }
+    
+    # output$cluster_happening <- renderPrint({ cat(clusterr$text)})
+    output$cluster_happening = renderText({clusterr$text})
+    output$cluster_table = renderTable({  clusterr$table }, striped = TRUE, hover = TRUE, bordered = TRUE, rownames = T, colnames = T)
     
     ## window with plots/Modaldialog
     
@@ -2606,7 +2604,8 @@ server <- function(input, output, session) {
         ggsave(file, plot = clusterr$plots$p2, width = 12, height = 8, dpi = 600)
       }
     )
-    
+    if(clusterr$cluster_success){
+      
     showModal(modalDialog(
       title = "Representative Solutions",
       fluidRow(
@@ -2624,10 +2623,8 @@ server <- function(input, output, session) {
       footer = modalButton("Close")
     ))
     
-    output$cluster_table = renderTable({
-      clusterr$table
-    }, striped = TRUE, hover = TRUE, bordered = TRUE, rownames = T, colnames = T)
     
+    }
     #### ===> end of Modal dialog
     
    
