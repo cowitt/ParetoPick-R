@@ -45,7 +45,7 @@ The tool can be used for model workflows that do not rely on SWAT+/CoMOLA, this 
 - **data**: User-supplied outputs from multi-objective optimisation
 - **output**: Analysis results and selected optima
 
-Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO [Strauch and Schürz, 2024](https://www.optain.eu/sites/default/files/delivrables/OPTAIN%20D5.1%20-%20Common%20optimisation%20protocol.pdf).
+Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793).
 
 
 ## 3.1 Files created during processing
