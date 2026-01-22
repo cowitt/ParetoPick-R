@@ -74,7 +74,29 @@ This design separates functionality, creating a modular software simpler to deve
 
 
 # 4. Required input files and data structure
+
+## 4.1 Input files for different Levels of functionalities
+
+There are four levels of functionality based on data availability.
+If all input data files are available from a coupled model workflow based on SWAT+ and CoMOLA or if all files can be reproduced, then all functionalities of ParetoPick-R (inlcuding both slider types, clustering and plotting) can be used. If you have not used the OPTAIN workflow, reproducing cluster_params.csv for the cluster functionality is straightforward, see below.
+The table below outlines the four levels of functionality, their differences and required input files. 
+
+| Level                 | Description                                          | Required Input Files                                   |                               
+|:----------------------|:-----------------------------------------------------|:-------------------------------------------------------|
+| Basic Functionality   | Visualisations & the AHP  <br> are working but without <br> measure sliders, clustering and <br>map plotting | Only the base file: pareto_fitness.txt <br> and the objective names|
+| Full Visualisation    | All sliders, Visualisations <br> & the AHP are working but neither <br> map plotting nor Clustering | pareto_fitness.txt <br> measure_location.csv <br> hru_in_optima.RDS |
+| Full Connection to Decision Space  | All sliders, maps & the AHP are working <br> only the clustering cannot be performed | pareto_fitness.txt <br> measure_location.csv <br> hru_in_optima.RDS <br> hru.con <br> hru.shp/.dbf/.prj/.shx |
+| Full Functionality - OPTAIN workflow  | All sliders, maps, the AHP & the <br> clustering are working | All files named Above. <br> The Data Prep has to run before the <br> Clustering can be performed |
+| Clustering - not OPTAIN* | All sliders, maps, the AHP & the <br> clustering are working | pareto_fitness.txt & cluster_params.csv <br> you do not necessarily have to provide shapefiles <br> this functionality works without spatial visualisations  |
+
+*For the clustering, a .csv file has to be prepared; each row should represent a Pareto optimal solution, column names can contain spaces and values should be numerical. In no particular order, the file should contain objective value columns as well as columns with information interesting for a cluster algorithm (such as decision space descriptors). The objective value columns have to align with the objective name Input in the tool. 
+
+This manual will be expanded with a detailed explanation of the steps required to reproduce the data, specifically: hru_in_optima.RDS and measure_location.csv required for the measure sliders and hru.shp and hru.con required for the mapping.
+
+
+## 4.2 Data structures
 (with example data structures from the Schwarzer Schöps catchment)
+
 1. __pareto_fitness.txt__
   * comma delineated, four columns representing the objectives that were maximised in optimisation
   * can be either comma separated OR space separated
@@ -150,23 +172,7 @@ id,	name,	nswrm,	obj_id
   * connection file created with SWAT+ Editor/SWATmeasR delineating the transport of water between HRUs, channel and aquifer
   * this file has to contain the columns: obj_id, obj_typ_1, area, frac_1
 
-## 4.1 Input files for reduced functionalities
 
-There are four levels of functionality based on data availability.
-If all input data files are available from a coupled model workflow based on SWAT+ and CoMOLA or if all files can be reproduced, then all functionalities of ParetoPick-R (inlcuding both slider types, clustering and plotting) can be used. If you have not used the OPTAIN workflow, reproducing cluster_params.csv for the cluster functionality is straightforward, see below.
-The table below outlines the four levels of functionality, their differences and required input files. 
-
-| Level                 | Description                                          | Required Input Files                                   |                               
-|:----------------------|:-----------------------------------------------------|:-------------------------------------------------------|
-| Basic Functionality   | Visualisations & the AHP  <br> are working but without <br> measure sliders, clustering and <br>map plotting | Only the base file: pareto_fitness.txt <br> and the objective names|
-| Full Visualisation    | All sliders, Visualisations <br> & the AHP are working but neither <br> map plotting nor Clustering | pareto_fitness.txt <br> measure_location.csv <br> hru_in_optima.RDS |
-| Full Connection to Decision Space  | All sliders, maps & the AHP are working <br> only the clustering cannot be performed | pareto_fitness.txt <br> measure_location.csv <br> hru_in_optima.RDS <br> hru.con <br> hru.shp/.dbf/.prj/.shx |
-| Full Functionality - OPTAIN workflow  | All sliders, maps, the AHP & the <br> clustering are working | All files named Above. <br> The Data Prep has to run before the <br> Clustering can be performed |
-| Clustering - not OPTAIN* | All sliders, maps, the AHP & the <br> clustering are working | pareto_fitness.txt & cluster_params.csv <br> you do not necessarily have to provide shapefiles <br> this functionality works without spatial visualisations  |
-
-*For the clustering, a .csv file has to be prepared; each row should represent a Pareto optimal solution, column names can contain spaces and values should be numerical. In no particular order, the file should contain objective value columns as well as columns with information interesting for a cluster algorithm (such as decision space descriptors). The objective value columns have to align with the objective name Input in the tool. 
-
-This manual will be expanded with a detailed explanation of the steps required to reproduce the data, specifically: hru_in_optima.RDS and measure_location.csv required for the measure sliders and hru.shp and hru.con required for the mapping.
 
 # 5. Process
 ### Data Preparation tab
@@ -197,6 +203,8 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
   * optimum number display in AHP
   * (OPTAIN-specific) remove superfluous priority file writing, replace hru.con requirement for lat lon 
   * dynamic printing of progress during clustering
+  * render measure_location.csv obsolete
+  * hru_in_optima.RDS as txt and with lookup
  
 Other
   * this Readme needs a better eplanation of the levels of functionality, aligned with the Data Preparation tab as a table
