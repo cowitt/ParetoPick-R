@@ -14,14 +14,11 @@ foo1 <- function(x) {
 }
 
 ## check if any packages are missing (not only here but also for external convert_optain)
-foo1(c("cluster","configr", "corrplot", "DT","fpc", "fs", "fst", 
-       "geosphere","geohashTools", "ggplot2","ggtext", "gridExtra",
-       "ini", "leaflet","leaflet.extras", "leafsync",
-       "mapview", "patchwork", "plotly",  "processx", 
-       "quanteda",  "reshape2", "RColorBrewer",   "reticulate",
-       "scales", "sf", "shiny", "shinycssloaders", "shinydashboard",
-       "shinyFiles", "shinyjs","shinythemes",  "shinyWidgets",  "sp",
-       "spdep",    "tidyverse",  "tmap",  "viridis", "webshot"))
+foo1(c("cluster", "corrplot", "DT","fpc", "fs", "fst", 
+       "geosphere",  "ggplot2",  "gridExtra", "ini", "leaflet","leaflet.extras", "leafsync",
+        "patchwork", "plotly",  "processx",  "quanteda", 
+       "scales", "sf", "shiny", "shinycssloaders", "shinydashboard", "shinyjs",
+     "shinyWidgets",  "sp", "spdep",  "tmap",  "viridis", "webshot"))
 
 if (!webshot::is_phantomjs_installed()) {
   webshot::install_phantomjs()
