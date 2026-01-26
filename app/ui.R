@@ -420,74 +420,37 @@ ui <-
 
                                ############################################################# Full Functionality
 
-                               hr(style = "border-top: 2px solid #03597F;"),  # Horizontal line with custom styling
-                               br(),
-                               div("2. File Upload - Full Functionality (OPTAIN)",
-                                   style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
-                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use the full functionality of this tool. (This is also possible if you can reproduce a number of files, see below). Please provide the following files. 
-                                 Their names have to align with what is given here:"),
-
-                               #file numbers are jumbled but just here
-                               div("1. pareto_genomes.txt",style = "text-align: left; font-size:115%"),
-                               div(style = "margin-top: -15px;",fileInput("file1", "", accept = ".txt", placeholder="")),
-
-                               div("2. hru.con",style = "text-align: left; font-size:115%"),
-                               div(style = "margin-top: -15px;",fileInput("file2", "", accept = ".con", placeholder="")),
-
-
-                               div("3. measure_location.csv",style = "text-align: left; font-size:115%"),
-                               div(style = "margin-top: -15px;",fileInput("file3", "", accept = ".csv", placeholder="")),
-
-
-                               div("4. rout_unit.con", style="text-align: left; font-size:115%"),
-                               div(style = "margin-top: -15px;",fileInput("file6", "", accept = ".con", placeholder="")),
-
-
-                               div("5. shapefile called \"hru\" with four components (.shp .dbf .prj and .shx)",style = "text-align: left; font-size:115%"),
-                               div(style = "margin-top: -15px;",fileInput("shapefile", "", multiple = TRUE, placeholder="",
-                                                                          accept = c(".shp", ".shx", ".dbf", ".prj"))),
-
-
-                               actionButton("files_avail", "Check Files"),
-
-
-                               uiOutput("fileStatusMessage"),
-
-
-                               hr(),
-
-                               div(id="runprep_show",p("Run Preparation Script when ready (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:150%; width: 150%;"),
-                                   actionButton("runprep", "Run Prep"))%>%hidden,
-                               uiOutput("scriptdp"),
+                              
                                ######################################################################## Full Visualisation
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
-                               div("3. File Upload - Clustering",
+                               div("2. File Upload - Clustering",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                
-                               p("If you have used another model workflow than OPTAIN and/or want to explore different cluster parameters but you can reproduce 
-                                 an .csv file following the Readme, you will be able to use the clustering, visualisations and AHP :"),
+                               p("If you can produce a .csv file with cluster parameters following the Readme, you will be able to use the clustering, visualisations and AHP :"),
                                
                                div(".csv file with cluster parameters", style = "text-align: left; font-size:115%"),
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
                                actionButton("save_cluster_no","Save file"),
                                ######################################################################## Clustering
                                hr(style = "border-top: 2px solid #03597F;"),
-                               div("4.1 File Upload - Decision space (not OPTAIN)",
+                               div("3.1 File Upload - Decision space",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
-                               p("If you have used another model workflow than OPTAIN but you can reproduce the following files according the Readme, you will be able to use all visualisations and the AHP including the measure sliders :"),
+                               p("Your multi-objective optimisation should provide you with an output that describes the genome/activation.
+                               You can upload this file here (as .txt) to be able to use all visualisations with both slider types. 
+                                 Please also provide a lookup table that translates how measures are coded, please refer to the Readme for an example."),
                                
-                               div("1. measure_location.csv",style = "text-align: left; font-size:115%"),
-                               div(style = "margin-top: -15px;",fileInput("measure_loc", "", accept = ".csv", placeholder="")),
+                               div("1. genome",style = "text-align: left; font-size:115%"),
+                               div(style = "margin-top: -15px;",fileInput("hru_activ", "", accept = ".txt", placeholder="")),
                                
-                               div("2. hru_in_optima.RDS",style = "text-align: left; font-size:115%"),
-                               div(style = "margin-top: -15px;",fileInput("hru_activ", "", accept = ".RDS", placeholder="")),
+                               div("2. lookup table",style = "text-align: left; font-size:115%"),
+                               div(style = "margin-top: -15px;",fileInput("measure_loc", "", accept = ".txt", placeholder="")),
                                
                                actionButton("save_full_vis", "Save files"),
                               
                                ######################################################################## Full 
 
-                               div("4.2 File Upload - Full Visualisation (not OPTAIN)",
+                               div("3.2 File Upload - Full Visualisation",
                                    style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
                                p("If additionally, you can reproduce 
                                  the following files according the Readme, you will be able to use all visualisations with both slider types and the AHP including the map plotting :"),
@@ -502,6 +465,48 @@ ui <-
                                actionButton("save_full_cd", "Save files"),
                                
                                #####################################################################################
+                               hr(style = "border-top: 2px solid #03597F;"),  # Horizontal line with custom styling
+                               br(),
+                               div("4. File Upload - Full Functionality (OPTAIN)",
+                                   style = "text-align: left; font-size:160%; font-weight: bold; margin-top: 10px;"),
+                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use the full functionality of this tool. (This is also possible if you can reproduce a number of files, see below). Please provide the following files. 
+                                 Their names have to align with what is given here:"),
+                               
+                               #file numbers are jumbled but just here
+                               div("1. pareto_genomes.txt",style = "text-align: left; font-size:115%"),
+                               div(style = "margin-top: -15px;",fileInput("file1", "", accept = ".txt", placeholder="")),
+                               
+                               div("2. hru.con",style = "text-align: left; font-size:115%"),
+                               div(style = "margin-top: -15px;",fileInput("file2", "", accept = ".con", placeholder="")),
+                               
+                               
+                               div("3. measure_location.csv",style = "text-align: left; font-size:115%"),
+                               div(style = "margin-top: -15px;",fileInput("file3", "", accept = ".csv", placeholder="")),
+                               
+                               
+                               div("4. rout_unit.con", style="text-align: left; font-size:115%"),
+                               div(style = "margin-top: -15px;",fileInput("file6", "", accept = ".con", placeholder="")),
+                               
+                               
+                               div("5. shapefile called \"hru\" with four components (.shp .dbf .prj and .shx)",style = "text-align: left; font-size:115%"),
+                               div(style = "margin-top: -15px;",fileInput("shapefile", "", multiple = TRUE, placeholder="",
+                                                                          accept = c(".shp", ".shx", ".dbf", ".prj"))),
+                               
+                               
+                               actionButton("files_avail", "Check Files"),
+                               
+                               
+                               uiOutput("fileStatusMessage"),
+                               
+                               
+                               hr(),
+                               
+                               div(id="runprep_show",p("Run Preparation Script when ready (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:150%; width: 150%;"),
+                                   actionButton("runprep", "Run Prep"))%>%hidden,
+                               uiOutput("scriptdp"),
+                               #####################################
+                               
+                               
                                br(),
                                hr(style = "border-top: 2px solid #03597F;"),  # Horizontal line with custom styling
                                br(),

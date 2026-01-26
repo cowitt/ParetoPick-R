@@ -1602,10 +1602,10 @@ server <- function(input, output, session) {
   
   #measure sliders, make hru_matcher/hru_ever and aep_100
   observe({
-    two_basis_meas = c(
-                       "../input/hru_in_optima.RDS", #hru_matcher()/hru_ever()
+    two_basis_meas = c( "../input/hru_in_optima.RDS", #hru_matcher()/hru_ever()
                        "../data/measure_location.csv")#aep_100()
     
+    ## OPTAIN case (hru_in_optima has been pulled from measure_location)
     if(all(file.exists(two_basis_meas))){
       hru= readRDS("../input/hru_in_optima.RDS")
      
@@ -1635,6 +1635,23 @@ server <- function(input, output, session) {
       
       aep_100_con(aep_100 %>% filter(hru %in% unique(hru_everact$id)))
       aep_100(aep_100)
+    }else if(file.exists("../input/hru_in_optima.RDS") && !file.exists("../data/measure_location.csv")){
+      ## non-OPTAIN case, measure_location.csv doesn't exist
+      hru= readRDS("../input/hru_in_optima.RDS")
+      colnames(hru) = gsub("^V", "", colnames(hru))
+      hru_matcher(as_tibble(hru))
+      hru_ever(hru_matcher() %>%pivot_longer(cols = -id, names_to = "optims", values_to = "measure") %>%
+                 group_by(id)%>%filter(!is.na(measure)))
+      
+      aep_100(hru_matcher %>% #pulls the number of measures out of hru_in_optima, every hru is its own aep
+        pivot_longer(cols =!"id",
+                     names_to = "variable", 
+                     values_to = "measure") %>%
+        filter(!is.na(measure)) %>%
+        select(hru = id, measure) %>%
+        mutate(name = paste(measure, hru, sep = "_")) %>%
+        select(name, measure, hru)%>%distinct())
+      aep_100_con(aep_100())
     }
   })
   
