@@ -1,26 +1,14 @@
 # 1. Background
-ParetoPick-R has been developed as part of the [OPTAIN Project's](https://www.optain.eu/) post processing. <img align = "right" width="150" height="200" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
+ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="150" height="200" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
 It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making for spatial optimisation.
-It provides a dashboard for the user to supply their own data (produced with the OPTAIN model workflow or other optimisation processes), visualise and explore it, alter a range of parameters and perform an Analytical Hierarchy Process.
+It provides a dashboard for the user to supply their own data, visualise and explore it, alter a range of parameters and perform an Analytical Hierarchy Process.
 
 The code allows the user to select variables to be analysed in a correlation analysis and a cluster algorithm. 
 
-## Cluster Variables for OPTAIN
-The algorithm considers five variables:
-1. **share_con** - ratio of area covered by measure to available area (per measure type) 
-2. **channel_frac** - fraction of measure HRU water draining directly to channel (per measure type) 
-3. **moran** - Moran's I (per measure type) 
-4. **linE** - ratio of structural to management options 
-5. **lu_share** - share of land use measures (buffer, grassslope, hedge) in available area
+ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.optain.eu/).
 
-ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
 
-Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
-
-### Alternative Clustering
-The tool can be used for model workflows that do not rely on SWAT+/CoMOLA, this requires to prepare and upload a simple .csv file containing variables for clustering. 
-
-# 2. Requirements
+# 2. Requirements for use in R/Rstudio
   * R version 4.4.2 or higher
   * package "promises" version 1.3.2 or higher
   * package "tmap" remove or upgrade to version 4.0+ to avoid conflicts
@@ -45,7 +33,7 @@ The tool can be used for model workflows that do not rely on SWAT+/CoMOLA, this 
 - **data**: User-supplied outputs from multi-objective optimisation
 - **output**: Analysis results and selected optima
 
-Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793).
+Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO, e.g. [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793).
 
 
 ## 3.1 Files created during processing
@@ -68,9 +56,7 @@ Each script serves a specific purpose in the software’s architecture:
 * server.R: This is the core backend functionality containing the server-side logic of the software. It captures user inputs, processes data, performs calculations and updates outputs. It relies on reactive expressions to efficiently manage data flow and calls external functions from functions.R alongside defining its own to create dynamic visualisations and tables.
 * functions.R: This script defines all custom functions used throughout the app. Most of them are used for formatting, data manipulation and plotting, while a few are for adapting reactive values for the clustering. The codebase is easier to maintain when consolidating the most important and frequently used function definitions.
 * global.R: This short script defines global paths and app settings. It installs and/or loads packages and sets constants such as file paths, default parameters and any configuration options that need to be accessible across the entire app. It's kept concise to focus on app-wide settings.
-* convert_optain.R: This script is needed for the desktop version only. It handles all data preparation. It reads the required data files and prepares the input data for the clustering analysis.
-
-This design separates functionality, creating a modular software simpler to develop and maintain. The convert_optain.R file maintains uniform data formatting for clustering across OPTAIN studies.
+* convert_optain.R: This script is needed for applications relying on a SWAT+/CoMOLA workflow only. It handles all data preparation. It reads the required data files and prepares the input data for the clustering analysis.
 
 
 # 4. Required input files and data structure
@@ -182,12 +168,27 @@ Users can identify measures requiring buffer visualisation in maps. (note that e
 
 **Note**: Changing objective names without a Hard Reset requires: (1) delete object_names.RDS, (2) manually update names in var_corr_par.csv, (3) update names in the newest kmeans/kmedoid output file.
 
-### Clusterin Tabs
+### Clustering Tabs
 Clustering (manually & default) generates two correlation_matrix.csv and kmeans/kmedoid_data_w_clusters_representativesolutions.csv  
 
 **Important**:
 1. Files are overwritten each clustering run—save externally if retention is needed
 2. Only the most recent kmeans/kmedoid output file is read; remove older versions to reprocess a previous result
+
+
+# 6. Pre-set Cluster Variables for SWAT+/CoMOLA/OPTAIN workflow
+
+The algorithm considers five variables:
+1. **share_con** - ratio of area covered by measure to available area (per measure type) 
+2. **channel_frac** - fraction of measure HRU water draining directly to channel (per measure type) 
+3. **moran** - Moran's I (per measure type) 
+4. **linE** - ratio of structural to management options 
+5. **lu_share** - share of land use measures (buffer, grassslope, hedge) in available area
+
+ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
+
+Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
+
 
 
 # 6. Assumptions and Planned Features
