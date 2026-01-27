@@ -77,7 +77,7 @@ The following files (their detailed structure is described in the next section) 
 
 3. __lookup_table.csv/.txt__
   * integer and string of respective decision space unit/measure/implementation
-  * in .txt rows with: "integer = string"
+  * in .txt rows with: "integer = string", note the space before and after the equal sign
   * in .csv: 2 columns without header/rownames: 1st the integer used in pareto_genomes.txt, 2nd the string denoting the respective measure
   * not required for automated workflow and MOO from SWAT+/CoMOLA
 
@@ -151,7 +151,7 @@ Users can identify measures requiring buffer visualisation in maps. (note that e
 **Note**: Changing objective names without a Hard Reset requires: (1) delete object_names.RDS, (2) manually update names in var_corr_par.csv/cluster_params.csv, (3) update names in the newest kmeans/kmedoid output file or delete these/this file/s.
 
 ### Clustering Tabs
-Clustering (manually & default) generates two correlation_matrix.csv and kmeans/kmedoid_data_w_clusters_representativesolutions.csv  
+Clustering (manually & default) generates two files - correlation_matrix.csv and kmeans/kmedoid_data_w_clusters_representativesolutions.csv  
 
 ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
 
@@ -189,13 +189,16 @@ Files supplied through by the user are stored in the data folder, these are the 
 (stored in input folder)
 
 * **object_names.RDS**: objective names
-* **var_corr_par.csv**: objectives and variables for analysis
 * **nswrm_priorities.RDS**: measures and implementation priority
 * **hru_in_optima.RDS**: HRU-optimum connections
 * **all_var.RDS**: all clustering variables
 * **pca_content.RDS**: variables after correlation filtering
 * **buffers.RDS**: measures requiring buffer for map visibility
 * **units.RDS**: unit definitions
+* **hru.con**: shapefile center for plot settings
+
+* **var_corr_par.csv**: objectives and variables for analysis (SWAT+/CoMOLA only)
+
 
 ## 4.2 Scripts
 ParetoPick-R is built using a standard structure for dividing shiny functionalities among scripts. The five R scripts contained in the app folder are: ui.R, app.R, server.R, global.R, and convert_optain.R.
@@ -222,9 +225,9 @@ The algorithm considers five variables:
 # 6. Assumptions and Planned Features
 
 ## 6.1 Current Limitations
+* hard-coded to FOUR objectives, less than four can be assessed by introducing a dummy variable but more is not possible atm
 * (OPTAIN - specific) convert_optain.R requires specific measure names; unmapped measures cannot be processed
-* AHP inconsistency calculation requires ≥3 sliders set to non-"Equal" values
-* Stratified variables (as sometimes happens through rounding) are not supported and there is no error message
+* Stratified variables (as sometimes happens through rounding) are not supported for sliders and there is no error message
 
 
 ## 6.2 Planned Features for Version 1.1.0
@@ -232,15 +235,11 @@ The algorithm considers five variables:
   * optimum number display in AHP
   * (OPTAIN-specific) remove superfluous priority file writing, replace hru.con requirement for lat lon 
   * dynamic printing of progress during clustering
-  * render measure_location.csv obsolete
-  * hru_in_optima.RDS as txt and with lookup
  
 Other
-  * this Readme needs a better eplanation of the levels of functionality, aligned with the Data Preparation tab as a table
   * dynamic regression line with R2 in scatter plot in red, other R2 in blue
   * optima selection via direct number input
   * add information on objectives on hover through link to glossary
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed
   * add a small spinner to the Check Data button to clarify that it takes a while
-  * description of reproducing data 
