@@ -17,17 +17,17 @@ ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.opta
 
 ## 2.2 Input files for different Levels of functionalities
 
-The following files (their detailed structure is described in the next section) can be uploaded in the Data Preparation tab, depending on which of these files are uploaded, different Level of functionalities become available:
-  * **pareto_fitness**: describes the performance of individual optimas across the four objectives. Providing this file and the objective names allows to use the Visualisation and AHP tab including objective Sliders.
-* **pareto_genomes** & **lookup table**: describes the Connection between decision and objective space. Providing both these files, additionally to pareto fitness, activates the decision space/measure sliders in Visualisation and AHP tab. If you would like to assess a more complex decision space with individual elements spanning several spatial elements and competing activation, you might consider reproducing a measure_location file and copying it to the data Folder
+The following files (their detailed structure is described in the next section) can be uploaded in the Data Preparation tab, depending on which of these files are uploaded, different level of functionalities become available:
+  * **pareto_fitness**: describes the performance of individual optimas across the four objectives. Providing this file and the objective names allows to use the Visualisation and AHP tab including the objective sliders.
+* **pareto_genomes** & **lookup table**: describes the connection between decision and objective space. Providing both these files, additionally to pareto fitness, activates the decision space/measure sliders in Visualisation and AHP tab. If you would like to assess a more complex decision space with individual elements spanning several spatial elements and competing activation, you might consider reproducing a measure_location file and copying it to the data Folder
 * **shapefile**: Spatial representation of the decision space, providing this four-part file allows to use the mapping functionalities of the app.
-* **cluster parameters**: contains pareto fitness and descriptors for each of the optima e.g. describing the decision space.
+* **cluster parameters**: contains pareto fitness and descriptors for each of the optima e.g. describing the decision space. The app allows to select the parameters from this file that shall be used in the clustering.
 
 ## 2.3 Data structures
 
 1. __pareto_fitness.txt__
   * float
-  * four columns are the objectives that were maximised in optimisation
+  * four columns that provide the objectives values
   * rows are the different Pareto optima
   * can be either comma separated OR space separated
   * EITHER
@@ -77,8 +77,8 @@ The following files (their detailed structure is described in the next section) 
 
 3. __lookup_table.csv/.txt__
   * integer and string of respective decision space unit/measure/implementation
-  * in .txt: <integer> = <string> 
-  * in .csv: 2 columns without Header/rownames: 1st the integer used in pareto_genomes.txt, 2nd the respective measure
+  * in .txt: integer = string
+  * in .csv: 2 columns without header/rownames: 1st the integer used in pareto_genomes.txt, 2nd the string denoting the respective measure
 
   * EXAMPLE .txt (from Crosslink)
 ```
@@ -95,7 +95,10 @@ The following files (their detailed structure is described in the next section) 
 
 
 4. __shapefile__ consisting of: shapefile.shp, shapefile.dbf, shapefile.prj, shapefile.shx
-  * shapfile used in SWAT+ modelling allowing the matching of HRU location and activation
+  * shapefile with column id 
+  * the id column has to align with pareto_genomes - the first row of genomes aligns with id 1 etc.
+  * the shapefile should contain valid simple feature geometries (points, lines, or polygons)
+  * any CRS is supported, data will be used with CRS EPSG:4326 (WGS84), consider reprojecting your data if needed
 
 5. __cluster-parameters.csv__
   * float

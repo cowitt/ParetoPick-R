@@ -553,9 +553,9 @@ server <- function(input, output, session) {
     
     
     ## Full Connection to Decision Space with reproduced hru.con and hru.shp files
-    observeEvent(input$hru_con, { file <- input$hru_con
-    if (is.null(file)) {return(NULL)}
-    file_hru_con(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
+    # observeEvent(input$hru_con, { file <- input$hru_con
+    # if (is.null(file)) {return(NULL)}
+    # file_hru_con(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
     
     observeEvent(input$shapefile_cd, { file <- input$shapefile_cd
     if (is.null(file)) {return(NULL)}
@@ -564,9 +564,9 @@ server <- function(input, output, session) {
     
     
     observeEvent(input$save_full_cd, {
-      save_hru_con <- file_hru_con()$name
-      path_hru_con <- file.path(save_dir, save_hru_con)
-      file.copy(file_hru_con()$path, path_hru_con, overwrite = TRUE)
+      # save_hru_con <- file_hru_con()$name
+      # path_hru_con <- file.path(save_dir, save_hru_con)
+      # file.copy(file_hru_con()$path, path_hru_con, overwrite = TRUE)
       
       
       shp_req = c(".shp",".shx", ".dbf", ".prj")
@@ -578,7 +578,11 @@ server <- function(input, output, session) {
       # copy shapefile components if none are missing
       if (length(missing_shapefile_components) == 0) {
         lapply(seq_along(shapefile_paths), function(i) {
-          save_path <- file.path(save_dir, shapefile_names[i])
+          
+          which_comp = sub(".*\\.","", shapefile_names[i])
+          hru_named = paste0("hru.",which_comp)
+          
+          save_path <- file.path(save_dir,hru_named)
           if (!file.exists(save_path)) {
             file.copy(shapefile_paths[i], save_path, overwrite = TRUE)
           }
