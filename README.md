@@ -1,4 +1,4 @@
-# 1. Background
+# 1. Introduction
 ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="150" height="200" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
 It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making for spatial optimisation.
 It provides a dashboard for the user to supply their own data, visualise and explore it, alter a range of parameters and perform clustering and an Analytical Hierarchy Process.
@@ -15,7 +15,7 @@ ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.opta
   * package "promises" version 1.3.2 or higher
   * package "tmap" remove or upgrade to version 4.0+ to avoid conflicts
 
-## 2.2 Input files for different Levels of functionalities
+## 2.2 Input files for different levels of functionalities
 
 The following files (their detailed structure is described in the next section) can be uploaded in the Data Preparation tab, depending on which of these files are uploaded, different level of functionalities become available:
   * **pareto_fitness**: describes the performance of individual optimas across the four objectives. Providing this file and the objective names allows to use the Visualisation and AHP tab including the objective sliders.
@@ -54,10 +54,10 @@ The following files (their detailed structure is described in the next section) 
   * columns are different Pareto optima (== rows in pareto_fitness.txt)
   * row numbers have to align with the id column of the shapefile (1st row == id 1)
   * all integers have to be included in lookup table below
-  * in SWAT+/CoMOLA: list delineating activated (2) and non-activated (1) hydrological response units (hrus)
+  * if using SWAT+/CoMOLA: list delineating activated (2) and non-activated (1) hydrological response units (hrus), aligning with measure_location.csv
   * can be either comma separated OR space separated
 
-** Please make sure that the files pareto_fitness.txt, pareto_genomes.txt, lookup table and shape files align! **
+** Please make sure that pareto_fitness.txt, pareto_genomes.txt, lookup table and shape files align! **
 
   * EITHER
 ```
@@ -77,10 +77,11 @@ The following files (their detailed structure is described in the next section) 
 
 3. __lookup_table.csv/.txt__
   * integer and string of respective decision space unit/measure/implementation
-  * in .txt: integer = string
+  * in .txt rows with: "integer = string"
   * in .csv: 2 columns without header/rownames: 1st the integer used in pareto_genomes.txt, 2nd the string denoting the respective measure
+  * not required for automated workflow and MOO from SWAT+/CoMOLA
 
-  * EXAMPLE .txt (from Crosslink)
+  * EXAMPLE .txt (example from the [Crosslink Project](https://www.biodiversa.eu/2022/10/31/crosslink/))
 ```
 1 = Scen0
 2 = Scen20
@@ -94,18 +95,18 @@ The following files (their detailed structure is described in the next section) 
 ```
 
 
-4. __shapefile__ consisting of: shapefile.shp, shapefile.dbf, shapefile.prj, shapefile.shx
-  * shapefile with column id 
-  * the id column has to align with pareto_genomes - the first row of genomes aligns with id 1 etc.
+4. __shapefile__ consisting of: *.shp, *.dbf, *.prj, *.shx
+  * has to contain an id column 
+  * the id column has to align with pareto_genomes - the first row of the genome codes the activation of id 1
   * the shapefile should contain valid simple feature geometries (points, lines, or polygons)
-  * any CRS is supported, data will be used with CRS EPSG:4326 (WGS84), consider reprojecting your data if needed
+  * any CRS is supported, data will be used with CRS EPSG:4326 (WGS84), consider reprojecting your data
 
 5. __cluster-parameters.csv__
   * float
   * rows are Pareto optima
   * columns should contain the Pareto fitness and cluster variables
   * column names can contain spaces and the column names of pareto fitness have to align with what is provided in the Data Preparation tab
-
+  * optional for automated workflow and MOO from SWAT+/CoMOLA
 5. __sq_fitness.txt__
   * optional
   * four values indicating the status quo of objectives, must have same order as pareto_fitness.txt
@@ -140,21 +141,26 @@ id,	name,	nswrm,	obj_id
 
 # 3. Process
 ### Data Preparation tab
-Allows to either only provide pareto_fitness.txt (optionally also sq_fitness.txt) and the objective names, to provide all required datasets and perform the Data Preparation or to provide subsets of the required data that you reproduce following the OPTAIN templates. See previous section for Details.
+The one file that has to be uploaded to allow any functionality is a file describing the Pareto fitness. Also, the objective names have to be provided, these have to aligning with the four columns in this file. Further functionalities become available when other files are uploaded. Please note that the files are only uploaded once the individual upload buttons are pressed.
 
+For users of a SWAT+/CoMOLA workflow, an automated cluster and input data processing is available (see [section 5](#5-pre-set-cluster-variables-for-swatcomolaoptain-workflow) of this Readme).
+
+**Visualisation Options**
 Users can identify measures requiring buffer visualisation in maps. (note that elements in the downloaded maps tend to be a bit smaller than shown in the app).
 
-**Note**: Changing objective names without a Hard Reset requires: (1) delete object_names.RDS, (2) manually update names in var_corr_par.csv, (3) update names in the newest kmeans/kmedoid output file.
+**Note**: Changing objective names without a Hard Reset requires: (1) delete object_names.RDS, (2) manually update names in var_corr_par.csv/cluster_params.csv, (3) update names in the newest kmeans/kmedoid output file or delete these/this file/s.
 
 ### Clustering Tabs
 Clustering (manually & default) generates two correlation_matrix.csv and kmeans/kmedoid_data_w_clusters_representativesolutions.csv  
 
+ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
+
+Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
+
+
 **Important**:
 1. Files are overwritten each clustering run—save externally if retention is needed
 2. Only the most recent kmeans/kmedoid output file is read; remove older versions to reprocess a previous result
-
-
-
 
 
 # 4. Folder and File Structure
@@ -176,7 +182,7 @@ Clustering (manually & default) generates two correlation_matrix.csv and kmeans/
 - **data**: User-supplied outputs from multi-objective optimisation
 - **output**: Analysis results and selected optima
 
-Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO, e.g. [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793).
+Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO, e.g. from SWAT+/CoMOLA [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793).
 
 
 ## 4.1 Files created during processing
@@ -211,11 +217,6 @@ The algorithm considers five variables:
 3. **moran** - Moran's I (per measure type) 
 4. **linE** - ratio of structural to management options 
 5. **lu_share** - share of land use measures (buffer, grassslope, hedge) in available area
-
-ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
-
-Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
-
 
 
 # 6. Assumptions and Planned Features
