@@ -11,7 +11,7 @@ server <- function(input, output, session) {
   file_data2 <- reactiveVal(NULL)
   file_data3 <- reactiveVal(NULL)
   file_data6 <- reactiveVal(NULL)
-  file_measure_loc = reactiveVal(NULL)
+  file_lookup_loc = reactiveVal(NULL)
   file_hru_activ = reactiveVal(NULL)
   file_hru_con = reactiveVal(NULL)
   file_shapefile_cd = reactiveVal(NULL)
@@ -238,7 +238,7 @@ server <- function(input, output, session) {
     observeEvent(input$save_paretofit,{
       req(par_fiti())
       save_par_fiti <- par_fiti()$name
-      save_path_par_fiti <- file.path(save_dir, save_par_fiti)
+      save_path_par_fiti <- file.path(save_dir, "pareto_fitness.txt")
       file.copy(par_fiti()$path, save_path_par_fiti, overwrite = TRUE) #copy pareto_fitness.txt
       
      
@@ -413,9 +413,9 @@ server <- function(input, output, session) {
     })
     
     ## check if required files exist
-    observeEvent(input$file1, { file <- input$file1
-    if (is.null(file)) {return(NULL)}
-    file_data1(list(path = file$datapath, name = file$name))})
+    # observeEvent(input$file1, { file <- input$file1
+    # if (is.null(file)) {return(NULL)}
+    # file_data1(list(path = file$datapath, name = file$name))})
     
     observeEvent(input$file2, { file <- input$file2
     if (is.null(file)) {return(NULL)}
@@ -429,47 +429,48 @@ server <- function(input, output, session) {
     if (is.null(file)) {return(NULL)}
     file_data6(list(path = file$datapath, name = file$name))})
     
-    observeEvent(input$shapefile, { file <- input$shapefile
-    if (is.null(file)) {return(NULL)}
-    shapefile(list(path = file$datapath, name = file$name))})
+    # observeEvent(input$shapefile, { file <- input$shapefile
+    # if (is.null(file)) {return(NULL)}
+    # shapefile(list(path = file$datapath, name = file$name))})
     
     
     observeEvent(input$files_avail,{
-      save_filename1 <- file_data1()$name
-      save_filename2 <- file_data2()$name
+      # save_filename1 <- file_data1()$name
+      # save_filename2 <- file_data2()$name
       save_filename3 <- file_data3()$name
       save_filename6 <- file_data6()$name
 
-      save_path1 <- file.path(save_dir, save_filename1)
-      save_path2 <- file.path(save_dir, save_filename2)
+      # save_path1 <- file.path(save_dir, save_filename1)
+      # save_path2 <- file.path(save_dir, save_filename2)
       save_path3 <- file.path(save_dir, save_filename3)
       save_path6 <- file.path(save_dir, save_filename6)
       
       
-      file.copy(file_data1()$path, save_path1, overwrite = TRUE)
-      file.copy(file_data2()$path, save_path2, overwrite = TRUE)
+      # file.copy(file_data1()$path, save_path1, overwrite = TRUE)
+      # file.copy(file_data2()$path, save_path2, overwrite = TRUE)
       file.copy(file_data3()$path, save_path3, overwrite = TRUE)
       file.copy(file_data6()$path, save_path6, overwrite = TRUE)
       
       #cm shapefile
-      shp_req = c(".shp",".shx", ".dbf", ".prj")
-      shapefile <- input$shapefile
-      shapefile_names <- shapefile$name
-      shapefile_paths <- shapefile$datapath
-      missing_shapefile_components <- shp_req[!sapply(shp_req, function(ext) any(grepl(paste0(ext, "$"), shapefile_names)))]
-      
-      # copy shapefile components if none are missing
-      if (length(missing_shapefile_components) == 0) {
-        lapply(seq_along(shapefile_paths), function(i) {
-          save_path <- file.path(save_dir, shapefile_names[i])
-          if (!file.exists(save_path)) {
-            file.copy(shapefile_paths[i], save_path, overwrite = TRUE)
-          }
-        })
-      }
+      # shp_req = c(".shp",".shx", ".dbf", ".prj")
+      # shapefile <- input$shapefile
+      # shapefile_names <- shapefile$name
+      # shapefile_paths <- shapefile$datapath
+      # missing_shapefile_components <- shp_req[!sapply(shp_req, function(ext) any(grepl(paste0(ext, "$"), shapefile_names)))]
+      # 
+      # # copy shapefile components if none are missing
+      # if (length(missing_shapefile_components) == 0) {
+      #   lapply(seq_along(shapefile_paths), function(i) {
+      #     save_path <- file.path(save_dir, shapefile_names[i])
+      #     if (!file.exists(save_path)) {
+      #       file.copy(shapefile_paths[i], save_path, overwrite = TRUE)
+      #     }
+      #   })
+      # }
       
   
-      required_files <- c("../data/pareto_genomes.txt","../data/hru.con",   "../data/measure_location.csv",
+      required_files <- c("../data/pareto_genomes.txt",#"../data/hru.con",
+                          "../data/measure_location.csv",
                           "../data/hru.shp","../data/hru.shx", "../data/hru.dbf", "../data/hru.prj",
                           "../data/rout_unit.con",
                           "../data/pareto_fitness.txt")
@@ -511,29 +512,59 @@ server <- function(input, output, session) {
     } })
   
     
-    ## Full Visualisation with reproduced measure_location.csv and hru_in_optima.RDS
+    ## Full Visualisation 
     observeEvent(input$measure_loc, { file <- input$measure_loc
-    if (is.null(file)) {return(NULL)}
-    file_measure_loc(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
+    if (is.null(file)) {file_lookup_loc(NULL)}#lookup table
+    file_lookup_loc(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
     
     
     observeEvent(input$hru_activ, { file <- input$hru_activ
-    if (is.null(file)) {return(NULL)}
+    if (is.null(file)) {file_hru_activ(NULL)}
     file_hru_activ(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
     
     
     observeEvent(input$save_full_vis,{
       
-      # measure_location.csv
-      save_measure_loc <- file_measure_loc()$name
-      save_path_measure_loc <- file.path(save_dir, save_measure_loc)
-      file.copy(file_measure_loc()$path, save_path_measure_loc, overwrite = TRUE)
-      
-      # hru_in_optima.RDS
+      # genomes
       save_hru_activ <- file_hru_activ()$name
-      save_path_hru_activ <- file.path(input_dir, save_hru_activ)
-      file.copy(file_hru_activ()$path, save_path_hru_activ, overwrite = TRUE)
+      save_path_hru_activ <- file.path(save_dir, "pareto_genomes.txt")
       
+      if (is.null(file_hru_activ())) {
+        #needed in covert_optain.R
+        file.copy(file_hru_activ()$path, save_path_hru_activ, overwrite = TRUE)
+      }else{
+        shinyjs::show("spinner_hru_in_optima")
+        
+        ##create hru_in_optima.RDS
+        #not copied, just used
+        acti = read.table(file_hru_activ()$path,sep = deli(file_hru_activ()$path))
+        # lookup table
+        lookup_ext = sub(".*\\.", "", file_lookup_loc()$name)
+        save_path_lookup_loc <- file.path(save_dir, paste0("lookup_table.", lookup_ext))
+        file.copy(file_lookup_loc()$path, save_path_lookup_loc, overwrite = TRUE)
+        
+        ## missing error messages
+        # too few colums, missing codes
+        if (lookup_ext == "csv") {
+          lookup_table = read.csv(save_path_lookup_loc, stringsAsFactors = FALSE, header = F)%>%
+            rename(code = V1, measure = V2)
+        } else if (lookup_ext == "txt") {
+          lookup_table = read.table(save_path_lookup_loc, stringsAsFactors = FALSE) %>%
+            select(V1, V3) %>%
+            rename(code = V1, measure = V3)
+        }
+        
+        genome_filled <- acti %>%
+          mutate(across(starts_with("V"), 
+                        ~ lookup_table$measure[match(., lookup_table$code)]))%>%
+          mutate(id = row_number())
+        
+        saveRDS(genome_filled, file = "../input/hru_in_optima.RDS")
+        #remove lookup table
+        file.remove(save_path_lookup_loc); rm(genome_filled)
+        shinyjs::hide("spinner_hru_in_optima")
+        
+      }
       shinyjs::refresh()
       
     })
@@ -564,6 +595,7 @@ server <- function(input, output, session) {
     
     
     observeEvent(input$save_full_cd, {
+      shinyjs::show("spinner_hru_con")
       # save_hru_con <- file_hru_con()$name
       # path_hru_con <- file.path(save_dir, save_hru_con)
       # file.copy(file_hru_con()$path, path_hru_con, overwrite = TRUE)
@@ -588,6 +620,10 @@ server <- function(input, output, session) {
           }
         })
       }
+      
+      #write hru_con from shapefile
+      
+      shinyjs::hide("spinner_hru_con")
       shinyjs::refresh()
     })
     
@@ -1197,7 +1233,7 @@ server <- function(input, output, session) {
            
           }
         
-        if(file.exists("../data/hru.con")){lalo(plt_latlon(conpath = "../data/hru.con"))}
+        if(file.exists("../input/hru.con")){lalo(plt_latlon(conpath = "../input/hru.con"))}
          needs_buffer(pull_buffer())
       
          output$plt_play_measure = renderUI({ uiOutput("actual_plt_play_measure")#map
@@ -1650,12 +1686,13 @@ server <- function(input, output, session) {
       aep_100(hru_matcher() %>% #pulls the number of measures out of hru_in_optima, every hru is its own aep
         pivot_longer(cols =!"id",
                      names_to = "variable", 
-                     values_to = "measure") %>%
-        filter(!is.na(measure)) %>%
-        select(hru = id, measure) %>%
-        mutate(name = paste(measure, hru, sep = "_")) %>%
-        select(name, measure, hru)%>%distinct())
+                     values_to = "nswrm") %>%
+        filter(!is.na(nswrm)) %>%
+        select(hru = id, nswrm) %>%
+        mutate(name = paste(nswrm, hru, sep = "_")) %>%
+        select(name, nswrm, hru)%>%distinct())
       aep_100_con(aep_100()) #path dependency for OPTAIN (not ideal)
+      
     }
   })
   
@@ -1689,7 +1726,7 @@ server <- function(input, output, session) {
   
   observe({
     map_files = c(
-      "../data/hru.con", #only for lalo()
+      # "../input/hru.con", #only for lalo()
       "../data/hru.shp",#for cm() and cmf()
       "../data/hru.shx",#for cm() and cmf()
       "../data/hru.dbf",#for cm() and cmf()
@@ -1717,7 +1754,7 @@ server <- function(input, output, session) {
         buffers(st_transform(buffy, crs = st_crs(bc))) #all buffers ever required
       }else{buffers(NULL)}
 
-      if(file.exists("../data/hru.con")){lalo(plt_latlon(conpath = "../data/hru.con"))}
+      if(file.exists("../input/hru.con")){lalo(plt_latlon(conpath = "../input/hru.con"))}
       
       
       output$freq_map_play = renderUI({ play_freq()  })
@@ -2242,7 +2279,7 @@ server <- function(input, output, session) {
       corr_file_check = function(){
         required_files <- c(
           "../data/pareto_genomes.txt",
-          "../data/hru.con",
+          # "../input/hru.con", #implied if the shapefile is available
           "../data/measure_location.csv",
           "../data/hru.shp",
           "../data/hru.shx",
@@ -3148,7 +3185,7 @@ server <- function(input, output, session) {
     output$tabtext = renderText({HTML("You can select up to 12 optima and compare the implementation of measures in the catchment.")})
     
    
-    if(file.exists("../data/hru.con")){lalo(plt_latlon(conpath = "../data/hru.con"))}
+    if(file.exists("../input/hru.con")){lalo(plt_latlon(conpath = "../input/hru.con"))}
    
   })
   
@@ -4006,7 +4043,7 @@ server <- function(input, output, session) {
     }
     boo(bo$optimum) #for single_meas_fun
     
-    if(file.exists("../data/hru.con")){lalo(plt_latlon(conpath = "../data/hru.con"))}
+    if(file.exists("../input/hru.con")){lalo(plt_latlon(conpath = "../input/hru.con"))}
      needs_buffer(pull_buffer())
 
      output$plt_bo_measure = renderUI({single_meas_fun()})
@@ -4036,7 +4073,7 @@ server <- function(input, output, session) {
     }
     boo(bo$optimum) #for single_meas_fun
     
-    if(file.exists("../data/hru.con")){lalo(plt_latlon(conpath = "../data/hru.con"))}
+    if(file.exists("../input/hru.con")){lalo(plt_latlon(conpath = "../input/hru.con"))}
     needs_buffer(pull_buffer())
     
     
