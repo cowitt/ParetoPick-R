@@ -1230,7 +1230,7 @@ pull_buffer = function(){
 
 ## get map extent
 plt_latlon = function(conpath){
-  conny = read.table(conpath,skip = 1,header = T)
+  conny = read.table(conpath,skip = 0,header = T)
   lon_map = mean(conny$lon)
   lat_map = mean(conny$lat)
   return(c(lat_map,lon_map))
@@ -1246,7 +1246,7 @@ color_meas_most <- function(x) {
 }
 
 ## plot frequency
-plt_freq = function(data, lo, la, buffers, remaining, dispal = pal, 
+plt_freq = function(data, lo, la, buffers = NULL, remaining, dispal = pal, 
                     mes = mes, legend = TRUE, basemap = basemap ) {
   
   data = left_join(data, remaining, by = c("id"))%>%st_make_valid() #only those with highest priority
@@ -1401,7 +1401,7 @@ pull_shp_new = function(layername = "hru", hru_in_opt_path="../input/hru_in_opti
       cm <- st_sf(cm, geometry = sfc_mixed)
 
     }
-    cm = cm %>% filter(id %in% hru$id) %>% select(id, name, geometry) %>%st_make_valid()
+    cm = cm %>% filter(id %in% hru$id) %>% select(id, geometry) %>%st_make_valid()
     
     cm_utm <-  st_transform(cm, crs = 32633) # UTM zone 33N
     cuffy <-st_buffer(cm_utm,0.0)

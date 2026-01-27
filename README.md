@@ -233,7 +233,6 @@ The algorithm considers five variables:
 ## 6.2 Planned Features for Version 1.1.0
   * write/load full scenario run from previous uses
   * optimum number display in AHP
-  * (OPTAIN-specific) remove superfluous priority file writing, replace hru.con requirement for lat lon 
   * dynamic printing of progress during clustering
  
 Other

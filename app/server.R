@@ -556,7 +556,7 @@ server <- function(input, output, session) {
         
         genome_filled <- acti %>%
           mutate(across(starts_with("V"), 
-                        ~ lookup_table$measure[match(., lookup_table$code)]))%>%
+                        ~ lookup_table$measure[match(., lookup_table$code)])) %>%
           mutate(id = row_number())
         
         saveRDS(genome_filled, file = "../input/hru_in_optima.RDS")
@@ -622,6 +622,12 @@ server <- function(input, output, session) {
       }
       
       #write hru_con from shapefile
+      shp <- st_read(file.path(save_dir, "hru.shp"), quiet = TRUE)
+      shp_latlon <- st_transform(shp, crs = 4326) %>% 
+        select(area, id, lat, lon)
+      
+      write.table(st_drop_geometry(shp_latlon),file = "../input/hru.con", row.names = FALSE, col.names = TRUE)
+      
       
       shinyjs::hide("spinner_hru_con")
       shinyjs::refresh()
@@ -1224,7 +1230,7 @@ server <- function(input, output, session) {
       
       map_plotted(TRUE)
       eve = fit()%>% rownames_to_column("optimum")
-
+      
         # measure plot prep 
           if (file.exists("../input/hru_in_optima.RDS")) {
             
