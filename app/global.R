@@ -18,7 +18,7 @@ foo1(c("cluster", "corrplot", "DT","fpc", "fs", "fst",
        "geosphere",  "ggplot2",  "gridExtra", "ini", "leaflet","leaflet.extras", "leafsync",
         "patchwork", "plotly",  "processx",  "quanteda", 
        "scales", "sf", "shiny", "shinycssloaders", "shinydashboard", "shinyjs",
-     "shinyWidgets",  "sp", "spdep",  "tmap",  "viridis", "webshot"))
+     "shinyWidgets",  "sp", "spdep",  "tmap","tidyverse",  "viridis", "webshot"))#Docker needs webshot2, only works in Chrome
 
 if (!webshot::is_phantomjs_installed()) {
   webshot::install_phantomjs()
