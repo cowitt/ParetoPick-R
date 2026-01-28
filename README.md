@@ -25,7 +25,7 @@ The following files (their detailed structure is described in the next section) 
 
 ## 2.3 Data structures
 
-1. __pareto_fitness.txt__
+1. __pareto_fitness.txt__ <a name="fitness-structure"></a>
   * float
   * four columns that provide the objectives values
   * rows are the different Pareto optima
@@ -49,7 +49,7 @@ The following files (their detailed structure is described in the next section) 
 -6681.0, -0.054, 59125.122, -67853.89737
 -6765.0, -0.053, 59099.121, -25536.89511
 ```
-2. __pareto_genomes.txt__
+2. __pareto_genomes.txt__ <a name="genome-structure"></a>
   * integer from 1 to 99
   * columns are different Pareto optima (== rows in pareto_fitness.txt)
   * row numbers have to align with the id column of the shapefile (1st row == id 1)
@@ -75,7 +75,7 @@ The following files (their detailed structure is described in the next section) 
 ```
 
 
-3. __lookup_table.csv/.txt__
+3. __lookup_table.csv/.txt__<a name="lookup-structure"></a>
   * integer and string of respective decision space unit/measure/implementation
   * in .txt rows with: "integer = string", note the space before and after the equal sign
   * in .csv: 2 columns without header/rownames: 1st the integer used in pareto_genomes.txt, 2nd the string denoting the respective measure
@@ -95,19 +95,19 @@ The following files (their detailed structure is described in the next section) 
 ```
 
 
-4. __shapefile__ consisting of: *.shp, *.dbf, *.prj, *.shx
+4. __shapefile__ consisting of: *.shp, *.dbf, *.prj, *.shx <a name="shapefile-structure"></a>
   * has to contain an id column 
   * the id column has to align with pareto_genomes - the first row of the genome codes the activation of id 1
   * the shapefile should contain valid simple feature geometries (points, lines, or polygons)
   * any CRS is supported, data will be used with CRS EPSG:4326 (WGS84), consider reprojecting your data
 
-5. __cluster-parameters.csv__
+5. __cluster-parameters.csv__<a name="cluster-structure"></a>
   * float
   * rows are Pareto optima
   * columns should contain the Pareto fitness and cluster variables
   * column names can contain spaces and the column names of pareto fitness have to align with what is provided in the Data Preparation tab
   * optional for automated workflow and MOO from SWAT+/CoMOLA
-5. __sq_fitness.txt__
+5. __sq_fitness.txt__<a name="sq-structure"></a>
   * optional
   * four values indicating the status quo of objectives, must have same order as pareto_fitness.txt
   * can be either comma separated OR space separated
@@ -121,12 +121,12 @@ The following files (their detailed structure is described in the next section) 
 
 ```
 
-6. __rout_unit.con__
+6. __rout_unit.con__<a name="rout-structure"></a>
   * only for automated workflow and MOO from SWAT+/CoMOLA
   * connection file created with SWAT+ Editor/SWATmeasR delineating the transport of water between HRUs, channel and aquifer
   * this file has to contain the columns: obj_id, obj_typ_1, area, frac_1
 
-7. __measure_location.csv__
+7. __measure_location.csv__<a name="msrs-structure"></a>
   * only for automated workflow and MOO from SWAT+/CoMOLA
   * csv - comma separated table with four columns: id, name, nswrm, obj_id
 ```
@@ -141,6 +141,8 @@ id,	name,	nswrm,	obj_id
 
 # 3. Process
 ### Data Preparation tab
+Unless otherwise specified, you may use any file name. However, ensure the file is in the correct format.
+
 The one file that has to be uploaded to allow any functionality is a file describing the Pareto fitness. Also, the objective names have to be provided, these have to aligning with the four columns in this file. Further functionalities become available when other files are uploaded. Please note that the files are only uploaded once the individual upload buttons are pressed.
 
 For users of a SWAT+/CoMOLA workflow, an automated cluster and input data processing is available (see [section 5](#5-pre-set-cluster-variables-for-swatcomolaoptain-workflow) of this Readme).
@@ -231,6 +233,7 @@ The algorithm considers five variables:
 
 
 ## 6.2 Planned Features for Version 1.1.0
+  * Data Prep: blue messages on capabilities with current upload
   * write/load full scenario run from previous uses
   * optimum number display in AHP
   * dynamic printing of progress during clustering
