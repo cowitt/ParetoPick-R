@@ -270,15 +270,15 @@ ui <-
                                   }
                                   
                                   .modal-dialog {
-      width: 95vw !important;
-      max-width: 95vw !important;
-    }
-    .modal-body {
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-                                  
-                                   ')),
+                                   width: 95vw !important;
+                                   max-width: 95vw !important;
+                                   }
+                                  .modal-body {
+                                   max-height: 85vh;
+                                   overflow-y: auto;
+                                  }
+                                 
+                                 ')),
 
                      useShinyjs(),
                    tags$script(src = "iframeResizer.contentWindow.min.js"),
@@ -363,8 +363,9 @@ ui <-
                        h2("Data Preparation", style = "margin-top: 0; padding-top: 0;"),
                        
                              wellPanel(  p(HTML("This tab requires you to provide the optimisation outputs.
-                                                 Please refer to the Readme for examples of their individual structures.
-                                                 You can provide a limited set of outputs to use a limited set of functionalities (see the Readme for details). <strong>All functionalities require you to upload the file named under 1</strong>.
+                                                 <br/>Clicking on the file name opens the Readme with examples of file structures.
+                                                 You can provide a limited set of outputs to use a limited set of functionalities (see the Readme for details).
+                                                 <br/><strong>All functionalities require you to upload the file describing the Pareto fitness.</strong>.
                                                  "))),
 
                              mainPanel(width = 12,
@@ -372,48 +373,74 @@ ui <-
                                          style = "width: 100%;margin: 0 auto; text-align: justify; font-size:140%;",# This describes style for all that don't specify themselves
                                div("1. File Upload - Basic Functionality",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
-                               p("Please provide pareto_fitness.txt as well as the objective names. These two are sufficient to run the Visualisations and the AHP (without the measure sliders)."),
+                               p("Please provide a .txt file with the Pareto fitness values as well as the objective names. These two are sufficient to run the Visualisations and the AHP (without the measure sliders)."),
                                # div(id="fitness_avail",
-
-                               div("pareto_fitness.txt",style = "text-align: left; font-size:115%;",
+                               div(
+                                 tags$a("Pareto fitness", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#fitness-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
                                    div(style = "margin-top: -15px;",
                                        fileInput("par_fit", "", accept = ".txt", placeholder =""),
-                               div(style= "vertical-align: top; margin-top: -15px;",actionButton("save_paretofit","Save")))),
-
-
-                               br(),
-                               p("If you would like to plot the status quo, sq_fitness.txt is also required:"),
-                               div("sq_fitness.txt (optional)",style = "text-align: left; font-size:115%;",
-                                   div(style = "margin-top: -15px;",fileInput("sq_in", "", accept = ".txt", placeholder=""),
-
-                                   div(style= "vertical-align: top; margin-top: -15px;",actionButton("save_sq_in","Save")))),
+                               div(style= "vertical-align: top; margin-top: -15px;",actionButton("save_paretofit","Save"))),
 
                                br(),
-                               div( "The objective names should align with the first four columns of the pareto_fitness.txt file:",
-                                 style = "text-align: left; font-size:115%",
+                               div( "The objective names should be ordered like the four columns of the Pareto fitness file:",
+                                 style = "text-align: left; font-size:100%",
                                  div("*Please note, you can only change these names later if you perform a Hard Reset below or by following the procedure described in the Readme.",
                                      style="text-align: left; font-size:70%;"),
-                                 textInput("short1", "Objective 1\n (Column 1)"),
-                                 textInput("short2", "Objective 2\n (Column 2)"),
-                                 textInput("short3", "Objective 3\n (Column 3)"),
-                                 textInput("short4", "Objective 4\n (Column 4)"),
-                                 actionButton("save_par_fiti", "Save")),
+                                 div(
+                                   tags$style(HTML("
+                                     .custom-label label {
+                                       color: blue;
+                                       font-weight: normal;
+                                     } ")),
+                                   div(class = "custom-label",
+                                       textInput("short1", "Objective 1\n (Column 1)"),
+                                       textInput("short2", "Objective 2\n (Column 2)"),
+                                       textInput("short3", "Objective 3\n (Column 3)"),
+                                       textInput("short4", "Objective 4\n (Column 4)")
+                                   ),
+                                   actionButton("save_par_fiti", "Save")
+                                 )),
 
-
+                               br(),
+                               p("If you would like to plot the status quo, a .txt with the objective values of the status quo is also required:"),
+                                 div(
+                                 tags$a("status quo fitness (optional)", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#sq-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
+                               div(style = "margin-top: -15px;",fileInput("sq_in", "", accept = ".txt", placeholder=""),
+                                       
+                                       div(style= "vertical-align: top; margin-top: -15px;",actionButton("save_sq_in","Save"))),
                                br(),
 
                                div(id="units",
                                    "Optionally, you can supply the objectives' units, they can be changed at any time:",
-                                   style= "text-align: left; font-size:115%",
-                                   textInput("unit1","unit Objective 1", value = ""),
-                                   textInput("unit2","unit Objective 2", value = ""),
-                                   textInput("unit3","unit Objective 3", value = ""),
-                                   textInput("unit4","unit Objective 4", value = ""),
-                                   actionButton("save_unit","Save")),
-
+                                   style= "text-align: left; font-size:100%",
+                                   
+                               div(
+                                 tags$style(HTML("
+                                     .custom-label label {
+                                       color: blue;
+                                       font-weight: normal;
+                                     } ")),
+                                 div(class = "custom-label",
+                                     textInput("unit1","unit objective 1 (optional)", value = ""),
+                                     textInput("unit2","unit objective 2 (optional)", value = ""),
+                                     textInput("unit3","unit objective 3 (optional)", value = ""),
+                                     textInput("unit4","unit objective 4 (optional)", value = "")
+                                 )),
+                                 actionButton("save_unit", "Save")
+                               ),
                                br(),
 
-                               div(textOutput("can_visualise"),style = "text-align: left; font-size:115%"),
+                               div(textOutput("can_visualise"),style = "text-align: left; font-size:90%; color: blue;"),
 
                                br(),
 
@@ -424,13 +451,27 @@ ui <-
                                div("2.1 File Upload - Decision space",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                p("Your multi-objective optimisation should provide you with an output that describes the genome/activation.
-                               You can upload this file here (as .txt) to be able to use all visualisations with both slider types. 
-                                 Please also provide a lookup table that translates how measures are coded, please refer to the Readme for an example."),
+                               You can upload this file here (as .txt) and then use all visualisations with both slider types."),
                                
-                               div("1. genome",style = "text-align: left; font-size:115%"),
+                               div(
+                                 tags$a("Genome", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#genome-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
                                div(style = "margin-top: -15px;",fileInput("hru_activ", "", accept = ".txt", placeholder="")),
                                
-                               div("2. lookup table",style = "text-align: left; font-size:115%"),
+                               p("Please also provide a lookup table (either .csv or .txt) that translates how measures are coded, please refer to the Readme for an example. 
+                                 This file is not needed when working with SWAT+/CoMOLA outputs."),
+                               
+                               div(
+                                 tags$a("Lookup table", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#lookup-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
                                div(style = "margin-top: -15px;",fileInput("measure_loc", "", accept =c(".txt",".csv"), placeholder="")),
                                
                                actionButton("save_full_vis", "Save file/s"),
@@ -445,14 +486,17 @@ ui <-
                                hr(style = "border-top: 1px solid #03597F;"), 
                                
                                
-                               div("2.2 File Upload - Decision Space Mapping",
+                               div("2.2 File Upload - Mapping",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
-                               p("If you provide the following shapefile all visualisations including both slider types and the AHP including the map plotting will become available:"),
+                               p("If you provide the following shapefile all visualisations including the map plotting will become available:"),
                                
-                               # div("1. hru.con",style = "text-align: left; font-size:115%"),
-                               # div(style = "margin-top: -15px;",fileInput("hru_con", "", accept = ".con", placeholder="")),
-                               
-                               div("a shapefile with four components (.shp .dbf .prj and .shx)",style = "text-align: left; font-size:115%"),
+                               div(
+                                 tags$a("a shapefile with four components (.shp .dbf .prj and .shx)", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#shapefile-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
                                div(style = "margin-top: -15px;",fileInput("shapefile_cd", "", multiple = TRUE, placeholder="",
                                                                           accept = c(".shp", ".shx", ".dbf", ".prj"))),
                                
@@ -471,33 +515,42 @@ ui <-
                                
                                p("If you can produce a .csv file with cluster parameters following the Readme, you will be able to use the clustering, visualisations and AHP :"),
                                
-                               div(".csv file with cluster parameters", style = "text-align: left; font-size:115%"),
+                               div(
+                                 tags$a(".csv file with cluster parameters", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#cluster-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
                                actionButton("save_cluster_no","Save file"),
 
                            
                                
-                               #####################################################################################
+                               #######################################################################SWAT+/CoMOLA###############
                                hr(style = "border-top: 2px solid #03597F;"), 
                                br(),
                                div("4. Additional files for an automated workflow (SWAT+/CoMOLA outputs)",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use an automated workflow for calculating cluster parameters and consider competing measure allocation. (This is also possible if you can reproduce these two files).
                                  The file names have to align with what is given here:"),
-                               
-                               # #file numbers are jumbled but just here
-                               # div("1. pareto_genomes.txt",style = "text-align: left; font-size:115%"),
-                               # div(style = "margin-top: -15px;",fileInput("file1", "", accept = ".txt", placeholder="")),
-                               
-                               # div("2. hru.con",style = "text-align: left; font-size:115%"),
-                               # div(style = "margin-top: -15px;",fileInput("file2", "", accept = ".con", placeholder="")),
-                               
-                               
-                               div("1. measure_location.csv",style = "text-align: left; font-size:115%"),
+                              
+                               div(
+                                 tags$a("1. measure_location.csv", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#msrs-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
                                div(style = "margin-top: -15px;",fileInput("file3", "", accept = ".csv", placeholder="")),
                                
-                               
-                               div("2. rout_unit.con", style="text-align: left; font-size:115%"),
+                               div(
+                                 tags$a("2. rout_unit.con", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#rout-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
                                div(style = "margin-top: -15px;",fileInput("file6", "", accept = ".con", placeholder="")),
                                
                                
@@ -506,15 +559,13 @@ ui <-
                                #                                            accept = c(".shp", ".shx", ".dbf", ".prj"))),
                                
                                
-                               actionButton("files_avail", "Check Files"),
+                               actionButton("files_avail", "Check Files"),#SWAT+/CoMOLA
                                
                                
                                uiOutput("fileStatusMessage"),
                                
                                
-                               hr(),
-                               
-                               div(id="runprep_show",p("Run Preparation Script when ready (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:150%; width: 150%;"),
+                               div(id="runprep_show",p("Run Preparation Script when ready (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:100%; width: 150%;"),
                                    actionButton("runprep", "Run Prep"))%>%hidden,
                                uiOutput("scriptdp"),
                                #####################################
@@ -830,7 +881,7 @@ ui <-
                              h2("Configure Cluster Settings", style = "margin-top: 0; padding-top: 0;"),
                            
                      mainPanel(width = 12,
-                       textOutput("config_needs_var"),
+                       tags$div(textOutput("config_needs_var"), style = "color: red;"),
 
 
               div(id = "config_all",
