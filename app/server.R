@@ -618,11 +618,13 @@ server <- function(input, output, session) {
       }
       
       #write hru_con from shapefile
-      shp <- st_read(file.path(save_dir, "hru.shp"), quiet = TRUE)
-      shp_latlon <- st_transform(shp, crs = 4326) %>% 
-        select(area, id, lat, lon)
-      
-      write.table(st_drop_geometry(shp_latlon),file = "../input/hru.con", row.names = FALSE, col.names = TRUE)
+      shp <- st_read(file.path(save_dir, "hru.shp"), quiet = TRUE) %>% st_transform(crs = 4326)
+
+      bbox <- st_bbox(shp)
+      mean_lon <- mean(c(bbox["xmin"], bbox["xmax"]))
+      mean_lat <- mean(c(bbox["ymin"], bbox["ymax"]))
+      latlon = c(mean_lat, mean_lon)
+      write.table(latlon,file = "../input/hru.con", row.names = FALSE, col.names = F)
       
       
       shinyjs::hide("spinner_hru_con")

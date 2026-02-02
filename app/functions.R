@@ -1230,9 +1230,9 @@ pull_buffer = function(){
 
 ## get map extent
 plt_latlon = function(conpath){
-  conny = read.table(conpath,skip = 0,header = T)
-  lon_map = mean(conny$lon)
-  lat_map = mean(conny$lat)
+  conny = read.table(conpath)
+  lon_map = conny[2,]
+  lat_map = conny[1,]
   return(c(lat_map,lon_map))
 }
 
