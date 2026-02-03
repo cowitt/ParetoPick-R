@@ -75,7 +75,7 @@ nswrm_priorities <- function(lu) {
     }
   }
   
-  write.csv(prio, file = "../input/nswrm_priorities.csv", row.names = FALSE)
+  # write.csv(prio, file = "../input/nswrm_priorities.csv", row.names = FALSE)
   
   return(prio)
 }
@@ -176,7 +176,7 @@ for(op in paste0("V", 1:nopt)){
   if(nrow(confl_use) > 0) {
     hru <- hru %>%
       left_join(confl_use%>% select(name_new, nswrm), by = c("id" = "name_new")) %>%
-      mutate(!!op := ifelse(!is.na(nswrm), nswrm, !!sym(op))) %>%
+      mutate(!!op := ifelse(!is.na(nswrm), nswrm, !!sym(op))) %>%#updates only those with conflicting use
       select(-nswrm)
   }}
   print(paste0("check: calculated land use allocation in optima ",op,"..."),quote=F)
