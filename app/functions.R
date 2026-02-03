@@ -1219,15 +1219,6 @@ pull_buffer = function(){
   }else{return(NULL)}
 }
 
-# pull_buffer = function(prios= "../input/nswrm_priorities.csv"){
-#   if (!file.exists(prios)) {
-#     return(NULL)  
-#   }
-#   priodf = read.csv(prios)
-#   strct_obj = priodf%>%filter(mngmt ==0)%>%select(nswrm)%>%pull()#structural measures
-#   return(strct_obj)
-# }
-
 ## get map extent
 plt_latlon = function(conpath){
   conny = read.table(conpath)

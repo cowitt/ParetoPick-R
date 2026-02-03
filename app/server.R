@@ -7,10 +7,9 @@ server <- function(input, output, session) {
 
   ## reactive values
   objectives <- reactiveVal(character()) #objective names
-  file_data1 <- reactiveVal(NULL)
-  file_data2 <- reactiveVal(NULL)
   file_data3 <- reactiveVal(NULL)
   file_data6 <- reactiveVal(NULL)
+  file_hrucon = reactiveVal(NULL)
   file_lookup_loc = reactiveVal(NULL)
   file_hru_activ = reactiveVal(NULL)
   file_hru_con = reactiveVal(NULL)
@@ -222,52 +221,76 @@ server <- function(input, output, session) {
           updateSelectInput(session,inputId = "buffies", choices = buffs,selected=sel_buff)
           
         }
-      # }
+      
         
 
       
     })
+    
+    
+    observe({if(file.exists("../input/object_names.RDS")){
+      
+      short = readRDS("../input/object_names.RDS")
+      objectives(short)
+      
+      updateTextInput(session,"short1", value = objectives()[1] )
+      updateTextInput(session,"short2", value = objectives()[2] )
+      updateTextInput(session,"short3", value = objectives()[3] )
+      updateTextInput(session,"short4", value = objectives()[4] )
+      
+      shinyjs::disable("short1")
+      shinyjs::disable("short2")
+      shinyjs::disable("short3")
+      shinyjs::disable("short4")
+    }})
+    
+    
+    observe({
+      req(input$short1, input$short2, input$short3, input$short4,rng_plt())
+      short <<- c(input$short1, input$short2, input$short3, input$short4)
+      objectives(short)
+      
+      updateSelectInput(session, "x_var3",   choices = short, selected = rng_plt()[1])
+      updateSelectInput(session, "y_var3",   choices = short, selected = rng_plt()[2])
+      updateSelectInput(session, "col_var3", choices = short, selected = rng_plt()[3])
+      updateSelectInput(session, "size_var3",choices = short, selected = rng_plt()[4])
+      
+      num_criteria = length(objectives())
+      k=1
+      for (i in 1:(num_criteria - 1)) {
+        for (j in (i + 1):num_criteria) {
+          new_label <- paste0(objectives()[j]," vs. ",objectives()[i])
+          updateActionButton(session, paste0("ahp_card",k), label = new_label)
+          k = k+1}}
+      
+    })
+    
+    
+  }) ###end of things that happen when data prep tab is opened
+  
     ## make fit() based on user input
     observeEvent(input$par_fit, {     
       req(input$par_fit)
       file <- input$par_fit
       if (is.null(file)) {return(NULL)}
       par_fiti(list(path = file$datapath, name = file$name))
+      save_path_par_fiti <- file.path(save_dir, "pareto_fitness.txt")
+      file.copy(par_fiti()$path, save_path_par_fiti, overwrite = TRUE) #copy pareto_fitness.txt
     })
     
   
-    #get pareto_fitness.txt and make fit()
-    observeEvent(input$save_paretofit,{
-      req(par_fiti())
-      save_par_fiti <- par_fiti()$name
-      save_path_par_fiti <- file.path(save_dir, "pareto_fitness.txt")
-      file.copy(par_fiti()$path, save_path_par_fiti, overwrite = TRUE) #copy pareto_fitness.txt
-      
-     
-    })
-    
-    #make status quo based on user input
+  #make status quo based on user input
     observeEvent(input$sq_in, {
       req(input$sq_in)
       file <- input$sq_in
       if(is.null(file)){return(NULL)}
-      sq_file(list(path=file$datapath, name = file$name))
-      
-    })
-    
-    observeEvent(input$save_sq_in, {
-      req(sq_file())#,objectives())
-      save_sq <- sq_file()$name
+      sq_file(list(path=file$datapath, name = file$name))#name here superfluous
       save_path_sq <- file.path(save_dir, "sq_fitness.txt")
       file.copy(sq_file()$path,save_path_sq,overwrite = TRUE) #copy sq_fitness.txt
       
-      # st_q = read.table("../data/sq_fitness.txt", header = FALSE, stringsAsFactors = FALSE, sep = deli("../data/sq_fitness.txt"))
-      # st_q = as.numeric(st_q)
-      # 
-      # names(st_q) = objectives()
-      # stq(st_q)
     })
     
+  
     ##get new objective names, make fit() and objectives() and f_scaled
     observeEvent(input$save_par_fiti, {
       short <<- c(trimws(input$short1), trimws(input$short2), trimws(input$short3), trimws(input$short4))
@@ -323,42 +346,7 @@ server <- function(input, output, session) {
       
     })
     
-    observe({if(file.exists("../input/object_names.RDS")){
-      
-      short = readRDS("../input/object_names.RDS")
-      objectives(short)
-      
-      updateTextInput(session,"short1", value = objectives()[1] )
-      updateTextInput(session,"short2", value = objectives()[2] )
-      updateTextInput(session,"short3", value = objectives()[3] )
-      updateTextInput(session,"short4", value = objectives()[4] )
-      
-      shinyjs::disable("short1")
-      shinyjs::disable("short2")
-      shinyjs::disable("short3")
-      shinyjs::disable("short4")
-    }})
-    
-    
-    observe({
-      req(input$short1, input$short2, input$short3, input$short4,rng_plt())
-      short <<- c(input$short1, input$short2, input$short3, input$short4)
-      objectives(short)
-      
-      updateSelectInput(session, "x_var3",   choices = short, selected = rng_plt()[1])
-      updateSelectInput(session, "y_var3",   choices = short, selected = rng_plt()[2])
-      updateSelectInput(session, "col_var3", choices = short, selected = rng_plt()[3])
-      updateSelectInput(session, "size_var3",choices = short, selected = rng_plt()[4])
-      
-      num_criteria = length(objectives())
-      k=1
-      for (i in 1:(num_criteria - 1)) {
-        for (j in (i + 1):num_criteria) {
-          new_label <- paste0(objectives()[j]," vs. ",objectives()[i])
-          updateActionButton(session, paste0("ahp_card",k), label = new_label)
-          k = k+1}}
-      
-    })
+  
     
     ## get unit input 
     observeEvent(input$save_unit,{
@@ -408,7 +396,7 @@ server <- function(input, output, session) {
     observe({
       if (file.exists("../input/object_names.RDS") && file.exists(pareto_path) && file.exists("../data/sq_fitness.txt")) {
         output$can_visualise = renderText({
-          "At this point you can use the Visualisation and AHP tab. If you haven't done so, you can supply the genome, shapefile and/or cluster information below."
+          "At this point you can use the Visualisation and AHP tab. If you haven't done so already, you can supply the genome, shapefile and/or cluster information below."
         })
         
       } else if (file.exists("../input/object_names.RDS") &&
@@ -416,220 +404,181 @@ server <- function(input, output, session) {
                  !file.exists("../data/sq_fitness.txt")) {
         output$can_visualise = renderText({ "At this point you can use the Visualisation and AHP tab.
           If you'd like to also plot the status quo, please provide it above.
-          If you haven't done so, you can supply the genome, shapefile and/or cluster information below."})
+          If you haven't done so already, you can supply the genome, shapefile and/or cluster information below."})
       } 
     })
     
-    ## check if required files exist
-    # observeEvent(input$file1, { file <- input$file1
-    # if (is.null(file)) {return(NULL)}
-    # file_data1(list(path = file$datapath, name = file$name))})
-    
-    observeEvent(input$file2, { file <- input$file2
-    if (is.null(file)) {return(NULL)}
-    file_data2(list(path = file$datapath, name = file$name))})
-    
+    ## Automated SWAT+/CoMOLA workflow
+    ##measure_location - copied straight away
     observeEvent(input$file3, { file <- input$file3
     if (is.null(file)) {return(NULL)}
-    file_data3(list(path = file$datapath, name = file$name))})
+    file_data3(list(path = file$datapath, name = file$name))
+    save_filename3 <- file_data3()$name
+    save_path3 <- file.path(save_dir, save_filename3)
+    file.copy(file_data3()$path, save_path3, overwrite = TRUE)
+    })
     
+    ##rout_unit - copied straight away
     observeEvent(input$file6, { file <- input$file6
     if (is.null(file)) {return(NULL)}
-    file_data6(list(path = file$datapath, name = file$name))})
-    
-    # observeEvent(input$shapefile, { file <- input$shapefile
-    # if (is.null(file)) {return(NULL)}
-    # shapefile(list(path = file$datapath, name = file$name))})
-    
-    #SWAT+/CoMOLA
-    observeEvent(input$files_avail,{
-      # save_filename1 <- file_data1()$name
-      # save_filename2 <- file_data2()$name
-      save_filename3 <- file_data3()$name
-      save_filename6 <- file_data6()$name
+    file_data6(list(path = file$datapath, name = file$name))
+    save_filename6 <- file_data6()$name
+    save_path6 <- file.path(save_dir, save_filename6)#rout_unit.con
+    file.copy(file_data6()$path, save_path6, overwrite = TRUE)
+    })
+     
+    ##hru.con
+    observeEvent(input$hrucon, { file <- input$hrucon
+    if (is.null(file)) {return(NULL)}
+    file_hrucon(list(path = file$datapath, name = file$name))
+    save_hruname <- file_hrucon()$name
+    save_pathhrucon <- file.path(save_dir, save_hruname)
+    file.copy(file_hrucon()$path, save_pathhrucon, overwrite = TRUE)})
 
-      # save_path1 <- file.path(save_dir, save_filename1)
-      # save_path2 <- file.path(save_dir, save_filename2)
-      save_path3 <- file.path(save_dir, save_filename3)
-      save_path6 <- file.path(save_dir, save_filename6)
-      
-      
-      # file.copy(file_data1()$path, save_path1, overwrite = TRUE)
-      # file.copy(file_data2()$path, save_path2, overwrite = TRUE)
-      file.copy(file_data3()$path, save_path3, overwrite = TRUE)
-      file.copy(file_data6()$path, save_path6, overwrite = TRUE)
-      
-      #cm shapefile
-      # shp_req = c(".shp",".shx", ".dbf", ".prj")
-      # shapefile <- input$shapefile
-      # shapefile_names <- shapefile$name
-      # shapefile_paths <- shapefile$datapath
-      # missing_shapefile_components <- shp_req[!sapply(shp_req, function(ext) any(grepl(paste0(ext, "$"), shapefile_names)))]
-      # 
-      # # copy shapefile components if none are missing
-      # if (length(missing_shapefile_components) == 0) {
-      #   lapply(seq_along(shapefile_paths), function(i) {
-      #     save_path <- file.path(save_dir, shapefile_names[i])
-      #     if (!file.exists(save_path)) {
-      #       file.copy(shapefile_paths[i], save_path, overwrite = TRUE)
-      #     }
-      #   })
-      # }
-      
-  
-      required_files <- c("../data/pareto_genomes.txt",#"../data/hru.con",
+    #SWAT+/CoMOLA
+    
+    observeEvent(input$files_avail, ignoreInit = TRUE,{
+      required_files <- c("../data/pareto_genomes.txt","../data/hru.con",
                           "../data/measure_location.csv",
                           "../data/hru.shp","../data/hru.shx", "../data/hru.dbf", "../data/hru.prj",
                           "../data/rout_unit.con",
                           "../data/pareto_fitness.txt")
-      
+
       checkFiles <- sapply(required_files, function(file) file.exists(file))
-      
-      if(all(checkFiles)& file.exists("../input/object_names.RDS")){run_prep_possible$files_avail = T
-      }
 
-      output$fileStatusMessage <- renderText({
-        if (all(checkFiles) & file.exists("../input/object_names.RDS")) {
-          HTML("All Files found.")
-          
-        } else if(all(checkFiles) & !file.exists("../input/object_names.RDS")){
-          HTML("All files found. <br>Please provide the names of the objectives represented in the Pareto front.
+      if (all(checkFiles)) {
+        if(file.exists("../input/object_names.RDS")){
+          run_prep_possible$files_avail = T
+          output$fileStatusMessage <- renderText({HTML("All Files found.")})
+        }else{
+          output$fileStatusMessage <- renderText({HTML(
+            "All files found. <br>Please provide the names of the objectives represented in the Pareto front.
              The names and the order in which they are given have
-             to align with what is provided in the first four columns of pareto_fitness.txt")
-        }else {
-          missing_files = required_files[!checkFiles]
-          HTML(paste("The following file(s) are missing:<br/>", paste(sub('../data/', '', missing_files), collapse = "<br/> ")))
+             to align with what is provided in the first four columns of pareto_fitness.txt"
+          )
+          })
         }
-      })
+        }else{
+        missing_files = required_files[!checkFiles]
+        output$fileStatusMessage <- renderText({HTML(paste("The following file(s) are missing:<br/>",
+            paste(sub('../data/', '', missing_files), collapse = "<br/> ")
+          ))
+        })
+        }
+
+})
 
 
-    })
+    
     #cannot run if already exists, has to be deleted manually
     
     observe({
-        if (!file.exists("../input/var_corr_par.csv") | !file.exists("../input/hru_in_optima.RDS") | 
-        !file.exists("../input/all_var.RDS")) {
+        if (!file.exists("../input/var_corr_par.csv")) {
       shinyjs::show(id = "runprep_show")
-      
-     
-      
-    }
+      } 
       
     })
-    observe({     if (run_prep_possible$files_avail) {  shinyjs::enable("runprep")} else{  shinyjs::disable("runprep")
+    observe({if (run_prep_possible$files_avail) {  shinyjs::enable("runprep")} else{  shinyjs::disable("runprep")
     } })
   
     
     #### File Upload - Decision Space ####
+    observe({
+      shinyjs::toggleState("measure_loc", condition = file.exists("../data/pareto_genomes.txt"))
+    })
+    
+    
     observeEvent(input$measure_loc, { file <- input$measure_loc
     if (is.null(file)) {file_lookup_loc(NULL)}#lookup table
-    file_lookup_loc(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
+    file_lookup_loc(list(path = file$datapath, name = file$name))
+
+    ##create hru_in_optima.RDS
+    #not copied, just used
+    acti = read.table("../data/pareto_genomes.txt",sep = deli("../data/pareto_genomes.txt"))
+    # lookup table
+    lookup_ext = sub(".*\\.", "", file_lookup_loc()$name)
+    save_path_lookup_loc <- file.path(save_dir, paste0("lookup_table.", lookup_ext))
+    file.copy(file_lookup_loc()$path, save_path_lookup_loc, overwrite = TRUE)
+    
+    ## missing error messages
+    # too few colums, missing codes
+    if (lookup_ext == "csv") {
+      lookup_table = read.csv(save_path_lookup_loc, stringsAsFactors = FALSE, header = F)%>%
+        rename(code = V1, measure = V2)
+    } else if (lookup_ext == "txt") {
+      lookup_table = read.table(save_path_lookup_loc, stringsAsFactors = FALSE) %>%
+        select(V1, V3) %>%
+        rename(code = V1, measure = V3)
+    }
+    
+    genome_filled <- acti %>%
+      mutate(across(starts_with("V"), 
+                    ~ lookup_table$measure[match(., lookup_table$code)])) %>%
+      mutate(id = row_number())
+    
+    saveRDS(genome_filled, file = "../input/hru_in_optima.RDS")
+    #remove lookup table
+    file.remove(save_path_lookup_loc); rm(genome_filled)
+
+    shinyjs::refresh()
+    }, ignoreInit = TRUE)
     
     
     observeEvent(input$hru_activ, { file <- input$hru_activ
     if (is.null(file)) {file_hru_activ(NULL)}
-    file_hru_activ(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
+    file_hru_activ(list(path = file$datapath, name = file$name))#name ignored here
+    save_hru_activ <- file_hru_activ()$name
+    save_path_hru_activ <- file.path(save_dir, "pareto_genomes.txt")
+    file.copy(file_hru_activ()$path, save_path_hru_activ, overwrite = TRUE)
+    shinyjs::refresh()
     
-    
-    observeEvent(input$save_full_vis,{
-      
-      # genomes
-      save_hru_activ <- file_hru_activ()$name
-      save_path_hru_activ <- file.path(save_dir, "pareto_genomes.txt")
-      
-      if (is.null(file_hru_activ())) {#automated SWAT+/CoMOLA where hru_in_optima.RDS is written in convert_optain
-
-        file.copy(file_hru_activ()$path, save_path_hru_activ, overwrite = TRUE)
-      }else{#standard workflow
-        shinyjs::show("spinner_hru_in_optima")
-        
-        ##create hru_in_optima.RDS
-        #not copied, just used
-        acti = read.table(file_hru_activ()$path,sep = deli(file_hru_activ()$path))
-        # lookup table
-        lookup_ext = sub(".*\\.", "", file_lookup_loc()$name)
-        save_path_lookup_loc <- file.path(save_dir, paste0("lookup_table.", lookup_ext))
-        file.copy(file_lookup_loc()$path, save_path_lookup_loc, overwrite = TRUE)
-        
-        ## missing error messages
-        # too few colums, missing codes
-        if (lookup_ext == "csv") {
-          lookup_table = read.csv(save_path_lookup_loc, stringsAsFactors = FALSE, header = F)%>%
-            rename(code = V1, measure = V2)
-        } else if (lookup_ext == "txt") {
-          lookup_table = read.table(save_path_lookup_loc, stringsAsFactors = FALSE) %>%
-            select(V1, V3) %>%
-            rename(code = V1, measure = V3)
-        }
-        
-        genome_filled <- acti %>%
-          mutate(across(starts_with("V"), 
-                        ~ lookup_table$measure[match(., lookup_table$code)])) %>%
-          mutate(id = row_number())
-        
-        saveRDS(genome_filled, file = "../input/hru_in_optima.RDS")
-        #remove lookup table
-        file.remove(save_path_lookup_loc); rm(genome_filled)
-        shinyjs::hide("spinner_hru_in_optima")
-        
-      }
-      shinyjs::refresh()
-      
-    })
-
+    }, ignoreInit = TRUE)
+  
     #### File upload - Clustering (standard workflow) #####
     observeEvent(input$cluster_params, { file <- input$cluster_params
     if (is.null(file)) {return(NULL)}
-    file_cluster_params(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
+    file_cluster_params(list(path = file$datapath, name = file$name))
+    path_cluster_params = file.path(input_dir, "cluster_params.csv")
+    file.copy(file_cluster_params()$path, path_cluster_params, overwrite = T)
     
-    observeEvent(input$save_cluster_no,{
-      path_cluster_params = file.path(input_dir, "cluster_params.csv")
-      file.copy(file_cluster_params()$path, path_cluster_params, overwrite = T)
-      
-      shinyjs::refresh()
-    }) 
+    shinyjs::refresh()
+    }, ignoreInit = TRUE)
     
     #### File Upload - Mapping ####
     observeEvent(input$shapefile_cd, { file <- input$shapefile_cd
     if (is.null(file)) {return(NULL)}
-    file_shapefile_cd(list(path = file$datapath, name = file$name))}, ignoreInit = TRUE)
+    file_shapefile_cd(list(path = file$datapath, name = file$name))
+    shp_req = c(".shp",".shx", ".dbf", ".prj")
+    shapefile <- input$shapefile_cd
+    shapefile_names <- shapefile$name
+    shapefile_paths <- shapefile$datapath
+    missing_shapefile_components <- shp_req[!sapply(shp_req, function(ext) any(grepl(paste0(ext, "$"), shapefile_names)))]
     
-    observeEvent(input$save_full_cd, {
-      shinyjs::show("spinner_hru_con")
-      
-      shp_req = c(".shp",".shx", ".dbf", ".prj")
-      shapefile <- input$shapefile_cd
-      shapefile_names <- shapefile$name
-      shapefile_paths <- shapefile$datapath
-      missing_shapefile_components <- shp_req[!sapply(shp_req, function(ext) any(grepl(paste0(ext, "$"), shapefile_names)))]
-      
-      # copy shapefile components if none are missing
-      if (length(missing_shapefile_components) == 0) {
-        lapply(seq_along(shapefile_paths), function(i) {
-          
-          which_comp = sub(".*\\.","", shapefile_names[i])
-          hru_named = paste0("hru.",which_comp)
-          
-          save_path <- file.path(save_dir,hru_named)
-          if (!file.exists(save_path)) {
-            file.copy(shapefile_paths[i], save_path, overwrite = TRUE)
-          }
-        })
-      }
-      
-      #write hru_con from shapefile
-      shp <- st_read(file.path(save_dir, "hru.shp"), quiet = TRUE) %>% st_transform(crs = 4326)
+    # copy shapefile components if none are missing
+    if (length(missing_shapefile_components) == 0) {
+      lapply(seq_along(shapefile_paths), function(i) {
+        
+        which_comp = sub(".*\\.","", shapefile_names[i])
+        hru_named = paste0("hru.",which_comp)
+        
+        save_path <- file.path(save_dir,hru_named)
+        if (!file.exists(save_path)) {
+          file.copy(shapefile_paths[i], save_path, overwrite = TRUE)
+        }
+      })
+    }
+    
+    #write hru_con from shapefile
+    shp <- st_read(file.path(save_dir, "hru.shp"), quiet = TRUE) %>% st_transform(crs = 4326)
+    
+    bbox <- st_bbox(shp)
+    mean_lon <- mean(c(bbox["xmin"], bbox["xmax"]))
+    mean_lat <- mean(c(bbox["ymin"], bbox["ymax"]))
+    latlon = c(mean_lat, mean_lon)
+    write.table(latlon,file = "../input/hru.con", row.names = FALSE, col.names = F)
+    shinyjs::refresh()
+    }, ignoreInit = TRUE)
 
-      bbox <- st_bbox(shp)
-      mean_lon <- mean(c(bbox["xmin"], bbox["xmax"]))
-      mean_lat <- mean(c(bbox["ymin"], bbox["ymax"]))
-      latlon = c(mean_lat, mean_lon)
-      write.table(latlon,file = "../input/hru.con", row.names = FALSE, col.names = F)
-      
-      
-      shinyjs::hide("spinner_hru_con")
-      shinyjs::refresh()
-    })
     
     #### Automated workflow Data Prep ####
     
@@ -781,12 +730,12 @@ server <- function(input, output, session) {
       saveRDS(input$buffies,file = "../input/buffers.RDS")
     })  
     
-  })
+
   
 
   
  
-  ### Play Around Tab ####
+    ### Play Around Tab ####
   if (!file.exists("../data/sq_fitness.txt")){
     shinyjs::disable("plt_sq")
     shinyjs::hide("status_quo_title")
@@ -1744,8 +1693,7 @@ server <- function(input, output, session) {
     if (all(file.exists(map_files))) {
       shinyjs::show("freq_map_play")
       shinyjs::show("download_freq_id")
-      needs_buffer(pull_buffer()) #needs nswrm_priorities.csv
-
+      needs_buffer(pull_buffer()) #needs buffers.RDS, NULL if not exists
       
       #catchment forever
       cm(pull_shp_new())

@@ -369,7 +369,7 @@ ui <-
                                                  "))),
 
                              mainPanel(width = 12,
-                                       div(
+                               div(
                                          style = "width: 100%;margin: 0 auto; text-align: justify; font-size:140%;",# This describes style for all that don't specify themselves
                                div("1. File Upload - Basic Functionality",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
@@ -384,7 +384,8 @@ ui <-
                                ),
                                    div(style = "margin-top: -15px;",
                                        fileInput("par_fit", "", accept = ".txt", placeholder =""),
-                               div(style= "vertical-align: top; margin-top: -15px;",actionButton("save_paretofit","Save"))),
+                               # div(style= "vertical-align: top; margin-top: -15px;",actionButton("save_paretofit","Save"))
+                               ),
 
                                br(),
                                div( "The objective names should be ordered like the four columns of the Pareto fitness file:",
@@ -417,7 +418,8 @@ ui <-
                                ),
                                div(style = "margin-top: -15px;",fileInput("sq_in", "", accept = ".txt", placeholder=""),
                                        
-                                       div(style= "vertical-align: top; margin-top: -15px;",actionButton("save_sq_in","Save"))),
+                                       # div(style= "vertical-align: top; margin-top: -15px;",actionButton("save_sq_in","Save"))
+                                   ),
                                br(),
 
                                div(id="units",
@@ -462,8 +464,8 @@ ui <-
                                ),
                                div(style = "margin-top: -15px;",fileInput("hru_activ", "", accept = ".txt", placeholder="")),
                                
-                               p("Please also provide a lookup table (either .csv or .txt) that translates how measures are coded, please refer to the Readme for an example. 
-                                 This file is not needed when working with SWAT+/CoMOLA outputs."),
+                               p("After providing the genomes, please provide a lookup table (either .csv or .txt) that translates the code used for the decision space in the genome. 
+                                 This file is not needed when working with SWAT+/CoMOLA outputs. The genome has to be uploaded first."),
                                
                                div(
                                  tags$a("Lookup table", 
@@ -474,14 +476,7 @@ ui <-
                                ),
                                div(style = "margin-top: -15px;",fileInput("measure_loc", "", accept =c(".txt",".csv"), placeholder="")),
                                
-                               actionButton("save_full_vis", "Save file/s"),
-                               div(
-                                 id = "spinner_hru_in_optima",style = "display: none;",
-                                 style = "display: none; vertical-align: top; margin-left: 0px; margin-top: 5px;",
-                                 div(class = "spinspin")
-                               ),
-                               
-                               
+                             
                                ######################################################################## 
                                hr(style = "border-top: 1px solid #03597F;"), 
                                
@@ -500,12 +495,12 @@ ui <-
                                div(style = "margin-top: -15px;",fileInput("shapefile_cd", "", multiple = TRUE, placeholder="",
                                                                           accept = c(".shp", ".shx", ".dbf", ".prj"))),
                                
-                               actionButton("save_full_cd", "Save files"),
-                               div(
-                                 id = "spinner_hru_con",style = "display: none;",
-                                 style = "display: none; vertical-align: top; margin-left: 0px; margin-top: 5px;",
-                                 div(class = "spinspin")
-                               ),
+                               # actionButton("save_full_cd", "Save files"),
+                               # div(
+                               #   id = "spinner_hru_con",style = "display: none;",
+                               #   style = "display: none; vertical-align: top; margin-left: 0px; margin-top: 5px;",
+                               #   div(class = "spinspin")
+                               # ),
                               
                                ######################################################################## Full Visualisation
                                hr(style = "border-top: 1px solid #03597F;"), 
@@ -513,7 +508,7 @@ ui <-
                                div("3. File Upload - Clustering",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                
-                               p("If you can produce a .csv file with cluster parameters following the Readme, you will be able to use the clustering, visualisations and AHP :"),
+                               p("If you can produce a .csv file with cluster parameters following the Readme, you will be able to use the clustering, visualisations and AHP. This file is produced automatically when working with SWAT+/CoMOLA outputs."),
                                
                                div(
                                  tags$a(".csv file with cluster parameters", 
@@ -523,13 +518,13 @@ ui <-
                                  style = "text-align: left;"
                                ),
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
-                               actionButton("save_cluster_no","Save file"),
+                               # actionButton("save_cluster_no","Save file"),
 
                            
                                
                                #######################################################################SWAT+/CoMOLA###############
                                hr(style = "border-top: 2px solid #03597F;"), 
-                               br(),
+                               
                                div("4. Additional files for an automated workflow (SWAT+/CoMOLA outputs)",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use an automated workflow for calculating cluster parameters and consider competing measure allocation. (This is also possible if you can reproduce these two files).
@@ -554,18 +549,24 @@ ui <-
                                div(style = "margin-top: -15px;",fileInput("file6", "", accept = ".con", placeholder="")),
                                
                                
-                               # div("5. shapefile called \"hru\" with four components (.shp .dbf .prj and .shx)",style = "text-align: left; font-size:115%"),
-                               # div(style = "margin-top: -15px;",fileInput("shapefile", "", multiple = TRUE, placeholder="",
-                               #                                            accept = c(".shp", ".shx", ".dbf", ".prj"))),
+                               div(
+                                 tags$a("3. hru.con", 
+                                        href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#con-structure",
+                                        target = "_blank", #prevents reload
+                                        style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
+                                 style = "text-align: left;"
+                               ),
+                               div(style = "margin-top: -15px;",fileInput("hrucon", "", accept = ".con", placeholder="")),
                                
                                
+                             
                                actionButton("files_avail", "Check Files"),#SWAT+/CoMOLA
-                               
+                              
                                
                                uiOutput("fileStatusMessage"),
                                
                                
-                               div(id="runprep_show",p("Run Preparation Script when ready (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:100%; width: 150%;"),
+                               div(id="runprep_show",p("Check files and click Run Prep when ready (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:100%; width: 150%;"),
                                    actionButton("runprep", "Run Prep"))%>%hidden,
                                uiOutput("scriptdp"),
                                #####################################
@@ -672,7 +673,7 @@ ui <-
                                                style = "display: inline-block; vertical-align: top; margin-left: 0px; margin-top: 5px;",
                                                downloadButton("download_freq", "Download map as .png"),
                                                div(
-                                                 id = "spinner_download_play2",style = "display: none;",
+                                                 id = "spinner_download_play2",
                                                  style = "display: none; vertical-align: top; margin-left: 0px; margin-top: 5px;",
                                                  div(class = "spinspin")
                                                ) ),
@@ -680,7 +681,7 @@ ui <-
                                                style = "display: inline-block; vertical-align: top; margin-left: 0px; margin-top: 5px;",
                                                downloadButton("download_shp_freq", "Download map as shapefile"),
                                                div(
-                                                 id = "spinner_download_shp2",style = "display: none;",
+                                                 id = "spinner_download_shp2",
                                                  style = "display: none; vertical-align: top; margin-left: 0px; margin-top: 5px;",
                                                  div(class = "spinspin")
                                                ) )
