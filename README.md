@@ -139,6 +139,19 @@ id,	name,	nswrm,	obj_id
 294,	pond_1,	pond,	997
 ```
 
+8. __hru.con__<a name="con-structure"></a>
+  * only for automated workflow and MOO from SWAT+/CoMOLA
+  * SWAT+ input file
+  * has to contain columns id, area, lat, lon
+```
+SWAT+ input file updated with SWATmeasR at 2024-09-18 12:54:56.599093
+      id  name                gis_id          area           lat           lon          elev    obj_id               wst       cst      ovfl      rule   out_tot
+       1  hru0001                  1       0.76279      45.70575       9.81739     364.90688         1      s45784n9822e         0         0         0         0
+       2  hru0002                  2       0.74251      45.70370       9.82486     293.29695         2      s45784n9822e         0         0         0         0
+
+```
+
+
 # 3. Process
 ### Data Preparation tab
 Unless otherwise specified, you may use any file name. However, ensure the file is in the correct format.
