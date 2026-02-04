@@ -1301,15 +1301,14 @@ server <- function(input, output, session) {
         paste0(input$fp_plot_savename, curt, ".", ext)
       },
       content = function(file) {
-        plot <- first_pareto_fun()
         format <- if (is.null(input$dl_fp_format)) "png" else input$dl_fp_format
         if (format == "png") {
           png(file, width = 1200, height = 800)
-          print(plot)
+          print(first_pareto_fun())
           dev.off()
         } else if (format == "svg") {
-          svg(file, width = 12, height = 8)
-          print(plot)
+          svglite(file, width = 12, height = 8)
+          print(first_pareto_fun())
           dev.off()
         }
       }
@@ -1487,7 +1486,7 @@ server <- function(input, output, session) {
         print(plot)
         dev.off()
       } else if (format == "svg") {
-        svg(file, width = 15, height = 8)
+        svglite(file, width = 15, height = 8)
         print(plot)
         dev.off()
       }
@@ -2024,7 +2023,7 @@ server <- function(input, output, session) {
         print(plot)
         dev.off()
       } else if (format == "svg") {
-        svg(file, width = 12, height = 8)
+        svglite(file, width = 12, height = 8)
         print(plot)
         dev.off()
       }
@@ -3129,7 +3128,7 @@ server <- function(input, output, session) {
           print(plot)
           dev.off()
         } else if (format == "svg") {
-          svg(file, width = 12, height = 8)
+          svglite(file, width = 12, height = 8)
           print(plot)
           dev.off()
         }
@@ -3904,7 +3903,7 @@ server <- function(input, output, session) {
         print(plot)
         dev.off()
       } else if (format == "svg") {
-        svg(file, width = 15, height = 10)
+        svglite(file, width = 15, height = 10)
         print(plot)
         dev.off()
       }
