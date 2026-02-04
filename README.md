@@ -210,7 +210,7 @@ Files supplied through by the user are stored in the data folder, these are the 
 * **pca_content.RDS**: variables after correlation filtering
 * **buffers.RDS**: measures requiring buffer for map visibility
 * **units.RDS**: unit definitions
-* **hru.con**: shapefile center for plot settings
+* **hru.con**: shapefile center for plot settings (same name as what automated workflow uses for producing cluster variables)
 
 * **var_corr_par.csv**: objectives and variables for analysis (SWAT+/CoMOLA only)
 
@@ -250,6 +250,9 @@ The algorithm considers five variables:
   * write/load full scenario run from previous uses
   * optimum number display in AHP
   * dynamic printing of progress during clustering
+  * extend on cluster input requirements
+  * clarify output naming, allow easier reuse of cluster results
+  
  
 Other
   * dynamic regression line with R2 in scatter plot in red, other R2 in blue
@@ -257,4 +260,3 @@ Other
   * add information on objectives on hover through link to glossary
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed
-  * add a small spinner to the Check Data button to clarify that it takes a while
