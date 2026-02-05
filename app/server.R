@@ -1198,7 +1198,7 @@ server <- function(input, output, session) {
     
     
     single_meas_fun2 = function(fs = T) {#fs - full screen, set to true in app, false in download
-      req(lalo(), cmf(), sel_tay(), fit1(), msrs())
+      req( cmf(), sel_tay(), fit1(), msrs())
       
       cols = objectives()
       values = sel_tay()
@@ -1609,7 +1609,6 @@ server <- function(input, output, session) {
       
       #msrs() used for plotting
       msrs(unique(genome_hru$nswrm))#all measures available
-      
       mc=  genome_hru %>%# number of extra columns required
         mutate(num_count = str_count(obj_id, ",") + 1) %>%
         summarize(max_numbers = max(num_count)) %>%
@@ -1717,7 +1716,7 @@ server <- function(input, output, session) {
       shinyjs::hide("download_freq_id")}})
  
   play_freq = function(leg = TRUE){ #excessive function
-    req(cmf(),lalo(), filtered_data(),hru_matcher())
+    req(cmf(), filtered_data(),hru_matcher())
     
     dat = filtered_data()
     
@@ -3166,7 +3165,6 @@ server <- function(input, output, session) {
     man_col = c("#66C2A5" ,"#4db818","#663e13", "#F7A600", "#03597F" ,"#83D0F5","#FFEF2C","#a84632","#b82aa5","#246643")
     man_col = man_col[1:length(msrs())]
     pal = colorFactor(palette = man_col, domain = msrs(), na.color = "lightgrey")
-    
     m1 = plt_lf(data=hru_sel, col_sel = col_sel ,dispal=pal,
                 la = lalo()[1],lo =lalo()[2], buff_els=needs_buffer(), buffers=buffers(), basemap = input$anomap, fullscreen = T)
     
@@ -4040,11 +4038,10 @@ server <- function(input, output, session) {
     # shinyjs::show("download_ahp_id") #show download button
     
   })
-    
-
+  
   single_meas_fun = function(fs = T){
     # if(!file.exists("../data/measure_location.csv")){return(NULL)}else{
-    req(boo(),lalo(),cmf(),msrs())
+    req(boo(),cmf(),msrs())
       
     hru_one = plt_sel(shp=cmf(),opti_sel = boo())
     # mes = read.csv("../data/measure_location.csv")
@@ -4084,7 +4081,7 @@ server <- function(input, output, session) {
   )
   
   shp_ahp = function(shp=T){
-    req(boo(),lalo(),cmf())
+    req(boo(),cmf())
     
     hru_one = plt_sel(shp=cmf(),opti_sel = boo())
     

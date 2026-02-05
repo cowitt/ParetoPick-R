@@ -1243,8 +1243,11 @@ plt_freq = function(data, lo, la, buffers = NULL, remaining, dispal = pal,
   data = left_join(data, remaining, by = c("id"))%>%st_make_valid() #only those with highest priority
   data = data %>%subset(!st_is_empty(geometry))
   
-  m =  leaflet(data=data) %>%
-    setView(lng = lo, lat = la, zoom = 12) 
+  m = leaflet(data = data)
+  
+  if (!is.null(lo) && !is.null(la)) {#to make sure OPTAIN projects built before input/hru.con can still plot
+    m = m %>% setView(lng = lo, lat = la, zoom = 12)
+  }
   
   if(!basemap){ #show basemap if anonymise NOT selected
     m = m %>%
@@ -1492,15 +1495,18 @@ plt_boxpl_clus = function(dat, sel, all_obs,mima){
 
 
 ## plot leaflet w/ specific column
-plt_lf <- function(data, lo, la, buff_els, col_sel, buffers, dispal = pal, basemap = basemap, fullscreen = T) {
+plt_lf <- function(data, lo=NULL, la=NULL, buff_els, col_sel, buffers, dispal = pal, basemap = basemap, fullscreen = T) {
   data = data %>%subset(!st_is_empty(geometry))
   m <- vector("list", length = length(col_sel))
   
   for (i in seq_along(col_sel)) {
     col = col_sel[i]
     
-    p  = leaflet(data = data) %>%
-      setView(lng = lo, lat = la, zoom = 12)
+    p = leaflet(data = data)
+    
+    if (!is.null(lo) && !is.null(la)) { #latlon is pulled from input/hru.con which isn't available in older OPTAIN versions
+      p = p %>% setView(lng = lo, lat = la, zoom = 12)
+    }
     
     if(!basemap){ #show basemap if anonymise NOT selected
       p = p %>%
