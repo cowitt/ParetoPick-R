@@ -2489,7 +2489,6 @@ server <- function(input, output, session) {
 
  
     observeEvent(input$confirm_axis,{ 
-      pca_available$button1_clicked = TRUE
     
     isolate({axiselected(c(input$axisx,input$axisy,input$colour, input$size))})
 
@@ -2500,6 +2499,8 @@ server <- function(input, output, session) {
     
     empty_count2 <- sum(input$axisx == "", input$axisy == "", input$colour == "", input$size == "")
     if (empty_count2 == 0){
+      pca_available$button1_clicked = TRUE
+      
   
       write_labels(pca_rv = pca_rv, var1=input$element1,var2=input$element2,var3=input$element3,var4=input$element4,
                     var1_lab=input$axisx,var2_lab=input$axisy,var3_lab=input$colour,var4_lab=input$size)
@@ -2508,6 +2509,8 @@ server <- function(input, output, session) {
     output$axis_text <- renderText({
       
       if (empty_count2 >= 1) {
+        pca_available$button1_clicked = FALSE
+        
         "Please make selections for all four elements."
       } else {
         HTML(paste("X Axis: ", ifelse(input$element1 == "", "No selection", input$axisx),
