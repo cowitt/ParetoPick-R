@@ -2113,6 +2113,7 @@ server <- function(input, output, session) {
       observeEvent(input$run_defaults, {
         req(clus_path())
         req(rng_plt())
+        req(msrs())
         if(is.null(corr_file_check())){
         
         output$spinner_progress <- renderText({ "Clustering is running, please wait..." })
@@ -2122,7 +2123,7 @@ server <- function(input, output, session) {
         all_var <<- readRDS("../input/all_var.RDS")
         
         da <- !file.exists("../input/cluster_params.csv")
-        write_corr_converted(rv = write_corr_rv,vars = input$selements,cor_analysis = T, pca = F, isOptain = da)
+        write_corr_converted(rv = write_corr_rv,mes = msrs(), vars = input$selements,cor_analysis = T, pca = F, isOptain = da)
 
         if(da){check_align_converted(var_path=clus_path(), rv = write_corr_rv)}#run a short check if all var_corr_par are in ini (sometimes they don't pass convert_optain) 
         
@@ -2344,10 +2345,11 @@ server <- function(input, output, session) {
           shinyjs::show("show_conf") #show confirm selection button once correlation has run
         
           req(input$selements,objectives())
+          req(msrs())
           all_var <<- readRDS("../input/all_var.RDS")
           clp <<- clus_path() != "../input/cluster_params.csv"
           #input_path is set here so not needed in next step
-          write_corr_converted(rv = write_corr_rv,vars = input$selements,cor_analysis = T, pca = F, isOptain = clp)
+          write_corr_converted(rv = write_corr_rv,mes = msrs(), vars = input$selements,cor_analysis = T, pca = F, isOptain = clp)
          
           if(clp){check_align_converted(var_path=clus_path(), rv = write_corr_rv)}
           
@@ -2378,7 +2380,6 @@ server <- function(input, output, session) {
   ## on clicking confirm selection the config ini is updated
   observeEvent(input$confirm_selection,{
     pca_remove(input$excl)
-    
     shinydashboard::updateTabItems(session, "tabs", "pca")
     
    

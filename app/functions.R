@@ -73,7 +73,7 @@ check_cvp = function(objs, var_path = "../input/cluster_params.csv", ws = T) {
 ## pca and correlation update
 write_corr_converted = function(vars,
                                 rv,
-                      measures = mes,
+                       mes = measures,
                       cor_analysis = F,
                       pca_content = all_var,
                       pca = T,
@@ -87,7 +87,7 @@ write_corr_converted = function(vars,
     
     if(isOptain){
       varmes = NULL
-      
+
       if ("moran" %in% vars) {
         varmes = append(varmes, paste(mes, "moran", sep = "_"))
       }
