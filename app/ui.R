@@ -1026,7 +1026,7 @@ ui <-
                                    selected = "k-means"
                                  )
                                )),
-                               actionButton("runPCA", "Run PCA and Cluster Analysis"),
+                               actionButton("runPCA", "Run PCA and Cluster Analysis", style = "background-color: #83D0F5;"),
                                withSpinner(uiOutput("cluster_spin"),color= "#F7A600"),  # Spinner style (1-8)
                                conditionalPanel(
                                  condition = "input.runPCA > 0",  # true after first click
@@ -1049,7 +1049,7 @@ ui <-
 
                                # PCA Main Panel
                                mainPanel(div(id="everything_cluster_mainpanel",
-                                             div("Refine PCA Settings here and click Confirm Choice, Confirm Axis Labels and Confirm Number of PCs tested, then click Run Principal Component Analysis on the left", style = "text-align: left; font-size:150%"),
+                                             div("Refine PCA Settings here and click (at least) Confirm Choice, Confirm Axis Labels and Confirm Number of PCs tested, then click Run Principal Component Analysis on the left", style = "text-align: left; font-size:150%"),
 
                                              div("1. Please select how the objectives should be plotted", style = "margin-top: 10px; text-align: left; font-size:150%"),
                                              fluidRow(column(6,
@@ -1057,20 +1057,20 @@ ui <-
                                                              selectInput("element2", "Y Axis", choices = NULL),
                                                              selectInput("element3", "Colour", choices = NULL),
                                                              selectInput("element4", "Size", choices = NULL),
-                                                             actionButton("set_choices","Confirm Choice"),
+                                                             actionButton("set_choices","Confirm Choice", style = "background-color: #83D0F5;"),
                                                              htmlOutput("selected_elements")),
                                                       column(6,
                                                              textInput("axisx","X Axis Label",value = ""),
                                                              textInput("axisy","Y Axis Label",value = ""),
                                                              textInput("colour","Colour Label",value = ""),
                                                              textInput("size","Size Label",value = ""),
-                                                             actionButton("confirm_axis","Confirm Axis Labels"),
+                                                             actionButton("confirm_axis","Confirm Axis Labels", style = "background-color: #83D0F5;"),
                                                              htmlOutput("axis_text"))),
                                              #number of PCAs
                                              div("2. Please specify the number of principal components that shall be tested", style = "text-align: left; font-size:150%"),
                                              numericInput("pca_min", "Minimum number of PCs", value = 7),
                                              numericInput("pca_max", "Maximum number of PCs", value = 7),
-                                             actionButton("pcaminmax", "Confirm Number of PCs tested"),
+                                             actionButton("pcaminmax", "Confirm Number of PCs tested", style = "background-color: #83D0F5;"),
 
 
 
