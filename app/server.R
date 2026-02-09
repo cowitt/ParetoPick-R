@@ -204,7 +204,7 @@ server <- function(input, output, session) {
   shinyjs::runjs("$('#short3').attr('maxlength', 19)")
   shinyjs::runjs("$('#short4').attr('maxlength', 19)")
   
-  
+ 
   observeEvent(input$tabs == "data_prep",{
    
 
@@ -293,7 +293,23 @@ server <- function(input, output, session) {
   
     ##get new objective names, make fit() and objectives() and f_scaled
     observeEvent(input$save_par_fiti, {
-      short <<- c(trimws(input$short1), trimws(input$short2), trimws(input$short3), trimws(input$short4))
+      
+      short_temp <- c(trimws(input$short1), trimws(input$short2), 
+                      trimws(input$short3), trimws(input$short4))
+      
+      # Check for empty values
+      if(any(short_temp == "" | is.na(short_temp))) {
+        showNotification("Please provide all names or '-' ", type = "error", duration = 5)
+        return()  #don't do the rest
+      }
+      
+      if(length(unique(short_temp)) < length(short_temp)){
+        showNotification("Objective names have to be unique! Please change.", type = "error", duration = 5)
+        return() #don't do the rest
+      }
+      #only if above passes
+      short <<- short_temp
+      
       objectives(short)
       saveRDS(short, file = "../input/object_names.RDS")
       
@@ -325,6 +341,7 @@ server <- function(input, output, session) {
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)}
       shinyjs::refresh()
+
       
       output$obj_conf <- renderTable({
         if(file.exists(pareto_path)){
@@ -746,7 +763,7 @@ server <- function(input, output, session) {
   #remove tab content if fitness not available
   observe({
     if (!file.exists(pareto_path)) {
-      output$config_needs_var = renderText({"Please provide pareto_fitness.txt and click Run Prep (OPTAIN workflow) or provide a .csv with variables to cluster on in the Data Preparation tab before proceeding here!"})
+      output$config_needs_var = renderText({"Please provide pareto_fitness.txt, the objective names and a .csv with variables to cluster on in the Data Preparation tab before proceeding here! If you're using the SWAT+/CoMOLA workflow, please click Run Prep in the Data Preparation tab."})
       output$uploaded_pareto <- renderText({"To be able to proceed, please provide pareto_fitness.txt as well as the objective names in the previous tab."})
       shinyjs::hide("main_analysis")
       shinyjs::hide("all_ahp")
@@ -760,6 +777,9 @@ server <- function(input, output, session) {
       output$analysis_needs_var = renderText({"The correlation analysis and the clustering have to run first before their results can be analysed."})
       
     }else{
+ 
+      
+      
       observe({
         if (is.null(clus_path())) {
           #clus_path holds either var_corr_par.csv or cluster_param.csv path
@@ -1203,7 +1223,7 @@ server <- function(input, output, session) {
       cols = objectives()
       values = sel_tay()
       
-      mv <- fit1() %>%  filter(across(all_of(cols), ~ . %in% values))%>%slice(1) #slice needed for duplicate optima, should not happen in clean optimisation
+      mv <- fit1() %>%  filter(if_all(all_of(cols), ~ . %in% values))%>%slice(1) #slice needed for duplicate optima, should not happen in clean optimisation
       
       hru_one = plt_sel(shp = cmf(), opti_sel = mv$optimum)
       
@@ -1245,7 +1265,7 @@ server <- function(input, output, session) {
       
       cols = objectives()
       values = sel_tay()
-      mv <- fit1() %>%  filter(across(all_of(cols), ~ . %in% values))
+      mv <- fit1() %>%  filter(if_all(all_of(cols), ~ . %in% values))
       
       # make sf files
       hru_one = plt_sel(shp = cmf(), opti_sel = mv$optimum)
@@ -1865,7 +1885,7 @@ server <- function(input, output, session) {
          
        
        fit = fit() %>% rownames_to_column("optimum")
-       mv <- fit %>%  filter(across(all_of(cols), ~ . %in% values))
+       mv <- fit %>%  filter(if_all(all_of(cols), ~ . %in% values))
        one_opti = gsub("V","",mv$optimum)
 
        hru_one_act = hru_ever() %>%filter(optims == one_opti)
@@ -3630,7 +3650,7 @@ server <- function(input, output, session) {
         }else{
           fit = fit() %>% rownames_to_column("optimum")
           tol_rel <- 1e-6
-          mv = fit %>%filter(rowSums(across(all_of(cols), ~ 
+          mv = fit %>%filter(rowSums(if_all(all_of(cols), ~ 
                                           abs(.-values[[cur_column()]])/abs(values[[cur_column()]])<tol_rel))==length(cols))
           
           if(nrow(mv) == 0){
@@ -3834,7 +3854,7 @@ server <- function(input, output, session) {
       updateCheckboxInput(session, "save_ahp", value = FALSE) 
       bp <-best_option()
       
-      bp <<- fit()%>% rownames_to_column("optimum") %>% filter(across(all_of(objectives()), ~ . %in% bp))
+      bp <<- fit()%>% rownames_to_column("optimum") %>% filter(if_all(objectives(), ~ . %in% bp))
       })
     
       
@@ -3989,7 +4009,7 @@ server <- function(input, output, session) {
 
   bo = best_option() 
   cols = objectives()
-  bo <- fit1() %>% filter(across(all_of(cols), ~ . %in% bo))
+  bo <- fit1() %>% filter(if_all(all_of(cols), ~ . %in% bo))
    
     ##shps for maps
     if (file.exists("../input/hru_in_optima.RDS")) {
@@ -4019,7 +4039,7 @@ server <- function(input, output, session) {
 
     bo = best_option() 
     cols = objectives()
-    bo <- fit1() %>% filter(across(all_of(cols), ~ . %in% bo))
+    bo <- fit1() %>% filter(if_all(all_of(cols), ~ . %in% bo))
     
     ##shps for maps
     if (file.exists("../input/hru_in_optima.RDS")) {
