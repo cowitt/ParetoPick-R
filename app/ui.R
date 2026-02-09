@@ -8,8 +8,8 @@ ui <-
     dashboardHeader(title="ParetoPick-R"),
     dashboardSidebar(
       sidebarMenu(id = "tabs",
-                  menuItem("Introduction",tabName = "intro", icon = icon("home"),selected=TRUE),
-                  menuItem("Data Preparation", icon=icon("file",lib = "font-awesome"),tabName = "data_prep"),
+                  menuItem("Introduction",tabName = "intro", icon = icon("home")),
+                  menuItem("Data Preparation", icon=icon("file",lib = "font-awesome"),tabName = "data_prep",selected=TRUE),
                   menuItem("Visualising the Pareto Front",tabName = "play_around",icon = icon("dashboard")),
                   menuItem("Configure Clustering", tabName = "configure", icon = icon("cog")),
 
@@ -310,9 +310,7 @@ ui <-
                                       });
                                     });
                                     
-                                    
-                                    
-                                 ")),
+                               ")),
 
 
 
@@ -322,9 +320,8 @@ ui <-
                              
                              mainPanel(width =12, div(
                                style = "width: 100%;; margin: 0 auto; text-align: justify; font-size:135%;",
-                               p("This application analyses OPTAIN optimisation outputs and shall support decision making.
-                                  While all solutions provided by the SWAT+ / COMOLA workflow are pareto-optimal (none of the objectives can be improved without losses
-                                  in other objectives), choosing among a large number of solutions can be daunting."),
+                               p("This application analyses multi-objective optimisation outputs and shall support decision making.
+                                  "),
                                br(),
                                p("To reduce complexity while minimising information loss, this application provides two ways to filter/reduce the pareto front:"),
                                tags$ol(tags$li("A clustering algorithm based on a Principal Component Analysis (PCA) and kmeans/kmedoids.
@@ -336,7 +333,7 @@ ui <-
                                        br(),
                                        br(),
                                p(" The application is structured the following way:"),
-                               p(HTML("The second tab <b>Data Preparation</b> is needed to upload or produce the data required for the subsequent analyses. Four different levels of functionality can be distinguished depending on whether the SWAT+ - CoMOLA workflow was used or if files have to be reproduced in the SWAT+ - CoMOLA structure.")),
+                               p(HTML("The second tab <b>Data Preparation</b> is needed to upload and produce the data required for the subsequent analyses.")),
                                p(HTML("The third tab <strong>Visualising the Pareto Front</strong> provides an overview over the optimisation results. The user can gain insights into the relationships between the objectives and the pareto front by selecting and plotting preferred objective ranges.")),
                                p(HTML("The fourth tab <strong>Configure Clustering</strong> allows to perform the clustering with default settings or to jump to the optional tabs for manual clustering.")),
                                
@@ -626,10 +623,11 @@ ui <-
 
                          sidebarPanel( width = 3,
 
-
                                        textOutput("uploaded_pareto"),
+                                       
 
                                        div(id="play_sidebar",
+                                           
                                          column(12,
                                                 div("Objective Range",
                                                     tags$h5("For some of the visualisations and analyses in this tool, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
