@@ -7,6 +7,7 @@ server <- function(input, output, session) {
 
   ## reactive values
   objectives <- reactiveVal(character()) #objective names
+  pareto_da <- reactiveVal(if(file.exists(pareto_path)) 1 else NULL) #observer for pareto_path availability Data Prep --> Vis
   file_data3 <- reactiveVal(NULL)
   file_data6 <- reactiveVal(NULL)
   file_hrucon = reactiveVal(NULL)
@@ -222,8 +223,6 @@ server <- function(input, output, session) {
           
         }
       
-        
-
       
     })
     
@@ -276,7 +275,7 @@ server <- function(input, output, session) {
       par_fiti(list(path = file$datapath, name = file$name))
       save_path_par_fiti <- file.path(save_dir, "pareto_fitness.txt")
       file.copy(par_fiti()$path, save_path_par_fiti, overwrite = TRUE) #copy pareto_fitness.txt
-    })
+      })
     
   
   #make status quo based on user input
@@ -340,8 +339,8 @@ server <- function(input, output, session) {
       fit1(fit() %>% rownames_to_column("optimum"))
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)}
-      shinyjs::refresh()
-
+      pareto_da(1) #trigger for pareto front availability, used in other tabs to show/hide content
+      
       
       output$obj_conf <- renderTable({
         if(file.exists(pareto_path)){
@@ -685,7 +684,7 @@ server <- function(input, output, session) {
        
         
         observeEvent(input$reset_btn, {
-          
+          pareto_da(NULL)
           
           updateTextInput(session,"short1", value = "" )
           updateTextInput(session,"short2", value = "" )
@@ -762,7 +761,10 @@ server <- function(input, output, session) {
   
   #remove tab content if fitness not available
   observe({
-    if (!file.exists(pareto_path)) {
+  
+    pareto_da()
+    # if (!file.exists(pareto_path)) {
+    if(is.null(pareto_da())){
       output$config_needs_var = renderText({"Please provide pareto_fitness.txt, the objective names and a .csv with variables to cluster on in the Data Preparation tab before proceeding here! If you're using the SWAT+/CoMOLA workflow, please click Run Prep in the Data Preparation tab."})
       output$uploaded_pareto <- renderText({"To be able to proceed, please provide pareto_fitness.txt as well as the objective names in the previous tab."})
       shinyjs::hide("main_analysis")
@@ -777,9 +779,16 @@ server <- function(input, output, session) {
       output$analysis_needs_var = renderText({"The correlation analysis and the clustering have to run first before their results can be analysed."})
       
     }else{
- 
       
-      
+      #show stuff in vis and ahp tab
+      shinyjs::show("play_sidebar")
+      shinyjs::show("all_ahp")
+      shinyjs::show("ahp_analysis")
+      shinyjs::show("random_ahp2")
+      shinyjs::show("show_status_quo")
+      shinyjs::show("unit_add3")
+                    
+      output$uploaded_pareto <- NULL
       observe({
         if (is.null(clus_path())) {
           #clus_path holds either var_corr_par.csv or cluster_param.csv path
@@ -791,6 +800,9 @@ server <- function(input, output, session) {
           
           output$config_needs_var = renderText({"Please provide a .csv with cluster parameters (eg descriptors of the decision space) in the Data Preparation tab or Click Run Prep (SWAT+/CoMOLA workflow) before proceeding here!"})
           output$analysis_needs_var = renderText({"Please click Run Prep in the Data Preparation tab before proceeding here!"})
+        }else{
+          output$config_needs_var = NULL
+          
         }
       })
       
@@ -3878,7 +3890,8 @@ server <- function(input, output, session) {
     
     weight_plt_fun = function(){
       req(best_option())
-      req(whole_ahp(),input$x_var)
+      req(whole_ahp())
+      req(input$x_var, input$y_var, input$col_var, input$size_var)
       
      if(!is.null(sols())){ sol<<-sols()[,objectives()]}else{sol = NULL}
       bo = best_option()
