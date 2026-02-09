@@ -290,7 +290,9 @@ for(op in paste0("V", 1:nopt)){
   ### fraction of water from individual measures that goes directly into channel (channel_frac)
   # read rout_unit.con (ensure in this ugly way that those w/ missing col names look the same)
   ru_names = readLines("../data/rout_unit.con", n=2 )[2]
+  ru_names = unlist(strsplit(ru_names,"\t"))
   ru_names = unlist(strsplit(ru_names," "))
+  
   ru_names = ru_names[ru_names != ""] 
   if(!("frac_1" %in% ru_names)){
     ru <- read.table("../data/rout_unit.con", header = FALSE, fill = TRUE,

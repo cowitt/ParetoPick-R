@@ -124,7 +124,14 @@ The following files (their detailed structure is described in the next section) 
 6. __rout_unit.con__<a name="rout-structure"></a>
   * only for automated workflow and MOO from SWAT+/CoMOLA
   * connection file created with SWAT+ Editor/SWATmeasR delineating the transport of water between HRUs, channel and aquifer
-  * this file has to contain the columns: obj_id, obj_typ_1, area, frac_1
+  * this file has to contain the columns: obj_id, obj_typ_1, area
+  * has to contain one header line followed by one line with column names, no empty lines in first three lines
+```
+SWAT+ input file updated with SWATmeasR at 2023-12-29 17:47:43.710246
+      id  name                gis_id          area           lat           lon          elev    obj_id               wst       cst      ovfl      rule   out_tot     obj_typ_1  obj_id_1     hyd_typ_1        frac_1     obj_typ_2  obj_id_2     hyd_typ_2        frac_2     obj_typ_3  obj_id_3     hyd_typ_3        frac_3     obj_typ_4  obj_id_4     hyd_typ_4        frac_4     obj_typ_5  obj_id_5     hyd_typ_5        frac_5     obj_typ_6  obj_id_6     hyd_typ_6        frac_6     obj_typ_7  obj_id_7     hyd_typ_7        frac_7     obj_typ_8  obj_id_8     hyd_typ_8        frac_8     obj_typ_9  obj_id_9     hyd_typ_9        frac_9    obj_typ_10  obj_id_10    hyd_typ_10       frac_10    obj_typ_11  obj_id_11    hyd_typ_11       frac_11    obj_typ_12  obj_id_12    hyd_typ_12       frac_12
+       1  rtu0001                  0       0.14805      51.12234      14.74782     243.08908         1     s51119n14755e         0         0         0         3            ru      1856           tot       0.72164            ru      4694           tot       0.27836           aqu         1           rhg       1.00000                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+    
+```
 
 7. __measure_location.csv__<a name="msrs-structure"></a>
   * only for automated workflow and MOO from SWAT+/CoMOLA
