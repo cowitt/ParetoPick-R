@@ -10,6 +10,10 @@ server <- function(input, output, session) {
   pareto_da <- reactiveVal(if(file.exists(pareto_path)) 1 else NULL) #observer for pareto_path availability Data Prep --> Vis
   clus_out <- reactiveVal(if (list.files(path = output_dir, pattern = "clusters_representativesolutions.*\\.csv$", full.names = TRUE) %>% length() > 0) 1 else NULL) #observer for cluster output availability
   axiselected = reactiveVal(if(file.exists("../input/units.RDS")) readRDS("../input/units.RDS") else NULL) #axis labels
+  clusp_da = reactiveVal(if(file.exists("../input/cluster_params.csv")) 1 else NULL) 
+  hru_da =  reactiveVal(if(file.exists("../input/hru_in_optima.RDS")) 1 else NULL) 
+  pg_da = reactiveVal(if(file.exists("../data/pareto_genomes.txt")) 1 else NULL) 
+  shp_da = reactiveVal(if(file.exists("../data/hru.shp")) 1 else NULL)
   
   file_data3 <- reactiveVal(NULL)
   file_data6 <- reactiveVal(NULL)
@@ -495,6 +499,7 @@ server <- function(input, output, session) {
     
     #### File Upload - Decision Space ####
     observe({
+      pg_da()
       shinyjs::toggleState("measure_loc", condition = file.exists("../data/pareto_genomes.txt"))
     })
     
@@ -528,6 +533,7 @@ server <- function(input, output, session) {
       mutate(id = row_number())
     
     saveRDS(genome_filled, file = "../input/hru_in_optima.RDS")
+    hru_da(1)
     #remove lookup table
     file.remove(save_path_lookup_loc); rm(genome_filled)
 
@@ -540,8 +546,8 @@ server <- function(input, output, session) {
     save_hru_activ <- file_hru_activ()$name
     save_path_hru_activ <- file.path(save_dir, "pareto_genomes.txt")
     file.copy(file_hru_activ()$path, save_path_hru_activ, overwrite = TRUE)
-    shinyjs::refresh()
-    
+    # shinyjs::refresh()
+    pg_da(1)
     }, ignoreInit = TRUE)
   
     #### File upload - Clustering (standard workflow) #####
@@ -550,8 +556,8 @@ server <- function(input, output, session) {
     file_cluster_params(list(path = file$datapath, name = file$name))
     path_cluster_params = file.path(input_dir, "cluster_params.csv")
     file.copy(file_cluster_params()$path, path_cluster_params, overwrite = T)
-    
-    shinyjs::refresh()
+    clusp_da(1)
+    # shinyjs::refresh()
     }, ignoreInit = TRUE)
     
     #### File Upload - Mapping ####
@@ -586,7 +592,9 @@ server <- function(input, output, session) {
     mean_lat <- mean(c(bbox["ymin"], bbox["ymax"]))
     latlon = c(mean_lat, mean_lon)
     write.table(latlon,file = "../input/hru.con", row.names = FALSE, col.names = F)
-    shinyjs::refresh()
+    
+    shp_da(1)
+    # shinyjs::refresh()
     }, ignoreInit = TRUE)
 
     
@@ -644,6 +652,8 @@ server <- function(input, output, session) {
         }
         
         dp_done(TRUE)
+        hru_da(if(file.exists("../input/hru_in_optima.RDS")) 1 else NULL) 
+        
         optain <<- NULL # clear
         output_handled(TRUE) 
       }
@@ -1192,7 +1202,7 @@ server <- function(input, output, session) {
    
     output$clickpoint_map <- renderUI({
       if(clickpoint_button()){
-        if(is.null(cm())){ #indirect check if hru.shp is available
+        if(is.null(shp_da())){ 
           return(NULL)
         }else{
           actionButton("map_sel", "Plot measure implementation map of selected optimum")
@@ -1624,6 +1634,7 @@ server <- function(input, output, session) {
   
   #measure sliders, make hru_matcher/hru_ever and aep_100
   observe({
+    hru_da()
     two_basis_meas = c( "../input/hru_in_optima.RDS", #hru_matcher()/hru_ever()
                        "../data/measure_location.csv")#aep_100()
     
@@ -1710,6 +1721,7 @@ server <- function(input, output, session) {
   
   
   observe({
+    shp_da()
     map_files = c(
       # "../input/hru.con", #only for lalo()
       "../data/hru.shp",#for cm() and cmf()
@@ -2064,6 +2076,7 @@ server <- function(input, output, session) {
   ### Configure ####
   
   observe({
+    
     optain = "../input/var_corr_par.csv"
     not_optain = "../input/cluster_params.csv"
     
@@ -2825,16 +2838,20 @@ server <- function(input, output, session) {
     
     updateSelectInput(session, "x_var_pcs_vs", choices = choices, selected = rng_plt()[1])
     
-  observe({  if(file.exists("../data/hru.shp")) {
-    ##shps for maps
-    if (file.exists("../input/hru_in_optima.RDS")) {
-      
+    observe({
       req(cm())
-      cmf(fit_optims(cm=cm(),optims=sols(),hru_in_opt_path = "../input/hru_in_optima.RDS"))
-    }
-    needs_buffer(pull_buffer())
-  }})
+      hru_da()
+      shp_da()
+      if(file.exists("../data/hru.shp") && file.exists("../input/hru_in_optima.RDS")) {
+        cmf(fit_optims(cm = cm(), optims = sols(), hru_in_opt_path = "../input/hru_in_optima.RDS"))
+      }
+    })
     
+    observe({
+      if(file.exists("../data/hru.shp")) {
+        needs_buffer(pull_buffer())
+      }
+    })
     observe({
       if(all(fit()[[input$x_var2]]<=0) && 
          all(fit()[[input$y_var2]]<=0)){shinyjs::show("rev_plot2")}else{shinyjs::hide("rev_plot2")}
@@ -3085,6 +3102,7 @@ server <- function(input, output, session) {
     
     # turn off share_con if not OPTAIN
     observe({
+      clusp_da()
       if(file.exists("../input/cluster_params.csv")){
       shinyjs::disable("show_share_con")}
       
@@ -3322,8 +3340,10 @@ server <- function(input, output, session) {
     
     })
   
-  observe({ #hide measire slider title too
-    if(is.null(hru_ever()) && !file.exists("../input/cluster_params.csv")){
+  observe({ #hide measure slider title too
+    hru_ever()
+    clusp_da()
+    if(is.null(hru_ever()) && is.null(clusp_da())){
       shinyjs::hide("measure_title_ahp")
       shinyjs::hide("measure_table_title")
       
@@ -3960,16 +3980,7 @@ server <- function(input, output, session) {
         svglite(file, width = 15, height = 10)
         print(plot)
         dev.off()
-      }
-      
-      }
-  )
-  
-  
-    
-  
-  
-  
+      }   })
   
   })
   
@@ -4024,7 +4035,8 @@ server <- function(input, output, session) {
   })
   
   observe({ #remove plot button
-    if(is.null(cm())) {
+    shp_da()
+    if(is.null(shp_da())) {
       shinyjs::hide("plt_bo")
     } else {
       shinyjs::show("plt_bo")
