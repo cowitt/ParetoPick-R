@@ -8,6 +8,9 @@ server <- function(input, output, session) {
   ## reactive values
   objectives <- reactiveVal(character()) #objective names
   pareto_da <- reactiveVal(if(file.exists(pareto_path)) 1 else NULL) #observer for pareto_path availability Data Prep --> Vis
+  clus_out <- reactiveVal(if (list.files(path = output_dir, pattern = "clusters_representativesolutions.*\\.csv$", full.names = TRUE) %>% length() > 0) 1 else NULL) #observer for cluster output availability
+  axiselected = reactiveVal(if(file.exists("../input/units.RDS")) readRDS("../input/units.RDS") else NULL) #axis labels
+  
   file_data3 <- reactiveVal(NULL)
   file_data6 <- reactiveVal(NULL)
   file_hrucon = reactiveVal(NULL)
@@ -102,7 +105,6 @@ server <- function(input, output, session) {
   
   # pca_status <- reactiveVal("")
   pca_spin <- reactiveVal(NULL)#spinner in cluster tab
-  axiselected = reactiveVal(NULL) 
   max_pca <- reactiveVal()# required for max pc field
   pca_available <- reactiveValues(button1_clicked = FALSE, button2_clicked = FALSE, button3_clicked = FALSE)
   #results table
@@ -366,12 +368,8 @@ server <- function(input, output, session) {
     
     ## get unit input 
     observeEvent(input$save_unit,{
-      
-      if(file.exists("../input/units.RDS")){enouvea = TRUE}else{enouvea = FALSE}
-      
       axiselected(c(input$unit1,input$unit2,input$unit3, input$unit4))
       saveRDS(axiselected(), file="../input/units.RDS")
-      
       updateTextInput(session, "axisx",  value  = axiselected()[1])
       updateTextInput(session, "axisy", value = axiselected()[2])
       updateTextInput(session, "colour", value = axiselected()[3])
@@ -384,10 +382,7 @@ server <- function(input, output, session) {
       
       write_uns_converted(rv = pca_rv, var1_lab= input$unit1, var2_lab = input$unit2, var3_lab = input$unit3, var4_lab = input$unit4)
       
-      if(enouvea){
-        shinyjs::refresh()
-
-      }
+      
     })
     
     
@@ -536,7 +531,6 @@ server <- function(input, output, session) {
     #remove lookup table
     file.remove(save_path_lookup_loc); rm(genome_filled)
 
-    shinyjs::refresh()
     }, ignoreInit = TRUE)
     
     
@@ -1019,33 +1013,35 @@ server <- function(input, output, session) {
   })
   
 
+    })#end of play tab observer
+
+  
+  observe({
+   axiselected()
     
-   
-   if(file.exists("../input/units.RDS")){#shinyjs::hide(id="units")
-        axiselected(readRDS("../input/units.RDS"))
-        updateTextInput(session, "unit1",  value  = axiselected()[1])
-        updateTextInput(session, "unit2", value = axiselected()[2])
-        updateTextInput(session, "unit3", value = axiselected()[3])
-        updateTextInput(session, "unit4", value = axiselected()[4])
+    if(!is.null(axiselected())){
+      updateTextInput(session, "unit1",  value  = axiselected()[1])
+      updateTextInput(session, "unit2", value = axiselected()[2])
+      updateTextInput(session, "unit3", value = axiselected()[3])
+      updateTextInput(session, "unit4", value = axiselected()[4])
+    }else{
+      if(!is.null(objectives())){
+        
+        write_labels(pca_rv = pca_rv, var1 = objectives()[1], var2 = objectives()[2], 
+                     var3 = objectives()[3], var4 = objectives()[4],
+                     var1_lab= "", var2_lab = "", var3_lab = "",
+                     var4_lab = "")
+        
       }else{
         
-        #delete from rv just to be sure
-        if(!is.null(objectives())){
-       
-                             write_labels(pca_rv = pca_rv, var1 = objectives()[1], var2 = objectives()[2], 
-                                          var3 = objectives()[3], var4 = objectives()[4],
-                                          var1_lab= "", var2_lab = "", var3_lab = "",
-                                          var4_lab = "")
-                                    
-        }else{
-          
-          write_labels(pca_rv = pca_rv, var1 = "", var2 = "", 
-                       var3 = "", var4 = "",
-                       var1_lab= "", var2_lab = "", var3_lab = "",
-                       var4_lab = "")
-           }
+        write_labels(pca_rv = pca_rv, var1 = "", var2 = "", 
+                     var3 = "", var4 = "",
+                     var1_lab= "", var2_lab = "", var3_lab = "",
+                     var4_lab = "")
       }
-    })
+    }
+  })
+  
 
   # cache slider observations
   # cache slider observations
@@ -1173,7 +1169,10 @@ server <- function(input, output, session) {
     
     
     ##TOP Pareto plot
-    output$first_pareto <- renderPlot({ first_pareto_fun() })
+    output$first_pareto <- renderPlot({ 
+      axiselected()
+      first_pareto_fun() 
+      })
   
     observeEvent(input$clickpoint, { #first pareto
       req(filtered_data(), input$x_var3) #non-scaled
@@ -2190,7 +2189,7 @@ server <- function(input, output, session) {
         ##run clustering
         
         clusterr = its_cluster_time(rv = pca_rv, corr_rv = write_corr_rv, var_path = clus_path(), ct = "kmeans")
-        
+        clus_out(1)
         
         ## window with plots/Modaldialog
         
@@ -2625,6 +2624,8 @@ server <- function(input, output, session) {
       clusterr = its_cluster_time(rv = pca_rv,corr_rv = write_corr_rv,var_path = clus_path(),ct = "kmedoid")
     }
     
+    clus_out(1)
+    
     # output$cluster_happening <- renderPrint({ cat(clusterr$text)})
     output$cluster_happening = renderText({clusterr$text})
     output$cluster_table = renderTable({  clusterr$table }, striped = TRUE, hover = TRUE, bordered = TRUE, rownames = T, colnames = T)
@@ -2778,7 +2779,33 @@ server <- function(input, output, session) {
   output$pca_settings_summary <- renderUI({HTML(settings_text())})
   
   ### Analysis Panel ####
-
+  
+  observe({
+    clus_out()
+    if(is.null(clus_out())){
+      shinyjs::hide("main_analysis")
+      shinyjs::hide("plt_opti")
+      shinyjs::runjs("toggleSidebar(false);")  #hide sidebar
+      
+      output$analysis_no_clustering <- renderText({HTML("the correlation analysis and the clustering have to run first before their results can be analysed")})
+    }else{
+      
+      shinyjs::hide("analysis_no_clustering")
+      shinyjs::runjs("toggleSidebar(true);")  #show sidebar
+      shinyjs::show("main_analysis")
+      shinyjs::show("plt_opti")
+  }
+  })
+  
+  
+  
+  
+  observe({
+    axiselected()
+    if (is.null(axiselected())){shinyjs::disable("unit_add2")}else{shinyjs::enable("unit_add2")} 
+    
+  })
+  
   observeEvent(input$tabs == "analysis", { #this could be combined with the ahp tab for analysis
     
     if(!file.exists("../input/object_names.RDS")) {
@@ -2788,7 +2815,6 @@ server <- function(input, output, session) {
     }
     
     if (!file.exists("../data/sq_fitness.txt")){shinyjs::disable("add_sq")}else{shinyjs::enable("add_sq")} 
-    if (!file.exists("../input/units.RDS")){shinyjs::disable("unit_add2")}else{shinyjs::enable("unit_add2")} 
     
     
     #update Analysis tab plot without "off"
@@ -2814,20 +2840,7 @@ server <- function(input, output, session) {
          all(fit()[[input$y_var2]]<=0)){shinyjs::show("rev_plot2")}else{shinyjs::hide("rev_plot2")}
     })
     
-    clus_out <- list.files(path = output_dir, pattern = "clusters_representativesolutions.*\\.csv$", full.names = TRUE)
-    
-    if(length(clus_out) == 0){
-     shinyjs::hide("main_analysis")
-     shinyjs::hide("plt_opti")
-     shinyjs::runjs("toggleSidebar(false);")  #hide sidebar
-     
-     output$analysis_no_clustering <- renderText({HTML("the correlation analysis and the clustering have to run first before their results can be analysed")})
-  
-     }else{shinyjs::hide("analysis_no_clustering")
-     shinyjs::runjs("toggleSidebar(true);")  #show sidebar
-     shinyjs::show("main_analysis")
-     shinyjs::show("plt_opti")
-   }
+   
       if(!file.exists("../input/object_names.RDS")) {
         shinyjs::hide(id = "analysis_random")
         shinyjs::hide(id= "meas_low")
@@ -3080,7 +3093,9 @@ server <- function(input, output, session) {
     #switch between plots/functions
     observeEvent(input$show_pareto,{ #default
       if (input$show_pareto) {
-        output$par_plot_optima <- renderPlot({clus_res_plt()})
+        output$par_plot_optima <- renderPlot({
+          axiselected()
+          clus_res_plt()})
         updateCheckboxInput(session, "show_share_con", value = FALSE)
         updateCheckboxInput(session, "show_boxplot", value = FALSE)
         updateCheckboxInput(session, "show_pca_vs_var", value = FALSE)
@@ -3662,8 +3677,10 @@ server <- function(input, output, session) {
         }else{
           fit = fit() %>% rownames_to_column("optimum")
           tol_rel <- 1e-6
-          mv = fit %>%filter(rowSums(if_all(all_of(cols), ~ 
-                                          abs(.-values[[cur_column()]])/abs(values[[cur_column()]])<tol_rel))==length(cols))
+          #awkward but needed through rounded csv reading, needs across(all_of()), not if_all(all_of())
+          mv <- fit %>% mutate(match = rowSums(across(all_of(cols),
+                                      ~abs(.-values[[cur_column()]])/abs(values[[cur_column()]])<tol_rel))==length(cols)) %>%
+            filter(match) %>% select(-match)
           
           if(nrow(mv) == 0){
             aep_one = default_empty_ahp()
@@ -3920,7 +3937,9 @@ server <- function(input, output, session) {
     })
     
     
-  output$weights_plot <- renderPlot({  weight_plt_fun() })
+  output$weights_plot <- renderPlot({  
+    axiselected()
+    weight_plt_fun() })
   
   output$download_weights_plot <- downloadHandler(
     filename = function() {
