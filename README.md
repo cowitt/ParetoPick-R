@@ -1,7 +1,7 @@
 # 1. Introduction
 ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="150" height="200" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
-It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making for spatial optimisation.
-It provides a dashboard for the user to supply their own data, visualise and explore it, alter a range of parameters and perform clustering and an Analytical Hierarchy Process.
+It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making.
+It provides a dashboard for the user to supply their own data, visualise and explore it, produce maps, alter a range of parameters and perform clustering and an Analytical Hierarchy Process.
 
 The code allows the user to select variables to be analysed in a correlation analysis and a cluster algorithm. 
 
@@ -255,9 +255,9 @@ The algorithm considers five variables:
 ## 6.2 Planned Features for Version 1.1.0
   * Data Prep: blue messages on capabilities with current upload
   * write/load full scenario run from previous uses
+  * automated cluster parameter production: share_con, spatial autocorrelation
   * optimum number display in AHP
   * dynamic printing of progress during clustering
-  * extend on cluster input requirements
   * clarify output naming, allow easier reuse of cluster results
   
  
