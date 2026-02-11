@@ -794,6 +794,7 @@ server <- function(input, output, session) {
                     
       output$uploaded_pareto <- NULL
       observe({
+        clusp_da()
         if (is.null(clus_path())) {
           #clus_path holds either var_corr_par.csv or cluster_param.csv path
           # shinyjs::hide("main_analysis")
@@ -2076,7 +2077,7 @@ server <- function(input, output, session) {
   ### Configure ####
   
   observe({
-    
+    clusp_da()
     optain = "../input/var_corr_par.csv"
     not_optain = "../input/cluster_params.csv"
     
