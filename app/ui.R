@@ -519,16 +519,22 @@ ui <-
                                p("If you do not want to produce the cluster variables yourself, you can automatically calculate a set of cluster variables (describing the share of activated areas per decision space variable) here.
                                  Please provide pareto_fitness.txt, the objective names, the shapefile and the genome + lookup table first."),
                                
-                               textOutput("automated_clustering"),                               
-                               actionButton("runaclust", "Prepare Cluster Variables"),#becomes available once hru_in_optima.RDS is available
+                               div(htmlOutput("automated_clustering"),style = "text-align: left; font-size:100%; color: blue; text-decoration: none;"),                               
+                               actionButton("runaclust", "Check Files"),
+                               
+                               tags$button(                               #becomes available once hru_in_optima.RDS is available
+                                 id = "runaclust2", 
+                                 class = "btn btn-default action-button", 
+                                 disabled = "disabled",  "Prepare Cluster Variables Clustering"),
                                uiOutput("aclustout"),
+                               htmlOutput("what_clp"),
                                
                                #######################################################################SWAT+/CoMOLA###############
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
                                div("4. Additional files for an automated workflow (SWAT+/CoMOLA outputs)",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
-                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use an automated workflow for calculating cluster variables and consider competing measure allocation. (This is also possible if you can reproduce these two files).
+                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can  consider competing measure allocation and use an automated workflow for calculating cluster variables.
                                  The file names have to align with what is given here:"),
                               
                                div(

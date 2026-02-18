@@ -8,44 +8,50 @@
 # used files: pareto_genomes.txt, hru.con, measure_location.csv
 # author: cordula.wittekind@ufz.de
 ################################################################################
-print(paste0("loading required packages..."), quote=F)
-suppressPackageStartupMessages({
-  library(configr)#
-  library(corrplot)#
-  library(dplyr)#
-  library(DT)#
-  library(fs)
-  library(fst)
-  library(geohashTools)
-  library(geosphere)
-  library(ggplot2)
-  library(ggtext)
-  library(gridExtra) # or patchwork
-  library(here)
-  library(htmltools)
-  library(leafsync)
-  library(plotly)
-  library(purrr)
-  library(quanteda)
-  library(RColorBrewer)
-  library(readr)
-  library(reticulate)
-  library(scales)
-  library(sf)#
-  library(shiny)
-  library(shinydashboard)
-  library(shinythemes)
-  library(shinyWidgets)
-  library(sp)
-  library(spdep)
-  library(tibble)
-  library(tidyr)
-  library(tidyverse)
-  library(tmap)
-  library(viridis)
- 
-})
+
+mode <- Sys.getenv("MY_MODE", unset = "default") #communicate with server.R
 source("functions.R")
+
+#### 1. Creating a small dataset with the variables for clustering and correlation ####
+if(mode == "fast"){
+  suppressPackageStartupMessages({
+  library(foreign)
+  library(dplyr)
+  library(tidyr)
+  })
+  
+  fit = read.table("../data/pareto_fitness.txt", header = FALSE, stringsAsFactors = FALSE, sep = deli("../data/pareto_fitness.txt"))
+  yolo = readRDS("../input/object_names.RDS")
+  names(fit) = yolo
+  fit$id = seq_len(nrow(fit)) #ids are optima
+  
+  con = read.dbf("../data/hru.dbf")
+  hru = readRDS("../input/hru_in_optima.RDS")
+  nopt = ncol(hru)-1
+  #pull unique meas
+  hru %>%pivot_longer(cols = -id, names_to = "optims", values_to = "measure") %>%
+    group_by(id)%>%filter(!is.na(measure)) %>%select(-id, -optims) %>%distinct(measure) %>% pull() %>% unique() -> meas
+  
+  writeLines(meas, "../output/meas_fast.txt") # this is the best way to communicate "back"
+
+}else{
+#### 2. SWAT+/CoMOLA workflow - produce hru_in_optima.RDS from genome and 
+#       measure_location, produce a more exhaustive set of cluster variables ####
+
+  print(paste0("loading required packages..."), quote=F)
+  
+  suppressPackageStartupMessages({
+    library(dplyr)
+    library(tidyr)
+    library(stringr)
+    library(geosphere)
+    library(spdep)
+    library(Matrix)
+    library(rlang)
+  })
+  
+  
+  
 land_u = c("hedge", "buffer","edgefilter","grasshedge", "shrubhedge", "grassbuffer", "shrubbuffer", "grassslope","grassland","grassrchrg", "terrace", "floodres","swale", "rip_forest", "afforest", "afforestation", "contr")
 
 ## check, assign and write priorities, hardcodes what has been used in CoMOLA
@@ -436,3 +442,4 @@ for(op in paste0("V", 1:nopt)){
   all_var = colnames(test_clu)[5:ncol(test_clu)]  #assuming four variables here
   saveRDS(all_var,file = "../input/all_var.RDS") #required for PCA
   print("check: provided variable names ---> /input/all_var...", quote = FALSE)
+  }

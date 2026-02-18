@@ -58,7 +58,10 @@ server <- function(input, output, session) {
   #data prep
   run_prep_possible = reactiveValues(files_avail = FALSE) #allow prep script to run when all required files available
   script_output <- reactiveVal("") # data prep R output
+  cscript_output <- reactiveVal("") # cluster prep R output
+  
   dp_done = reactiveVal(FALSE) # checking if data prep R output is done
+  cvp_done = reactiveVal(FALSE) # checking if cluster var prep is done
   sel_tay = reactiveVal(NULL)
   
   all_choices = reactiveVal()
@@ -596,7 +599,215 @@ server <- function(input, output, session) {
     shp_da(1)
     # shinyjs::refresh()
     }, ignoreInit = TRUE)
+    
+    #### Automated workflow Cluster Var Prep ####
+    cvp <- NULL 
+    coutput_handled <- reactiveVal(FALSE)
+    
+    observeEvent(input$runaclust, {
+      
+      aclu_files <- c(
+        "Pareto Genome"        = "../data/pareto_genomes.txt",
+        "Blubb"         = "../input/hru_in_optima.RDS",
+        "HRU shapefile"         = "../data/hru.shp",
+        "HRU shapefile (shx)"   = "../data/hru.shx",
+        "HRU shapefile (dbf)"   = "../data/hru.dbf",
+        "HRU shapefile (prj)"   = "../data/hru.prj",
+        "Pareto fitness"        = "../data/pareto_fitness.txt",
+        "Object names"          = "../input/object_names.RDS"
+      )
 
+       checkFiles2 <- sapply(aclu_files, function(file) file.exists(file))
+       
+       
+       # if (!all(checkFiles2)) {
+       #   if (length(which(!checkFiles2)) > 1) {
+       #     text_added = ""
+       #     
+       #     if(isTRUE(checkFiles2["HRU shapefile (dbf)"])) {
+       #       con = foreign::read.dbf("../data/hru.dbf")
+       #       
+       #       if (!all(c("area", "id") %in% names(con))) {
+       #         text_added = c(
+       #           " Please also reupload a shapefile with an area and an id column matching it to individual decision space elements."
+       #         )
+       #       }
+       #     }
+       #     
+       #     checkFiles2 = checkFiles2[-which(names(checkFiles2) == "Blubb")]#remove hru_in_optima, not a global input
+       #     
+       #     output$automated_clustering = renderText({
+       #       HTML(paste(
+       #         "Currently missing:<br/>",
+       #         paste(
+       #           paste(names(which(!checkFiles2)), collapse = "<br/> "),
+       #           "<br/> ",
+       #           text_added,
+       #           collapse = "<br/> "
+       #         )
+       #       ))
+       #     })
+       #     
+       #   } else if (names(which(!checkFiles2)) == "Blubb") {
+       #     #case when hru_in_optima has not been produced
+       #     output$automated_clustering = renderText({
+       #       HTML("Please upload the genome and the lookup table again!")
+       #     })
+       #   } else{
+       #     output$automated_clustering = renderText({
+       #       HTML(paste("Only one file missing: ", names(which(!checkFiles2))))
+       #     })
+       #   }
+       # }else if(isTRUE(checkFiles2["HRU shapefile (dbf)"])) {
+       #   con = foreign::read.dbf("../data/hru.dbf")
+       #   
+       #   if (!all(c("area", "id") %in% names(con))) {
+       #     HTML(
+       #       "All files found but please reupload a shapefile with an area and an id column matching it to individual decision space elements."
+       #     )
+       #   }
+       # } else{
+       #   output$automated_clustering = renderText({
+       #     HTML("All files found.")
+       #   })
+       # }
+       
+       missing_files <- names(checkFiles2)[!checkFiles2]
+       hru_present   <- isTRUE(checkFiles2["HRU shapefile (dbf)"])
+       
+       text_added <- ""
+       
+       # Only read DBF once, and only if needed
+       if (hru_present) {
+         con <- foreign::read.dbf("../data/hru.dbf")
+         
+         if (!all(c("area", "id") %in% names(con))) {
+           text_added <- " lease reupload a shapefile with an area and an id column matching it to individual decision space elements."
+         }
+       }
+       
+       # Remove "Blubb" from missing list (if present)
+       missing_no_blubb <- setdiff(missing_files, "Blubb")
+       
+       output$automated_clustering <- renderText({
+         
+         # ---- CASE 1: Files missing ----
+         if (length(missing_files) > 0) {
+           
+           # Only Blubb missing
+           if (identical(missing_files, "Blubb")) {
+             return(HTML("Please upload the genome and the lookup table again!"))
+           }
+           
+           # One missing (not Blubb)
+           if (length(missing_no_blubb) == 1) {
+             return(HTML(paste("Only one file missing:", missing_no_blubb)))
+           }
+           
+           # Multiple missing
+           return(HTML(paste(
+             "Currently missing:<br/>",
+             paste(missing_no_blubb, collapse = "<br/> "),
+             text_added
+           )))
+         }
+         
+         # ---- CASE 2: No files missing ----
+         if (nzchar(text_added)) {
+           return(HTML(paste("All files found but", text_added)))
+         }
+         
+         HTML("All files found.")
+         shinyjs::enable("runaclust2")
+         
+       })
+    })
+       
+    observeEvent(input$runaclust2,{
+      
+    
+      cvp_done(FALSE)
+      coutput_handled(FALSE)
+      cscript_output(character())
+      
+      # Start the process
+      cvp <<- process$new(
+        "Rscript",
+        c("convert_optain.R"),
+        stdout = "|",
+        stderr = "|",
+        env = c(current = Sys.getenv(), MY_MODE = "fast")#communicate w/ covert_optain.R
+      )
+      
+    })
+    
+    autoInvalidate <- reactiveTimer(50)
+    
+    observe({
+      autoInvalidate()
+      
+      # check if the process is running
+      if (!is.null(cvp) && cvp$is_alive()) {
+        new_output <- isolate(cvp$read_output_lines())
+        
+        if (length(new_output) > 0) {
+          current_output <- cscript_output()
+          updated_output <- unique(c(current_output, new_output))
+          
+          if (length(updated_output) > 10) {
+            updated_output <- tail(updated_output, 10)
+          }
+          
+          cscript_output(updated_output)
+          coutput_handled(TRUE) 
+        }
+        
+      } else if (!is.null(cvp)) {
+        final_output <- cvp$read_output_lines()
+        
+        if (length(final_output) > 0 ) {
+          current_output <- cscript_output()
+          updated_output <- c(current_output, final_output)
+          
+          if (length(updated_output) > 10) {
+            updated_output <- tail(updated_output, 10)
+          }
+          
+          cscript_output(updated_output)
+        }
+        
+        cvp_done(TRUE)
+
+        cvp <<- NULL # clear
+        coutput_handled(TRUE) 
+      }
+    })
+    
+    observe({
+      coutput_handled()
+
+      if(isTRUE(coutput_handled())){
+        cl_mes = readLines("../output/meas_fast.txt")
+        output$what_clp = renderText({(
+          HTML(paste0("The cluster variable preparation was successful for the following variables: ","<br/>", paste(cl_mes, collapse = "<br/>"))))
+          })
+      }
+    })
+    
+    
+    # Render UI output
+    output$aclustout <- renderUI({
+      if (cvp_done() && file.exists("../input/cluster_params.csv")) {
+        tags$strong("The preparation of cluster variables was successful!")
+      } else {
+        verbatimTextOutput("cluster_automated")
+      }
+    })
+    
+    # Render process output
+    output$cluster_automated <- renderText({
+      paste(cscript_output(), collapse = "\n")
+    })
     
     #### Automated workflow Data Prep ####
     
