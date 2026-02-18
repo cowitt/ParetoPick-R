@@ -461,8 +461,8 @@ ui <-
                                ),
                                div(style = "margin-top: -15px;",fileInput("hru_activ", "", accept = ".txt", placeholder="")),
                                
-                               p("After providing the genomes, please provide a lookup table (either .csv or .txt) that translates the code used for the decision space in the genome. 
-                                 This file is not needed when working with SWAT+/CoMOLA outputs. The genome has to be uploaded first."),
+                               p("After providing the genome, please provide a lookup table (either .csv or .txt) that translates the code used for the decision space in the genome. 
+                                 This file is not needed when working with SWAT+/CoMOLA outputs."),
                                
                                div(
                                  tags$a("Lookup table", 
@@ -473,9 +473,6 @@ ui <-
                                ),
                                div(style = "margin-top: -15px;",fileInput("measure_loc", "", accept =c(".txt",".csv"), placeholder="")),
                                
-                             
-                               ######################################################################## 
-                               hr(style = "border-top: 1px solid #03597F;"), 
                                
                                
                                div("2.2 File Upload - Mapping",
@@ -502,13 +499,13 @@ ui <-
                                ######################################################################## Full Visualisation
                                hr(style = "border-top: 1px solid #03597F;"), 
                                
-                               div("3. File Upload - Clustering",
+                               div("3.1 File Upload - Clustering with your own data",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                
-                               p("If you can produce a .csv file with cluster parameters following the Readme, you will be able to use the clustering, visualisations and AHP. This file is produced automatically when working with SWAT+/CoMOLA outputs."),
+                               p("If you can produce a .csv file with cluster variables following the Readme, please provide it here."),
                                
                                div(
-                                 tags$a(".csv file with cluster parameters", 
+                                 tags$a(".csv file with cluster variables", 
                                         href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#cluster-structure",
                                         target = "_blank", #prevents reload
                                         style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
@@ -517,14 +514,21 @@ ui <-
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
                                # actionButton("save_cluster_no","Save file"),
 
-                           
+                               div("3.2 Clustering - with a set of cluster variables produced from your shapefile",
+                                   style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
+                               p("If you do not want to produce the cluster variables yourself, you can automatically calculate a set of cluster variables (describing the share of activated areas per decision space variable) here.
+                                 Please provide pareto_fitness.txt, the objective names, the shapefile and the genome + lookup table first."),
+                               
+                               textOutput("automated_clustering"),                               
+                               actionButton("runaclust", "Prepare Cluster Variables"),#becomes available once hru_in_optima.RDS is available
+                               uiOutput("aclustout"),
                                
                                #######################################################################SWAT+/CoMOLA###############
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
                                div("4. Additional files for an automated workflow (SWAT+/CoMOLA outputs)",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
-                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use an automated workflow for calculating cluster parameters and consider competing measure allocation. (This is also possible if you can reproduce these two files).
+                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use an automated workflow for calculating cluster variables and consider competing measure allocation. (This is also possible if you can reproduce these two files).
                                  The file names have to align with what is given here:"),
                               
                                div(
