@@ -460,7 +460,7 @@ ui <-
                                  style = "text-align: left;"
                                ),
                                div(style = "margin-top: -15px;",fileInput("hru_activ", "", accept = ".txt", placeholder="")),
-                               
+                               uiOutput("gen_fit_fu"),#msg for alignment check between fitness and genome
                                p("After providing the genome, please provide a lookup table (either .csv or .txt) that translates the code used for the decision space in the genome. 
                                  This file is not needed when working with SWAT+/CoMOLA outputs."),
                                
@@ -472,7 +472,7 @@ ui <-
                                  style = "text-align: left;"
                                ),
                                div(style = "margin-top: -15px;",fileInput("measure_loc", "", accept =c(".txt",".csv"), placeholder="")),
-                               
+                               uiOutput("genome_lu_fu"),#msg for alignment check between lookup and genome
                                
                                
                                div("2.2 File Upload - Mapping",
@@ -488,7 +488,7 @@ ui <-
                                ),
                                div(style = "margin-top: -15px;",fileInput("shapefile_cd", "", multiple = TRUE, placeholder="",
                                                                           accept = c(".shp", ".shx", ".dbf", ".prj"))),
-                               
+                               uiOutput("map_plot_da"),
                                # actionButton("save_full_cd", "Save files"),
                                # div(
                                #   id = "spinner_hru_con",style = "display: none;",
@@ -525,16 +525,16 @@ ui <-
                                tags$button(                               #becomes available once hru_in_optima.RDS is available
                                  id = "runaclust2", 
                                  class = "btn btn-default action-button", 
-                                 disabled = "disabled",  "Prepare Cluster Variables Clustering"),
+                                 disabled = "disabled",  "Prepare Cluster Variables"),
                                uiOutput("aclustout"),
-                               htmlOutput("what_clp"),
+                               uiOutput("what_clp"),
                                
                                #######################################################################SWAT+/CoMOLA###############
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
                                div("4. Additional files for an automated workflow (SWAT+/CoMOLA outputs)",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
-                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can  consider competing measure allocation and use an automated workflow for calculating cluster variables.
+                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can consider overlapping/competing decision space elements and use an automated workflow for calculating cluster variables.
                                  The file names have to align with what is given here:"),
                               
                                div(
@@ -1138,9 +1138,9 @@ ui <-
                        
                        wellPanel(p("This tab allows you to analyse the cluster outputs and plot and compare the measure implementation across the pareto solutions selected in the clustering. The table shows those optima selected as representative for the different clusters. The plot on the right aligns with the one produced during the clustering.
                        It shows the location of the optima selected in the table. Please be aware that plotting the measure allocation takes around 20 seconds.")),
-
+                       uiOutput("analysis_needs_var"),
+                       
                         mainPanel(width = 12,
-                           textOutput("analysis_needs_var"),
                            id ="main_analysis",
                            div(id="analysis_random", #the whole right side of plots and extra stuff under plot can be hidden
                            fluidRow(
@@ -1213,18 +1213,8 @@ ui <-
                                uiOutput("comp_map")%>% withSpinner(color = "#F7A600", hide.ui = TRUE)),
                            br(),br(),br(),
                            br(),br(),br(),
-                           br(),br(),br()
-                           # ,
-                           # div(
-                           #   style = "display: inline-block; vertical-align: top; margin-right: 0px;",
-                           #   textInput("meas_plot_savename", label = NULL, value = "Measure implementation")
-                           # ),
-                           # div(
-                           #   style = "display: inline-block; vertical-align: top; margin-left: 0px;",
-                           #   downloadButton("download_meas_plot", "Download Plot")
-                           # )
-                           #
-                           ,
+                           br(),br(),br(),
+                           
                            div(id="ca_shp",
                                
                                style = "display: inline-block; vertical-align: top; margin-left: 0px; margin-top: 5px;",

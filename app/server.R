@@ -1,19 +1,20 @@
 ######################## SERVER ####################################
-# comments: 
 # Project: Clustering Pareto solutions/Multi-objective visualisation
 # author: cordula.wittekind@ufz.de
 ####################################################################
 server <- function(input, output, session) {
 
-  ## reactive values
-  objectives <- reactiveVal(character()) #objective names
+  ## flag observers
   pareto_da <- reactiveVal(if(file.exists(pareto_path)) 1 else NULL) #observer for pareto_path availability Data Prep --> Vis
   clus_out <- reactiveVal(if (list.files(path = output_dir, pattern = "clusters_representativesolutions.*\\.csv$", full.names = TRUE) %>% length() > 0) 1 else NULL) #observer for cluster output availability
   axiselected = reactiveVal(if(file.exists("../input/units.RDS")) readRDS("../input/units.RDS") else NULL) #axis labels
-  clusp_da = reactiveVal(if(file.exists("../input/cluster_params.csv")) 1 else NULL) 
+  clusp_da = reactiveVal(if(file.exists("../input/cluster_params.csv") || file.exists("../input/var_corr_par.csv")) 1 else NULL) 
   hru_da =  reactiveVal(if(file.exists("../input/hru_in_optima.RDS")) 1 else NULL) 
   pg_da = reactiveVal(if(file.exists("../data/pareto_genomes.txt")) 1 else NULL) 
   shp_da = reactiveVal(if(file.exists("../data/hru.shp")) 1 else NULL)
+  
+  ## reactive values
+  objectives <- reactiveVal(character()) #objective names
   
   file_data3 <- reactiveVal(NULL)
   file_data6 <- reactiveVal(NULL)
@@ -220,8 +221,7 @@ server <- function(input, output, session) {
 
     #buffer selection
     observe({
-      # if(file.exists("../data/measure_location.csv")){
-        # mes = read.csv("../data/measure_location.csv")
+      
         req(msrs())
         buffs = msrs()
         updateSelectInput(session,inputId = "buffies", choices = buffs)
@@ -276,7 +276,20 @@ server <- function(input, output, session) {
     
   }) ###end of things that happen when data prep tab is opened
   
-    ## make fit() based on user input
+    
+  observe({
+    hru_da()
+    shp_da()
+    if(!is.null(shp_da()) && !is.null(hru_da())){
+      output$map_plot_da = renderUI({HTML(
+        paste0('<p style="color: blue;"> You can now use the decision space/map plotting of the tool.</p>'))})
+      
+    }else{output$map_plot_da = renderUI({HTML(
+      ""
+    )})}
+  })
+  
+  ## make fit() based on user input
     observeEvent(input$par_fit, {     
       req(input$par_fit)
       file <- input$par_fit
@@ -506,9 +519,12 @@ server <- function(input, output, session) {
       shinyjs::toggleState("measure_loc", condition = file.exists("../data/pareto_genomes.txt"))
     })
     
+   
     
-    observeEvent(input$measure_loc, { file <- input$measure_loc
-    if (is.null(file)) {file_lookup_loc(NULL)}#lookup table
+    observeEvent(input$measure_loc, { 
+      
+    file <- input$measure_loc
+    if (is.null(file))return(file_lookup_loc(NULL))#lookup table
     file_lookup_loc(list(path = file$datapath, name = file$name))
 
     ##create hru_in_optima.RDS
@@ -519,8 +535,6 @@ server <- function(input, output, session) {
     save_path_lookup_loc <- file.path(save_dir, paste0("lookup_table.", lookup_ext))
     file.copy(file_lookup_loc()$path, save_path_lookup_loc, overwrite = TRUE)
     
-    ## missing error messages
-    # too few colums, missing codes
     if (lookup_ext == "csv") {
       lookup_table = read.csv(save_path_lookup_loc, stringsAsFactors = FALSE, header = F)%>%
         rename(code = V1, measure = V2)
@@ -529,6 +543,29 @@ server <- function(input, output, session) {
         select(V1, V3) %>%
         rename(code = V1, measure = V3)
     }
+    
+    code_happening = sort(unique(unlist(acti)))
+    not_ac = setdiff(lookup_table$code, code_happening) #not used but in lookup (ignored if alone)
+    ac_nm = setdiff(code_happening, lookup_table$code) #activated but not in lookup (worse)
+    
+    if(length(ac_nm)>0){
+      if(length(not_ac) == 0){
+      output$genome_lu_fu <- renderUI({HTML(paste0('<p style="color: red;">
+                                                    Please check your lookup table!<br/>
+                                                    The meaning of <b>', ac_nm, '</b> has not been provided.</p>'))})
+      }else{
+      output$genome_lu_fu <- renderUI({HTML(paste0('<p style="color: red;">
+                                                    Please check your lookup table!<br/>
+                                                    The meaning of the code <b>', ac_nm, '</b> has not been provided. You can also delete the line for <b>',
+                                                    lu[which(lu$code == not_ac),]$measure, '</b> as it is never activated in your genome     </p>'))})                                             
+      }
+      
+      file.remove(save_path_lookup_loc)  #clean up bad file
+      file_lookup_loc(NULL) 
+      
+      return()
+    }
+    output$genome_lu_fu = renderUI({HTML('<p style="color: blue;"> All codes used in the genome are provided in the lookup table. </p>')})
     
     genome_filled <- acti %>%
       mutate(across(starts_with("V"), 
@@ -543,14 +580,37 @@ server <- function(input, output, session) {
     }, ignoreInit = TRUE)
     
     
-    observeEvent(input$hru_activ, { file <- input$hru_activ
-    if (is.null(file)) {file_hru_activ(NULL)}
-    file_hru_activ(list(path = file$datapath, name = file$name))#name ignored here
-    save_hru_activ <- file_hru_activ()$name
-    save_path_hru_activ <- file.path(save_dir, "pareto_genomes.txt")
-    file.copy(file_hru_activ()$path, save_path_hru_activ, overwrite = TRUE)
-    # shinyjs::refresh()
-    pg_da(1)
+    observeEvent(input$hru_activ, {
+      file <- input$hru_activ
+      if (is.null(file))return(file_hru_activ(NULL))
+      
+      file_hru_activ(list(path = file$datapath, name = file$name))
+      
+      save_path_hru_activ <- file.path(save_dir, "pareto_genomes.txt")
+      file.copy(file_hru_activ()$path, save_path_hru_activ, overwrite = TRUE)
+      # shinyjs::refresh()
+      
+      # check if align
+      if (!is.null(fit())) {
+        gen = read.table(save_path_hru_activ,sep = deli(save_path_hru_activ))
+        if (ncol(gen) != nrow(fit())) {
+          if(nrow(gen) == nrow(fit())){#catch when the genome is reversed
+            gen = as.data.frame(t(gen))
+            write.table(gen,save_path_hru_activ, row.names = FALSE, col.names = F)}else{
+          
+          output$gen_fit_fu <- renderUI({
+            HTML('<p style="color: red;">
+               Please upload again!<br/>
+              The genome does not match the Pareto fitness file you supplied, the columns in the genome have to align with the rows in the fitness file.
+          <br/> </p>')})
+          file.remove(save_path_hru_activ)  #clean up bad file
+          file_hru_activ(NULL) 
+          return()
+        }}
+      }
+      output$gen_fit_fu = renderUI({HTML('<p style="color: blue;"> The genome matches the Pareto fitness file you supplied. </p>')})
+      
+      pg_da(1)
     }, ignoreInit = TRUE)
   
     #### File upload - Clustering (standard workflow) #####
@@ -609,7 +669,7 @@ server <- function(input, output, session) {
       aclu_files <- c(
         "Pareto Genome"        = "../data/pareto_genomes.txt",
         "Blubb"         = "../input/hru_in_optima.RDS",
-        "HRU shapefile"         = "../data/hru.shp",
+        "HRU shapefile (shp)"         = "../data/hru.shp",
         "HRU shapefile (shx)"   = "../data/hru.shx",
         "HRU shapefile (dbf)"   = "../data/hru.dbf",
         "HRU shapefile (prj)"   = "../data/hru.prj",
@@ -618,60 +678,7 @@ server <- function(input, output, session) {
       )
 
        checkFiles2 <- sapply(aclu_files, function(file) file.exists(file))
-       
-       
-       # if (!all(checkFiles2)) {
-       #   if (length(which(!checkFiles2)) > 1) {
-       #     text_added = ""
-       #     
-       #     if(isTRUE(checkFiles2["HRU shapefile (dbf)"])) {
-       #       con = foreign::read.dbf("../data/hru.dbf")
-       #       
-       #       if (!all(c("area", "id") %in% names(con))) {
-       #         text_added = c(
-       #           " Please also reupload a shapefile with an area and an id column matching it to individual decision space elements."
-       #         )
-       #       }
-       #     }
-       #     
-       #     checkFiles2 = checkFiles2[-which(names(checkFiles2) == "Blubb")]#remove hru_in_optima, not a global input
-       #     
-       #     output$automated_clustering = renderText({
-       #       HTML(paste(
-       #         "Currently missing:<br/>",
-       #         paste(
-       #           paste(names(which(!checkFiles2)), collapse = "<br/> "),
-       #           "<br/> ",
-       #           text_added,
-       #           collapse = "<br/> "
-       #         )
-       #       ))
-       #     })
-       #     
-       #   } else if (names(which(!checkFiles2)) == "Blubb") {
-       #     #case when hru_in_optima has not been produced
-       #     output$automated_clustering = renderText({
-       #       HTML("Please upload the genome and the lookup table again!")
-       #     })
-       #   } else{
-       #     output$automated_clustering = renderText({
-       #       HTML(paste("Only one file missing: ", names(which(!checkFiles2))))
-       #     })
-       #   }
-       # }else if(isTRUE(checkFiles2["HRU shapefile (dbf)"])) {
-       #   con = foreign::read.dbf("../data/hru.dbf")
-       #   
-       #   if (!all(c("area", "id") %in% names(con))) {
-       #     HTML(
-       #       "All files found but please reupload a shapefile with an area and an id column matching it to individual decision space elements."
-       #     )
-       #   }
-       # } else{
-       #   output$automated_clustering = renderText({
-       #     HTML("All files found.")
-       #   })
-       # }
-       
+
        missing_files <- names(checkFiles2)[!checkFiles2]
        hru_present   <- isTRUE(checkFiles2["HRU shapefile (dbf)"])
        
@@ -682,29 +689,29 @@ server <- function(input, output, session) {
          con <- foreign::read.dbf("../data/hru.dbf")
          
          if (!all(c("area", "id") %in% names(con))) {
-           text_added <- " lease reupload a shapefile with an area and an id column matching it to individual decision space elements."
+           text_added <- " please reupload a shapefile with an area and an id column matching it to individual decision space elements."
          }
        }
        
-       # Remove "Blubb" from missing list (if present)
+       # remove hru_in_optima from missing list = internal check 
        missing_no_blubb <- setdiff(missing_files, "Blubb")
        
        output$automated_clustering <- renderText({
          
-         # ---- CASE 1: Files missing ----
+         #case 1 - files missing
          if (length(missing_files) > 0) {
            
-           # Only Blubb missing
+           # only hru_in_optima missing
            if (identical(missing_files, "Blubb")) {
              return(HTML("Please upload the genome and the lookup table again!"))
            }
            
-           # One missing (not Blubb)
+           #one missing (not hru_in_optima)
            if (length(missing_no_blubb) == 1) {
              return(HTML(paste("Only one file missing:", missing_no_blubb)))
            }
            
-           # Multiple missing
+           #multiple missing
            return(HTML(paste(
              "Currently missing:<br/>",
              paste(missing_no_blubb, collapse = "<br/> "),
@@ -712,13 +719,14 @@ server <- function(input, output, session) {
            )))
          }
          
-         # ---- CASE 2: No files missing ----
+         #case 2 - multiple missing
          if (nzchar(text_added)) {
            return(HTML(paste("All files found but", text_added)))
          }
          
-         HTML("All files found.")
          shinyjs::enable("runaclust2")
+         
+         HTML("All files found.")
          
        })
     })
@@ -784,24 +792,37 @@ server <- function(input, output, session) {
     })
     
     observe({
-      coutput_handled()
+      cvp_done()
 
-      if(isTRUE(coutput_handled())){
+      if(isTRUE(cvp_done())){
+        
+        if(file.exists("../output/error_convert.txt")){
+          error_msg = readLines("../output/error_convert.txt")
+          output$what_clp = renderUI({HTML(error_msg)})
+            
+            rm("../output/error_convert.txt")
+            
+          
+        }else if (file.exists("../input/cluster_params.csv")){
+          clusp_da(1)
+          
         cl_mes = readLines("../output/meas_fast.txt")
-        output$what_clp = renderText({(
-          HTML(paste0("The cluster variable preparation was successful for the following variables: ","<br/>", paste(cl_mes, collapse = "<br/>"))))
-          })
+        output$what_clp = renderUI({(
+          HTML(paste0("The cluster variable preparation was successful.
+                      In all optima, it calculated the share of area (share_con) used for the following variables: ","<br/>", paste(cl_mes, collapse = "<br/>"))))
+        })
+        }
+        
+       
       }
     })
     
     
     # Render UI output
     output$aclustout <- renderUI({
-      if (cvp_done() && file.exists("../input/cluster_params.csv")) {
-        tags$strong("The preparation of cluster variables was successful!")
-      } else {
-        verbatimTextOutput("cluster_automated")
-      }
+      if (!cvp_done() && !file.exists("../input/cluster_params.csv")) {
+      verbatimTextOutput("cluster_automated")}
+      
     })
     
     # Render process output
@@ -864,6 +885,7 @@ server <- function(input, output, session) {
         
         dp_done(TRUE)
         hru_da(if(file.exists("../input/hru_in_optima.RDS")) 1 else NULL) 
+        clusp_da(if(file.exists("../input/var_corr_par.RDS")) 1 else NULL)
         
         optain <<- NULL # clear
         output_handled(TRUE) 
@@ -961,10 +983,6 @@ server <- function(input, output, session) {
       saveRDS(input$buffies,file = "../input/buffers.RDS")
     })  
     
-
-  
-
-  
  
     ### Play Around Tab ####
   if (!file.exists("../data/sq_fitness.txt")){
@@ -976,7 +994,6 @@ server <- function(input, output, session) {
   
   #remove tab content if fitness not available
   observe({
-  
     pareto_da()
     # if (!file.exists(pareto_path)) {
     if(is.null(pareto_da())){
@@ -1004,24 +1021,7 @@ server <- function(input, output, session) {
       shinyjs::show("unit_add3")
                     
       output$uploaded_pareto <- NULL
-      observe({
-        clusp_da()
-        if (is.null(clus_path())) {
-          #clus_path holds either var_corr_par.csv or cluster_param.csv path
-          # shinyjs::hide("main_analysis")
-          
-          shinyjs::hide("show_extra_dat") #AHP hide option to show clusters
-          shinyjs::hide("random_ahp") #AHP hide option to show clusters
-          updateCheckboxInput(session, "show_extra_dat", value = FALSE)#turn it off (has default TRUE)
-          
-          output$config_needs_var = renderText({"Please provide a .csv with cluster parameters (eg descriptors of the decision space) in the Data Preparation tab or Click Run Prep (SWAT+/CoMOLA workflow) before proceeding here!"})
-          output$analysis_needs_var = renderText({"Please click Run Prep in the Data Preparation tab before proceeding here!"})
-        }else{
-          output$config_needs_var = NULL
-          
-        }
-      })
-      
+     
       ## make or pull fit()
       
       req(objectives())
@@ -1414,10 +1414,10 @@ server <- function(input, output, session) {
    
     output$clickpoint_map <- renderUI({
       if(clickpoint_button()){
-        if(is.null(shp_da())){ 
+        if(is.null(shp_da()) || is.null(hru_da())){ 
           return(NULL)
         }else{
-          actionButton("map_sel", "Plot measure implementation map of selected optimum")
+          actionButton("map_sel", "Plot decision space of selected optimum")
         } 
       }
     })
@@ -1459,8 +1459,6 @@ server <- function(input, output, session) {
       mv <- fit1() %>%  filter(if_all(all_of(cols), ~ . %in% values))%>%slice(1) #slice needed for duplicate optima, should not happen in clean optimisation
       
       hru_one = plt_sel(shp = cmf(), opti_sel = mv$optimum)
-      
-      # mes = read.csv("../data/measure_location.csv")
       
       col_sel = names(hru_one)[grep("Optim", names(hru_one))]
       man_col = c("#66C2A5" ,"#4db818","#663e13", "#F7A600", "#03597F" ,"#83D0F5","#FFEF2C","#a84632","#b82aa5","#246643")
@@ -1934,6 +1932,7 @@ server <- function(input, output, session) {
   
   observe({
     shp_da()
+    hru_da()
     map_files = c(
       # "../input/hru.con", #only for lalo()
       "../data/hru.shp",#for cm() and cmf()
@@ -2289,15 +2288,24 @@ server <- function(input, output, session) {
   
   observe({
     clusp_da()
-    optain = "../input/var_corr_par.csv"
-    not_optain = "../input/cluster_params.csv"
-    
-    if(file.exists(optain)){
-      clus_path(optain)
-    }else if(file.exists(not_optain)){
-      clus_path(not_optain)
-    }
+    if(!is.null(clusp_da())){
+      shinyjs::show("config_all")
+      output$config_needs_var = NULL
+      optain = "../input/var_corr_par.csv"
+      not_optain = "../input/cluster_params.csv"
+      
+      if(file.exists(optain)){
+        clus_path(optain)
+      }else if(file.exists(not_optain)){
+        clus_path(not_optain)
+      }
+    }else{
+      shinyjs::hide("config_all")
+      output$config_needs_var = renderText({"Please provide a .csv with cluster parameters (eg descriptors of the decision space) in the Data Preparation tab or Click Run Prep (SWAT+/CoMOLA workflow) before proceeding here!"})
+
+      }
   })
+ 
   
   observe({#if back up exists, the original needs replacing
     req(clus_path())
@@ -2562,13 +2570,7 @@ server <- function(input, output, session) {
       
       ## actual CORRELATION tab
       observeEvent(input$tabs == "correlation_analysis",{ 
-        # if(file.exists("../data/measure_location.csv")) {
-        #   mes = read.csv("../data/measure_location.csv")
-        #   mes <<- unique(mes$nswrm)
-        # 
-        #   nm <<- length(mes)
-        # }
-        
+    
         ## pull corr from file
         if(file.exists("../output/correlation_matrix.csv")){
           
@@ -3008,17 +3010,29 @@ server <- function(input, output, session) {
   observe({
     clus_out()
     if(is.null(clus_out())){
+      output$analysis_needs_var <- renderUI({HTML(
+        '<p style="color: red;"> The correlation analysis and the clustering have to be performed before their results can be analysed.</p>'
+      )})
       shinyjs::hide("main_analysis")
       shinyjs::hide("plt_opti")
       shinyjs::runjs("toggleSidebar(false);")  #hide sidebar
       
-      output$analysis_no_clustering <- renderText({HTML("the correlation analysis and the clustering have to run first before their results can be analysed")})
+      shinyjs::hide("show_extra_dat") #AHP hide option to show clusters
+      shinyjs::hide("random_ahp") #AHP hide option to show clusters
+      updateCheckboxInput(session, "show_extra_dat", value = FALSE)#turn it off (has default TRUE)
+      
+     
     }else{
       
-      shinyjs::hide("analysis_no_clustering")
+      shinyjs::hide("analysis_needs_var")
       shinyjs::runjs("toggleSidebar(true);")  #show sidebar
       shinyjs::show("main_analysis")
       shinyjs::show("plt_opti")
+      
+      shinyjs::show("show_extra_dat") #AHP hide option to show clusters
+      shinyjs::show("random_ahp") #AHP hide option to show clusters
+      updateCheckboxInput(session, "show_extra_dat", value = TRUE)#turn it ON (has default TRUE)
+      output$analysis_needs_var <- NULL
   }
   })
   
@@ -3312,12 +3326,11 @@ server <- function(input, output, session) {
       }else{selected_data <- NULL} 
     }
     
-    # turn off share_con if not OPTAIN
+    # turn off share_con if not provided
     observe({
-      clusp_da()
-      if(file.exists("../input/cluster_params.csv")){
-      shinyjs::disable("show_share_con")}
+      req(clus_path())
       
+      shinyjs::toggle("show_share_con", condition = has_share_con(clus_path()))
     })
     
     #switch between plots/functions
@@ -3424,8 +3437,7 @@ server <- function(input, output, session) {
   })
   
   comp_fun = function(){
-    # if(!file.exists("../data/measure_location.csv")){return(NULL)}else{
-    
+
     req(sols(),cmf(), msrs()) 
     selected_row <- isolate(input$antab_rows_selected)
     
@@ -3433,8 +3445,7 @@ server <- function(input, output, session) {
     
    
     hru_sel <- plt_sel(shp=cmf(),opti_sel = selected_data$optimum)
-    # mes = read.csv("../data/measure_location.csv")
-    
+
     col_sel = names(hru_sel)[grep("Optim",names(hru_sel))]  #variable length of columns selected
     
     nplots = length(col_sel)#+1
@@ -3554,8 +3565,8 @@ server <- function(input, output, session) {
   
   observe({ #hide measure slider title too
     hru_ever()
-    clusp_da()
-    if(is.null(hru_ever()) && is.null(clusp_da())){
+    hru_da()
+    if(is.null(hru_ever())){
       shinyjs::hide("measure_title_ahp")
       shinyjs::hide("measure_table_title")
       
@@ -4248,7 +4259,8 @@ server <- function(input, output, session) {
   
   observe({ #remove plot button
     shp_da()
-    if(is.null(shp_da())) {
+    hru_da()
+    if(is.null(shp_da()) || is.null(hru_da())) {
       shinyjs::hide("plt_bo")
     } else {
       shinyjs::show("plt_bo")
@@ -4286,7 +4298,8 @@ server <- function(input, output, session) {
   
   
   observe({ #reactively replot every time best_option() changes
-    
+    hru_da()
+    shp_da()
     req(mahp_plotted())
     req(best_option(),fit(),objectives(), fit1())
     
@@ -4316,11 +4329,9 @@ server <- function(input, output, session) {
   })
   
   single_meas_fun = function(fs = T){
-    # if(!file.exists("../data/measure_location.csv")){return(NULL)}else{
     req(boo(),cmf(),msrs())
       
     hru_one = plt_sel(shp=cmf(),opti_sel = boo())
-    # mes = read.csv("../data/measure_location.csv")
     col_sel = names(hru_one)[grep("Optim",names(hru_one))] 
     
     man_col = c("#66C2A5" ,"#4db818","#663e13", "#F7A600", "#03597F" ,"#83D0F5","#FFEF2C","#a84632","#b82aa5","#246643")

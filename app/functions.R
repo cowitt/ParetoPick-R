@@ -2295,6 +2295,11 @@ pull_high_range <- function(df, num_order=F) {
 
 #### Other Functions ####
 
+has_share_con <- function(filepath) {
+  any(grepl("_share_con$", colnames(read.csv(filepath, nrow = 0, check.names = F))))
+}
+
+
 get_mima <- function(df) {
   mins <- vapply(df, min, numeric(1), na.rm = TRUE)
   maxs <- vapply(df, max, numeric(1), na.rm = TRUE)
