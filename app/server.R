@@ -5,6 +5,175 @@
 ####################################################################
 server <- function(input, output, session) {
 
+  # Info banner about which folders are in use (updated at start)
+  app_dir_info <- reactiveVal("")
+
+  # EARLY setup: determine case study and apply path mapping immediately (before any reads)
+  {
+      qs <- tryCatch(parseQueryString(isolate(session$clientData$url_search)), error = function(e) NULL)
+      requested_cs <- if (!is.null(qs)) qs[["cs"]] else NULL
+      base_dir <- normalizePath("..", winslash = "/", mustWork = TRUE)
+
+      # Resolve case folder and nested paths (prefer '<cs>/{data,input,output}', fallback to legacy and default)
+      resolve_paths <- function() {
+        case_folder_candidates <- character(0)
+        if (!is.null(requested_cs) && nzchar(requested_cs)) {
+          with_dash <- sub("([a-zA-Z]+)([0-9]+)$", "\\1-\\2", requested_cs)
+          case_folder_candidates <- unique(c(requested_cs, with_dash))
+        }
+        case_folder <- NULL
+        for (cand in case_folder_candidates) {
+          cand_path <- file.path(base_dir, cand)
+          if (dir.exists(cand_path)) { case_folder <- cand_path; break }
+        }
+        default_folder <- file.path(base_dir, "default")
+        DATA_PATH <- INPUT_PATH <- OUTPUT_PATH <- NULL
+        if (!is.null(case_folder)) {
+          DATA_PATH   <- file.path(case_folder, "data")
+          INPUT_PATH  <- file.path(case_folder, "input")
+          OUTPUT_PATH <- file.path(case_folder, "output")
+        }
+        if (is.null(DATA_PATH)   || !dir.exists(DATA_PATH))   DATA_PATH   <- file.path(base_dir, if (!is.null(requested_cs) && nzchar(requested_cs)) paste0("data-", requested_cs) else "data-default")
+        if (is.null(INPUT_PATH)  || !dir.exists(INPUT_PATH))  INPUT_PATH  <- file.path(base_dir, if (!is.null(requested_cs) && nzchar(requested_cs)) paste0("input-", requested_cs) else "input-default")
+        if (is.null(OUTPUT_PATH) || !dir.exists(OUTPUT_PATH)) OUTPUT_PATH <- file.path(base_dir, if (!is.null(requested_cs) && nzchar(requested_cs)) paste0("output-", requested_cs) else "output-default")
+        if (!dir.exists(DATA_PATH))   DATA_PATH   <- file.path(default_folder, "data")
+        if (!dir.exists(INPUT_PATH))  INPUT_PATH  <- file.path(default_folder, "input")
+        if (!dir.exists(OUTPUT_PATH)) OUTPUT_PATH <- file.path(default_folder, "output")
+        list(DATA_PATH=DATA_PATH, INPUT_PATH=INPUT_PATH, OUTPUT_PATH=OUTPUT_PATH)
+      }
+      .paths <- resolve_paths()
+      DATA_PATH <- .paths$DATA_PATH
+      INPUT_PATH <- .paths$INPUT_PATH
+      OUTPUT_PATH <- .paths$OUTPUT_PATH
+
+      save_dir   <- DATA_PATH
+      input_dir  <- INPUT_PATH
+      output_dir <- OUTPUT_PATH
+      pareto_path <- file.path(DATA_PATH, "pareto_fitness.txt")
+
+      path_map <- function(p) {
+        if (is.null(p)) return(p)
+        v <- as.character(p)
+        v <- sub("^\\.\\./data$", DATA_PATH, v)
+        v <- sub("^\\.\\./input$", INPUT_PATH, v)
+        v <- sub("^\\.\\./output$", OUTPUT_PATH, v)
+        v <- gsub("^\\.\\./data/", paste0(DATA_PATH, "/"), v)
+        v <- gsub("^\\.\\./input/", paste0(INPUT_PATH, "/"), v)
+        v <- gsub("^\\.\\./output/", paste0(OUTPUT_PATH, "/"), v)
+        v
+      }
+
+      options(wp5_path_map = path_map,
+              wp5_paths = list(data = DATA_PATH, input = INPUT_PATH, output = OUTPUT_PATH))
+
+      # Shadow common I/O locally so reads done inside server use mapped paths
+      file.exists <- function(paths) base::file.exists(path_map(paths))
+      read.table  <- function(file, ...) utils::read.table(path_map(file), ...)
+      read.csv    <- function(file, ...) utils::read.csv(path_map(file), ...)
+      readRDS     <- function(file, ...) base::readRDS(path_map(file), ...)
+      saveRDS     <- function(object, file, ...) base::saveRDS(object, path_map(file), ...)
+      file.copy   <- function(from, to, ...) base::file.copy(path_map(from), path_map(to), ...)
+      file.remove <- function(...) base::file.remove(path_map(c(...)))
+      file.rename <- function(from, to) base::file.rename(path_map(from), path_map(to))
+      write.table <- function(x, file, ...) utils::write.table(x, file = path_map(file), ...)
+      read.delim <- function(file, ...) utils::read.delim(path_map(file), ...)
+      readLines  <- function(con, ...) base::readLines(path_map(con), ...)
+      writeLines <- function(text, con = stdout(), ...) base::writeLines(text, con = ifelse(is.character(con), path_map(con), con), ...)
+      read.ini  <- function(file, ...) ini::read.ini(path_map(file), ...)
+      write.ini <- function(x, file, ...) ini::write.ini(x, path_map(file), ...)
+      list.files <- function(path = ".", ...) base::list.files(path_map(path), ...)
+      dir.exists <- function(paths) base::dir.exists(path_map(paths))
+
+      # Map sf readers so shapefiles are resolved per session
+      read_sf <- function(...) {
+        args <- list(...)
+        if (!is.null(args$dsn)) args$dsn <- path_map(args$dsn)
+        do.call(sf::read_sf, args)
+      }
+      st_read <- function(...) {
+        args <- list(...)
+        if (!is.null(args$dsn)) args$dsn <- path_map(args$dsn)
+        do.call(sf::st_read, args)
+      }
+
+      # Wrap selected helper functions to map path-like arguments
+      if (exists("write_uns", mode = "function")) {
+        .orig_write_uns <- write_uns
+        write_uns <- function(...){
+          args <- list(...)
+          if (!is.null(args$inipath)) args$inipath <- path_map(args$inipath)
+          do.call(.orig_write_uns, args)
+        }
+      }
+      if (exists("plt_latlon", mode = "function")) {
+        .orig_plt_latlon <- plt_latlon
+        plt_latlon <- function(...){
+          args <- list(...)
+          if (!is.null(args$conpath)) args$conpath <- path_map(args$conpath)
+          do.call(.orig_plt_latlon, args)
+        }
+      }
+      if (exists("fit_optims", mode = "function")) {
+        .orig_fit_optims <- fit_optims
+        fit_optims <- function(...){
+          args <- list(...)
+          if (!is.null(args$hru_in_opt_path)) args$hru_in_opt_path <- path_map(args$hru_in_opt_path)
+          do.call(.orig_fit_optims, args)
+        }
+      }
+  }
+
+  # Session-scoped case study selection (reactive context, supports concurrent tabs)
+  observeEvent(TRUE, {
+      qs <- tryCatch(parseQueryString(isolate(session$clientData$url_search)), error = function(e) NULL)
+      requested_cs <- if (!is.null(qs)) qs[["cs"]] else NULL
+      base_dir <- normalizePath("..", winslash = "/", mustWork = TRUE)
+
+      resolve_paths <- function() {
+        case_folder_candidates <- character(0)
+        if (!is.null(requested_cs) && nzchar(requested_cs)) {
+          with_dash <- sub("([a-zA-Z]+)([0-9]+)$", "\\1-\\2", requested_cs)
+          case_folder_candidates <- unique(c(requested_cs, with_dash))
+        }
+        case_folder <- NULL
+        for (cand in case_folder_candidates) {
+          cand_path <- file.path(base_dir, cand)
+          if (dir.exists(cand_path)) { case_folder <- cand_path; break }
+        }
+        default_folder <- file.path(base_dir, "default")
+        DATA_PATH <- INPUT_PATH <- OUTPUT_PATH <- NULL
+        if (!is.null(case_folder)) {
+          DATA_PATH   <- file.path(case_folder, "data")
+          INPUT_PATH  <- file.path(case_folder, "input")
+          OUTPUT_PATH <- file.path(case_folder, "output")
+        }
+        if (is.null(DATA_PATH)   || !dir.exists(DATA_PATH))   DATA_PATH   <- file.path(base_dir, if (!is.null(requested_cs) && nzchar(requested_cs)) paste0("data-", requested_cs) else "data-default")
+        if (is.null(INPUT_PATH)  || !dir.exists(INPUT_PATH))  INPUT_PATH  <- file.path(base_dir, if (!is.null(requested_cs) && nzchar(requested_cs)) paste0("input-", requested_cs) else "input-default")
+        if (is.null(OUTPUT_PATH) || !dir.exists(OUTPUT_PATH)) OUTPUT_PATH <- file.path(base_dir, if (!is.null(requested_cs) && nzchar(requested_cs)) paste0("output-", requested_cs) else "output-default")
+        if (!dir.exists(DATA_PATH))   DATA_PATH   <- file.path(default_folder, "data")
+        if (!dir.exists(INPUT_PATH))  INPUT_PATH  <- file.path(default_folder, "input")
+        if (!dir.exists(OUTPUT_PATH)) OUTPUT_PATH <- file.path(default_folder, "output")
+        list(DATA_PATH=DATA_PATH, INPUT_PATH=INPUT_PATH, OUTPUT_PATH=OUTPUT_PATH)
+      }
+
+      .paths <- resolve_paths()
+
+      relp <- function(p) {
+        bd <- normalizePath(base_dir, winslash = "/", mustWork = TRUE)
+        pp <- normalizePath(p, winslash = "/", mustWork = FALSE)
+        sub(paste0("^", bd, "/?"), "", pp)
+      }
+      info_html <- paste0(
+        "<b>Configuration in use:</b> ",
+        "cs=", if (!is.null(requested_cs) && nzchar(requested_cs)) requested_cs else "default",
+        " | data=", relp(.paths$DATA_PATH),
+        " | input=", relp(.paths$INPUT_PATH),
+        " | output=", relp(.paths$OUTPUT_PATH)
+      )
+      app_dir_info(info_html)
+      message(gsub("<[^>]+>", "", info_html))
+  }, once = TRUE)
+
   ## reactive values
   objectives <- reactiveVal(character()) #objective names
   pareto_da <- reactiveVal(if(file.exists(pareto_path)) 1 else NULL) #observer for pareto_path availability Data Prep --> Vis
@@ -178,15 +347,44 @@ server <- function(input, output, session) {
   observe({
     if (file.exists("../data/sq_fitness.txt")) {
       req(objectives())
-      
-      # shinyjs::enable("plt_sq")
-      
-      st_q = read.table('../data/sq_fitness.txt', header = FALSE, stringsAsFactors = FALSE, sep = deli('../data/sq_fitness.txt'))
-      names(st_q) = objectives()
-      stq(st_q)
-    }#else{
-      # shinyjs::disable("plt_sq")} 
-    })
+
+      tryCatch({
+        sep_char <- deli('../data/sq_fitness.txt')
+        st_q <- read.table('../data/sq_fitness.txt', header = FALSE, stringsAsFactors = FALSE, sep = sep_char)
+
+        # Robust normalisation: handle single-column or multi-delimiter edge cases
+        normalize_sq <- function(df, n_obj) {
+          if (ncol(df) == 1 && n_obj > 1) {
+            # Try splitting the single cell by common delimiters
+            cell <- as.character(df[1, 1])
+            for (d in c(" ", ",", ";", "\t")) {
+              parts <- trimws(unlist(strsplit(cell, d, fixed = TRUE)))
+              parts <- parts[nzchar(parts)]
+              if (length(parts) == n_obj) {
+                df <- as.data.frame(matrix(as.numeric(parts), nrow = 1), stringsAsFactors = FALSE)
+                return(df)
+              }
+            }
+          }
+          if (is.vector(df) && !is.data.frame(df)) {
+            df <- as.data.frame(matrix(df, nrow = 1), stringsAsFactors = FALSE)
+          }
+          df
+        }
+
+        st_q <- normalize_sq(st_q, length(objectives()))
+
+        if (ncol(st_q) == length(objectives())) {
+          names(st_q) <- objectives()
+          stq(st_q)
+        } else {
+          message("sq_fitness.txt: column count (", ncol(st_q), ") does not match objectives (", length(objectives()), ")")
+        }
+      }, error = function(e) {
+        message("Could not read sq_fitness.txt: ", conditionMessage(e))
+      })
+    }
+  })
   
   
   ## ggplot melt and change plotting order
@@ -464,18 +662,21 @@ server <- function(input, output, session) {
       if (all(checkFiles)) {
         if(file.exists("../input/object_names.RDS")){
           run_prep_possible$files_avail = T
-          output$fileStatusMessage <- renderText({HTML("All Files found.")})
+          output$fileStatusMessage <- renderText({HTML(paste0(app_dir_info(), "<br/>All Files found."))})
         }else{
-          output$fileStatusMessage <- renderText({HTML(
+          output$fileStatusMessage <- renderText({HTML(paste0(
+            app_dir_info(), "<br/>",
             "All files found. <br>Please provide the names of the objectives represented in the Pareto front.
              The names and the order in which they are given have
              to align with what is provided in the first four columns of pareto_fitness.txt"
-          )
+          ))
           })
         }
         }else{
         missing_files = required_files[!checkFiles]
-        output$fileStatusMessage <- renderText({HTML(paste("The following file(s) are missing:<br/>",
+        output$fileStatusMessage <- renderText({HTML(paste0(
+            app_dir_info(), "<br/>",
+            "The following file(s) are missing:<br/>",
             paste(sub('../data/', '', missing_files), collapse = "<br/> ")
           ))
         })
@@ -1272,12 +1473,14 @@ server <- function(input, output, session) {
         content = function(file) {
           shinyjs::show("spinner_download_play")
           measmap <- single_meas_fun2(fs = F)[[1]]
-          saveWidget(measmap, "temp.html", selfcontained = FALSE)
-          webshot::webshot("temp.html", file = file, cliprect = "viewport",vwidth = 900,
-                           vheight = 900)
+          temp_dir <- tempfile("mapdl_")
+          dir.create(temp_dir)
+          temp_html <- file.path(temp_dir, "map.html")
+          temp_libdir <- file.path(temp_dir, "temp_files")
+          htmlwidgets::saveWidget(measmap, temp_html, selfcontained = FALSE, libdir = temp_libdir)
+          webshot2::webshot(temp_html, file = file, cliprect = "viewport", vwidth = 900, vheight = 900)
+          unlink(temp_dir, recursive = TRUE)
           shinyjs::hide("spinner_download_play")
-          file.remove("temp.html")
-          unlink("temp_files", recursive = TRUE)
           }
     )
     
@@ -1312,15 +1515,15 @@ server <- function(input, output, session) {
         shinyjs::show("spinner_download_shp")
         data <- shp_single_meas()
         out_name <- shp_single_meas(shp=F)
-        sf::st_write(data,paste0(out_name,".shp"), driver = "ESRI Shapefile")
-        zip::zip( paste0(out_name,".zip"), c( paste0(out_name,".shp"), paste0(out_name,".shx"),
-                                              paste0(out_name,".dbf"), paste0(out_name,".prj")))
-        
-        file.rename(paste0(out_name,".zip"), file) #deletes zip from wd
-        file.remove(c( paste0(out_name,".shp"), paste0(out_name,".shx"),
-                       paste0(out_name,".dbf"), paste0(out_name,".prj")))
+        temp_dir <- tempfile(paste0("shp_", out_name, "_"))
+        dir.create(temp_dir)
+        shp_base <- file.path(temp_dir, out_name)
+        sf::st_write(data, dsn = paste0(shp_base, ".shp"), driver = "ESRI Shapefile", delete_layer = TRUE)
+        shp_files <- c(paste0(shp_base, ".shp"), paste0(shp_base, ".shx"),
+                        paste0(shp_base, ".dbf"), paste0(shp_base, ".prj"))
+        zip::zip(zipfile = file, files = shp_files, mode = "cherry-pick")
+        unlink(temp_dir, recursive = TRUE)
         shinyjs::hide("spinner_download_shp")
-        
       }
     )
     
@@ -1745,10 +1948,14 @@ server <- function(input, output, session) {
 
       if(!is.null(buff_els)){
         hru_ever_buffer = hru_ever() %>% filter(measure %in% buff_els) %>% distinct(id)#ids with small elements
-        bc = cm() %>% filter(id %in% hru_ever_buffer$id)%>%st_make_valid()
-        relda_utm = st_transform(bc, crs = 32633) # UTM zone 33N
-        buffy <-st_buffer(relda_utm, dist = 60)
-        buffers(st_transform(buffy, crs = st_crs(bc))) #all buffers ever required
+        if(!is.null(cm()) && nrow(hru_ever_buffer) > 0){
+          bc = cm() %>% dplyr::filter(id %in% hru_ever_buffer$id) %>% sf::st_make_valid()
+          relda_utm = st_transform(bc, crs = 32633) # UTM zone 33N
+          buffy <-st_buffer(relda_utm, dist = 60)
+          buffers(st_transform(buffy, crs = st_crs(bc))) #all buffers ever required
+        } else {
+          buffers(NULL)
+        }
       }else{buffers(NULL)}
 
       if(file.exists("../input/hru.con")){lalo(plt_latlon(conpath = "../input/hru.con"))}
@@ -1811,15 +2018,18 @@ server <- function(input, output, session) {
     
     content = function(file) {
       shinyjs::show("spinner_download_play2")
-      
+
       freqmap <- play_freq(leg=FALSE)#exports global pal and mes
-      
-      saveWidget(freqmap, "temp.html", selfcontained = FALSE)
-      webshot::webshot("temp.html", file = file, cliprect = "viewport",vwidth = 900,
-                       vheight = 900)
+      if (is.null(freqmap)) stop("Frequency map is not available for download.")
+
+      temp_dir <- tempfile("mapdl_")
+      dir.create(temp_dir)
+      temp_html <- file.path(temp_dir, "map.html")
+      temp_libdir <- file.path(temp_dir, "temp_files")
+      htmlwidgets::saveWidget(freqmap, temp_html, selfcontained = FALSE, libdir = temp_libdir)
+      webshot2::webshot(temp_html, file = file, cliprect = "viewport", vwidth = 900, vheight = 900)
+      unlink(temp_dir, recursive = TRUE)
       shinyjs::hide("spinner_download_play2")
-      file.remove("temp.html")
-      unlink("temp_files", recursive = TRUE)
       }
   )
   
@@ -2763,7 +2973,7 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$write_outl, {
+  .handle_write_outl <- function() {
     outlbool = ifelse(input$outlyn == "No",F,T)
     if(input$outlyn == "Yes"){
       write_outl_converted(pca_rv = pca_rv, handle_outliers_boolean=outlbool,deviations_min=input$sd_min,deviations_max=input$sd_max,
@@ -2772,7 +2982,9 @@ server <- function(input, output, session) {
       write_outl_converted(pca_rv = pca_rv, handle_outliers_boolean=outlbool)#bool is turning on all others, if false all others are ignored/default value works
     }
     update_settings()
-  })
+  }
+  observeEvent(input$write_outl, { .handle_write_outl() })
+  observeEvent(input$write_outl_no, { .handle_write_outl() })
   
   ## reactive value to output for use in conditionalPanel
   output$isElementVisible <- reactive({
@@ -3293,15 +3505,15 @@ server <- function(input, output, session) {
       shinyjs::show("ca_shp_spin")
       data <- shp_ca()
       out_name <- shp_ca(shp=F)
-      sf::st_write(data,paste0(out_name,".shp"), driver = "ESRI Shapefile")
-      zip::zip( paste0(out_name,".zip"), c( paste0(out_name,".shp"), paste0(out_name,".shx"),
-                                            paste0(out_name,".dbf"), paste0(out_name,".prj")))
-      
-      file.rename(paste0(out_name,".zip"), file) #deletes zip from wd
-      file.remove(c( paste0(out_name,".shp"), paste0(out_name,".shx"),
-                     paste0(out_name,".dbf"), paste0(out_name,".prj")))
+      temp_dir <- tempfile(paste0("shp_", out_name, "_"))
+      dir.create(temp_dir)
+      shp_base <- file.path(temp_dir, out_name)
+      sf::st_write(data, dsn = paste0(shp_base, ".shp"), driver = "ESRI Shapefile", delete_layer = TRUE)
+      shp_files <- c(paste0(shp_base, ".shp"), paste0(shp_base, ".shx"),
+                      paste0(shp_base, ".dbf"), paste0(shp_base, ".prj"))
+      zip::zip(zipfile = file, files = shp_files, mode = "cherry-pick")
+      unlink(temp_dir, recursive = TRUE)
       shinyjs::hide("ca_shp_spin")
-      
     }
   )
 
@@ -4134,14 +4346,16 @@ server <- function(input, output, session) {
       paste(input$meas_ahp_savename, curt, ".png", sep = "")
     },
     content = function(file) {
-      shinyjs::show("spinner_download_ahp")  
-      mp =single_meas_fun(fs = F)[[1]]
-      saveWidget(mp, "temp.html", selfcontained = FALSE)
-      webshot::webshot("temp.html", file = file, cliprect = "viewport",vwidth = 900,
-                       vheight = 900)
-      shinyjs::hide("spinner_download_ahp")  
-      file.remove("temp.html")
-      unlink("temp_files", recursive = TRUE)
+      shinyjs::show("spinner_download_ahp")
+      mp = single_meas_fun(fs = F)[[1]]
+      temp_dir <- tempfile("mapdl_")
+      dir.create(temp_dir)
+      temp_html <- file.path(temp_dir, "map.html")
+      temp_libdir <- file.path(temp_dir, "temp_files")
+      htmlwidgets::saveWidget(mp, temp_html, selfcontained = FALSE, libdir = temp_libdir)
+      webshot2::webshot(temp_html, file = file, cliprect = "viewport", vwidth = 900, vheight = 900)
+      unlink(temp_dir, recursive = TRUE)
+      shinyjs::hide("spinner_download_ahp")
       }
   )
   
@@ -4171,15 +4385,15 @@ server <- function(input, output, session) {
       shinyjs::show("ahp_shp_spin")
       data <- shp_ahp()
       out_name <- shp_ahp(shp=F)
-      sf::st_write(data,paste0(out_name,".shp"), driver = "ESRI Shapefile")
-      zip::zip( paste0(out_name,".zip"), c( paste0(out_name,".shp"), paste0(out_name,".shx"),
-                                            paste0(out_name,".dbf"), paste0(out_name,".prj")))
-      
-      file.rename(paste0(out_name,".zip"), file) #deletes zip from wd
-      file.remove(c( paste0(out_name,".shp"), paste0(out_name,".shx"),
-                     paste0(out_name,".dbf"), paste0(out_name,".prj")))
+      temp_dir <- tempfile(paste0("shp_", out_name, "_"))
+      dir.create(temp_dir)
+      shp_base <- file.path(temp_dir, out_name)
+      sf::st_write(data, dsn = paste0(shp_base, ".shp"), driver = "ESRI Shapefile", delete_layer = TRUE)
+      shp_files <- c(paste0(shp_base, ".shp"), paste0(shp_base, ".shx"),
+                      paste0(shp_base, ".dbf"), paste0(shp_base, ".prj"))
+      zip::zip(zipfile = file, files = shp_files, mode = "cherry-pick")
+      unlink(temp_dir, recursive = TRUE)
       shinyjs::hide("ahp_shp_spin")
-      
     }
   )
  
