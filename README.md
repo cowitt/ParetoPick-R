@@ -13,21 +13,22 @@ ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.opta
 ## 2.1 Requirements for use in R/Rstudio
   * R version 4.4.2 or higher
   * package "promises" version 1.3.2 or higher
-  * package "tmap" remove or upgrade to version 4.0+ to avoid conflicts
+  * remove or upgrade (>4.0) package "tmap" to avoid conflicts
+  * recommended to use renv::restore()
 
 ## 2.2 Input files for different levels of functionalities
 
 The following files (their detailed structure is described in the next section) can be uploaded in the Data Preparation tab, depending on which of these files are uploaded, different level of functionalities become available:
-  * **pareto_fitness**: describes the performance of individual optimas across the four objectives. Providing this file and the objective names allows to use the Visualisation and AHP tab including the objective sliders.
-* **pareto_genomes** & **lookup table**: describes the connection between decision and objective space. Providing both these files, additionally to pareto fitness, activates the decision space/measure sliders in Visualisation and AHP tab. If you would like to assess a more complex decision space with individual elements spanning several spatial elements and competing activation, you might consider reproducing a measure_location file and copying it to the data Folder
+  * **Pareto fitness**: describes the performance of individual optimas across four objectives. Providing this file and the objective names allows to use the Visualisation and AHP tab including the objective sliders.
+* **Pareto genome** & **lookup table**: describes the connection between decision and objective space. Providing both these files, additionally to pareto fitness, activates the decision space/measure sliders in Visualisation and AHP tab. If you would like to assess a more complex decision space with individual elements spanning several spatial elements and competing activation, you might consider reproduce a measure_location file.
 * **shapefile**: Spatial representation of the decision space, providing this four-part file allows to use the mapping functionalities of the app.
-* **cluster parameters**: contains pareto fitness and descriptors for each of the optima e.g. describing the decision space. The app allows to select the parameters from this file that shall be used in the clustering.
+* **Cluster variables**: contains pareto fitness and descriptors for each of the optima e.g. describing the decision space. The app allows to select the variables from this file that shall be used in the clustering.
 
 ## 2.3 Data structures
 
 1. __Pareto Fitness (.txt)__ <a name="fitness-structure"></a>
   * float
-  * four columns that provide the objectives values
+  * four columns for each of the objectives
   * rows are the different Pareto optima
   * can be either comma separated OR space separated
   * EITHER
@@ -57,7 +58,7 @@ The following files (their detailed structure is described in the next section) 
   * if using SWAT+/CoMOLA: list delineating activated (2) and non-activated (1) hydrological response units (hrus), aligning with measure_location.csv
   * can be either comma separated OR space separated
 
-** Please make sure that pareto_fitness.txt, pareto_genomes.txt, lookup table and shape files align! **
+**Please make sure that pareto_fitness.txt, pareto_genomes.txt, lookup table and shape files align!**
 
   * EITHER
 ```
@@ -96,10 +97,12 @@ The following files (their detailed structure is described in the next section) 
 
 
 4. __Shapefile__ consisting of: *.shp, *.dbf, *.prj, *.shx <a name="shapefile-structure"></a>
+
   * has to contain an id column 
   * the id column has to align with pareto_genomes - the first row of the genome codes the activation of id 1
-  * the shapefile should contain valid simple feature geometries (points, lines, or polygons)
+  * the shapefile should contain valid simple feature geometries (points, lines or polygons)
   * any CRS is supported, data will be used with CRS EPSG:4326 (WGS84), consider reprojecting your data
+  * if cluster parameters shall be calculated by the tool, an area column is required
 
 5. __Cluster Parameters (.csv)__<a name="cluster-structure"></a>
   * float
@@ -157,18 +160,32 @@ SWAT+ input file updated with SWATmeasR at 2024-09-18 12:54:56.599093
        2  hru0002                  2       0.74251      45.70370       9.82486     293.29695         2      s45784n9822e         0         0         0         0
 
 ```
+## 2.4 Automated Clustering
+It is possible to work with cluster variables produced within the tool. 
 
+ **share_con** - ratio of area covered by measure to available area (per measure type) 
+
+This variable is the share of area implemented for individual decision space variables (aka measures) in each individual optima.
+The user has to supply a shapefile with an id and an area column. The area can be provided in any unit, the id column maps the spatial units to the genome.
+
+## 2.5 Automated Data Processing and Clustering with a SWAT+/CoMOLA workflow
+
+For users of a SWAT+/CoMOLA workflow, an automated cluster and input data processing is available.
+
+The algorithm considers five variables:
+1. **share_con** - ratio of area covered by measure to available area (per measure type) 
+2. **channel_frac** - fraction of measure HRU water draining directly to channel (per measure type) 
+3. **moran** - Moran's I (per measure type) 
+4. **linE** - ratio of structural to management options 
+5. **lu_share** - share of land use measures (buffer, grassslope, hedge) in available area
 
 # 3. Process
 ### Data Preparation tab
 Unless otherwise specified, you may use any file name. However, ensure the file is in the correct format.
 
-The one file that has to be uploaded to allow any functionality is a file describing the Pareto fitness. Also, the objective names have to be provided, these have to aligning with the four columns in this file. Further functionalities become available when other files are uploaded. Please note that the files are only uploaded once the individual upload buttons are pressed.
+The one file that has to be uploaded to allow any functionality is a file describing the Pareto fitness. Additionally, the objective names have to be provided. These names have to align with the four columns in this file. Further functionalities become available when other files are uploaded. The app will tell you which functionalities are available at each step.
 
-For users of a SWAT+/CoMOLA workflow, an automated cluster and input data processing is available (see [section 5](#5-pre-set-cluster-variables-for-swatcomolaoptain-workflow) of this Readme).
-
-**Visualisation Options**
-Users can identify measures requiring buffer visualisation in maps. (note that elements in the downloaded maps tend to be a bit smaller than shown in the app).
+**Visualisation Options**: Users can identify measures requiring a buffer in maps because they might be too small otherwise. (note that elements in the downloaded maps tend to be a bit smaller than shown in the app).
 
 **Note**: Changing objective names without a Hard Reset requires: (1) delete object_names.RDS, (2) manually update names in var_corr_par.csv/cluster_params.csv, (3) update names in the newest kmeans/kmedoid output file or delete these/this file/s.
 
@@ -182,7 +199,7 @@ Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
 
 **Important**:
 1. Files are overwritten each clustering run—save externally if retention is needed
-2. Only the most recent kmeans/kmedoid output file is read; remove older versions to reprocess a previous result
+2. Only the most recent kmeans/kmedoid output file is read/analysed within the tool; (re)move newer versions from output folder to reprocess an older result
 
 
 # 4. Folder and File Structure
@@ -250,8 +267,8 @@ Files supplied by the user are stored in the data folder, these are the outputs 
 * **buffers.RDS**: measures requiring buffer for map visibility
 * **units.RDS**: unit definitions
 * **hru.con**: shapefile center for plot settings (same name as what automated workflow uses for producing cluster variables)
-
-* **var_corr_par.csv**: objectives and variables for analysis (SWAT+/CoMOLA only)
+* **cluster_params.csv**: parameters for cluster variables
+* **var_corr_par.csv**: objectives and parameters for cluster analysis (SWAT+/CoMOLA only)
 
 
 ## 4.2 Scripts
@@ -260,42 +277,29 @@ ParetoPick-R is built using a standard structure for dividing shiny functionalit
 Each script serves a specific purpose in the software’s architecture:
 * ui.R: This script establishes the UI of the app. It organises the app's layout, including input controls for sliders, clustering parameters and visualisation options. Additionally, it specifies the locations for displaying plots, tables, and clustering results.
 * server.R: This is the core backend functionality containing the server-side logic of the software. It captures user inputs, processes data, performs calculations and updates outputs. It relies on reactive expressions to efficiently manage data flow and calls external functions from functions.R alongside defining its own to create dynamic visualisations and tables.
-* functions.R: This script defines all custom functions used throughout the app. Most of them are used for formatting, data manipulation and plotting, while a few are for adapting reactive values for the clustering. The codebase is easier to maintain when consolidating the most important and frequently used function definitions.
-* global.R: This short script defines global paths and app settings. It installs and/or loads packages and sets constants such as file paths, default parameters and any configuration options that need to be accessible across the entire app. It's kept concise to focus on app-wide settings.
-* convert_optain.R: This script is needed for applications relying on a SWAT+/CoMOLA workflow only. It handles all data preparation. It reads the required data files and prepares the input data for the clustering analysis.
+* functions.R: This script defines all custom functions used throughout the app.
+* global.R: This short script defines global paths and app settings.  
+* convert_optain.R: This script is needed for applications relying on a SWAT+/CoMOLA workflow only. It prepares hru_in_optima.RDS with competing activation of individual spatial units (defined in measure_location.csv) and the cluster parameters.
 
 
+# 5. Assumptions and Planned Features
 
-# 5. Pre-set Cluster Variables for SWAT+/CoMOLA/OPTAIN workflow
-
-The algorithm considers five variables:
-1. **share_con** - ratio of area covered by measure to available area (per measure type) 
-2. **channel_frac** - fraction of measure HRU water draining directly to channel (per measure type) 
-3. **moran** - Moran's I (per measure type) 
-4. **linE** - ratio of structural to management options 
-5. **lu_share** - share of land use measures (buffer, grassslope, hedge) in available area
-
-
-# 6. Assumptions and Planned Features
-
-## 6.1 Current Limitations
+## 5.1 Current Limitations
 * hard-coded to FOUR objectives, less than four can be assessed by introducing a dummy variable but more is not possible atm
-* (OPTAIN - specific) convert_optain.R requires specific measure names; unmapped measures cannot be processed
+* convert_optain.R is limited to the hard coded measure names; unmapped measures cannot be processed
 * Stratified variables (as sometimes happens through rounding) are not supported for sliders and there is no error message
+* not all input files supplied by the user are checked for consistency, focus on the most important files: fitness and genome
 
 
-## 6.2 Planned Features for Version 1.1.0
-  * Data Prep: blue messages on capabilities with current upload
+## 5.2 Planned Features for Version 1.1.0
+  * debounce slider settings in visualisation tab
   * write/load full scenario run from previous uses
-  * automated cluster parameter production: share_con, spatial autocorrelation
-  * optimum number display in AHP
   * dynamic printing of progress during clustering
-  * clarify output naming, allow easier reuse of cluster results
-  
- 
+  * easier reuse of cluster results with selection and renaming
+   
 Other
+  * optimum number display in AHP
   * dynamic regression line with R2 in scatter plot in red, other R2 in blue
   * optima selection via direct number input
-  * add information on objectives on hover through link to glossary
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed

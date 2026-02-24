@@ -8,44 +8,104 @@
 # used files: pareto_genomes.txt, hru.con, measure_location.csv
 # author: cordula.wittekind@ufz.de
 ################################################################################
-print(paste0("loading required packages..."), quote=F)
-suppressPackageStartupMessages({
-  library(configr)#
-  library(corrplot)#
-  library(dplyr)#
-  library(DT)#
-  library(fs)
-  library(fst)
-  library(geohashTools)
-  library(geosphere)
-  library(ggplot2)
-  library(ggtext)
-  library(gridExtra) # or patchwork
-  library(here)
-  library(htmltools)
-  library(leafsync)
-  library(plotly)
-  library(purrr)
-  library(quanteda)
-  library(RColorBrewer)
-  library(readr)
-  library(reticulate)
-  library(scales)
-  library(sf)#
-  library(shiny)
-  library(shinydashboard)
-  library(shinythemes)
-  library(shinyWidgets)
-  library(sp)
-  library(spdep)
-  library(tibble)
-  library(tidyr)
-  library(tidyverse)
-  library(tmap)
-  library(viridis)
- 
-})
+
+mode <- Sys.getenv("MY_MODE", unset = "default") #communicate with server.R
 source("functions.R")
+
+#### 1. Creating a small dataset with the variables for clustering and correlation ####
+if(mode == "fast"){
+  suppressPackageStartupMessages({
+  library(foreign)
+  library(dplyr)
+  library(tidyr)
+  })
+  
+  fit = read.table("../data/pareto_fitness.txt", header = FALSE, stringsAsFactors = FALSE, sep = deli("../data/pareto_fitness.txt"))
+  yolo = readRDS("../input/object_names.RDS")
+  names(fit) = yolo
+  fit$id = seq_len(nrow(fit)) #ids are optima
+  
+  con = read.dbf("../data/hru.dbf")
+  hru = readRDS("../input/hru_in_optima.RDS")
+  nopt = ncol(hru)-1
+  #pull unique meas
+  
+  hru %>%pivot_longer(cols = -id, names_to = "optims", values_to = "measure") %>%
+    group_by(id)%>%filter(!is.na(measure)) %>%select(-id, -optims) %>%distinct(measure) %>% pull() %>% unique() -> meas
+  
+  if(length(meas)==0){
+    writeLines("could not determine decision space elements. You might want to try to reupload your genome and lookup table.","../output/error_convert.txt")
+    return()
+  }
+  
+  missing_in_hru <- setdiff(con$id, hru$id)
+  missing_in_con <- setdiff(hru$id, con$id)
+  
+  if (length(missing_in_hru) > 2) {#to exclude NA, 0 etc
+    writeLines(paste("The following ids from the shapefile are not in the genome:", paste(missing_in_hru, collapse = ", ")),"../output/error_convert.txt")
+    return()
+  }
+  if (length(missing_in_con) > 2) {
+    writeLines(paste("The following ids from the genome are not in the shapefile:", paste(missing_in_con, collapse = ", ")),"../output/error_convert.txt")
+    return()
+  }
+  
+  hru_donde <- con %>% select(id,area)%>% inner_join(hru, by = "id")%>%mutate(obj_id = "id") # Pareto front in columns
+  
+  
+  arre = as.data.frame(array(NA, dim =c(nopt,length(meas)))) # Pareto front in rows
+  colnames(arre) = meas  
+  rownames(arre) = paste0("V", 1:nopt)
+  
+  for (op in paste0("V", 1:nopt)) {
+    #how much area was covered by individual measures 
+    opti = hru_donde %>% select(c(all_of(op), area))
+    
+    for (m in meas) {
+      if (m %in% opti[[op]]) {
+        #check if land use is part of optimum (pond sometimes is not in Schwarzer Schoeps)
+        
+        arre[op, m] = opti %>% filter(.data[[op]] == m) %>%
+          mutate(tot = sum(area)) %>% distinct(tot) %>% pull()
+        
+      }
+      else{
+        arre[op, m] = 0
+      }
+    }
+    print(paste0("caculated area share of measures across Optimum ",op,"..."),
+          quote = FALSE)
+    
+  }
+  
+  ## share in implemented catchment area
+  share_con = apply(arre, 2, function(x) (x/max(x))*100) %>% as.data.frame() %>%
+    rename_with(~paste0(., "_share_con"), all_of(meas)) %>% mutate(id = row_number())
+  
+  test_clu = fit %>% 
+    left_join(share_con, by = "id") 
+  
+  write.csv(test_clu, "../input/cluster_params.csv",  row.names = FALSE, fileEncoding = "UTF8")  
+  
+  writeLines(meas, "../output/meas_fast.txt") # this is the best way to communicate "back"
+
+}else{
+#### 2. SWAT+/CoMOLA workflow - produce hru_in_optima.RDS from genome and 
+#       measure_location, produce a more exhaustive set of cluster variables ####
+
+  print(paste0("loading required packages..."), quote=F)
+  
+  suppressPackageStartupMessages({
+    library(dplyr)
+    library(tidyr)
+    library(stringr)
+    library(geosphere)
+    library(spdep)
+    library(Matrix)
+    library(rlang)
+  })
+  
+  
 land_u = c("hedge", "buffer","edgefilter","grasshedge", "shrubhedge", "grassbuffer", "shrubbuffer", "grassslope","grassland","grassrchrg", "terrace", "floodres","swale", "rip_forest", "afforest", "afforestation", "contr")
 
 ## check, assign and write priorities, hardcodes what has been used in CoMOLA
@@ -80,14 +140,13 @@ nswrm_priorities <- function(lu) {
   return(prio)
 }
 
-
 ## Genomes
   gen = read.table("../data/pareto_genomes.txt", header = FALSE, stringsAsFactors = FALSE, sep = deli("../data/pareto_genomes.txt"), encoding = "UTF-8")
   fit = read.table("../data/pareto_fitness.txt", header = FALSE, stringsAsFactors = FALSE, sep = deli("../data/pareto_fitness.txt"))
   #get number of optima
   nopt = nrow(fit)
   
-  if(nopt != ncol(gen)){gen = as.data.frame(t(gen))}#genome is reversed sometimes
+  # if(nopt != ncol(gen)){gen = as.data.frame(t(gen))}#fixed in upload, more stable (row AND column check)
   
   print("check: read pareto_fitness.txt and pareto_genomes.txt...",quote=F)
 
@@ -96,10 +155,6 @@ nswrm_priorities <- function(lu) {
 
 # genome_hru matches AEP with hrus, several hrus for each AEP (hru = obj_id)
   genome_hru <- read.csv("../data/measure_location.csv")
-  if (nrow(gen) != nrow(genome_hru)) {#CS6-inspired check for inconsistent MOO outputs
-    stop("Error: the measure_location.csv and pareto_genomes.txt files have different numbers of rows. Please check your input files - are they from the same model run?")
-  }
-  
   
   print("check: read measure_location.csv...", quote = FALSE)
   
@@ -392,8 +447,8 @@ for(op in paste0("V", 1:nopt)){
    
    ## share in implemented catchment area
    share_con = apply(arre,2,function(x) (x/max(x))*100)%>%as.data.frame()%>%
-     rename_at(vars(meas),~paste0(., "_share_con"))%>%mutate(id = row_number())
-  
+     rename_with(~paste0(., "_share_con"), all_of(meas)) %>% mutate(id = row_number())
+   
    ## land use share in considered/implemented catchment area
    if(any(meas %in% land_u)){
      lu = meas[which(meas %in% land_u)]
@@ -436,3 +491,4 @@ for(op in paste0("V", 1:nopt)){
   all_var = colnames(test_clu)[5:ncol(test_clu)]  #assuming four variables here
   saveRDS(all_var,file = "../input/all_var.RDS") #required for PCA
   print("check: provided variable names ---> /input/all_var...", quote = FALSE)
+  }

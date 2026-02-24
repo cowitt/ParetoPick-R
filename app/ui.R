@@ -545,9 +545,9 @@ ui <-
                                  style = "text-align: left;"
                                ),
                                div(style = "margin-top: -15px;",fileInput("hru_activ", "", accept = ".txt", placeholder="")),
-                               
-                               p("After providing the genomes, please provide a lookup table (either .csv or .txt) that translates the code used for the decision space in the genome. 
-                                 This file is not needed when working with SWAT+/CoMOLA outputs. The genome has to be uploaded first."),
+                               uiOutput("gen_fit_fu"),#msg for alignment check between fitness and genome
+                               p("After providing the genome, please provide a lookup table (either .csv or .txt) that translates the code used for the decision space in the genome. 
+                                 This file is not needed when working with SWAT+/CoMOLA outputs."),
                                
                                div(
                                  tags$a("Lookup table", 
@@ -557,10 +557,7 @@ ui <-
                                  style = "text-align: left;"
                                ),
                                div(style = "margin-top: -15px;",fileInput("measure_loc", "", accept =c(".txt",".csv"), placeholder="")),
-                               
-                             
-                               ######################################################################## 
-                               hr(style = "border-top: 1px solid #03597F;"), 
+                               uiOutput("genome_lu_fu"),#msg for alignment check between lookup and genome
                                
                                
                                div("2.2 File Upload - Mapping",
@@ -576,7 +573,7 @@ ui <-
                                ),
                                div(style = "margin-top: -15px;",fileInput("shapefile_cd", "", multiple = TRUE, placeholder="",
                                                                           accept = c(".shp", ".shx", ".dbf", ".prj"))),
-                               
+                               uiOutput("map_plot_da"),
                                # actionButton("save_full_cd", "Save files"),
                                # div(
                                #   id = "spinner_hru_con",style = "display: none;",
@@ -587,13 +584,13 @@ ui <-
                                ######################################################################## Full Visualisation
                                hr(style = "border-top: 1px solid #03597F;"), 
                                
-                               div("3. File Upload - Clustering",
+                               div("3.1 File Upload - Clustering with your own data",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                
-                               p("If you can produce a .csv file with cluster parameters following the Readme, you will be able to use the clustering, visualisations and AHP. This file is produced automatically when working with SWAT+/CoMOLA outputs."),
+                               p("If you can produce a .csv file with cluster variables following the Readme, please provide it here."),
                                
                                div(
-                                 tags$a(".csv file with cluster parameters", 
+                                 tags$a(".csv file with cluster variables", 
                                         href = "https://github.com/cowitt/ParetoPick-R?tab=readme-ov-file#cluster-structure",
                                         target = "_blank", #prevents reload
                                         style = "text-align: left; font-size:115%; color: blue; text-decoration: none;"),
@@ -602,14 +599,27 @@ ui <-
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
                                # actionButton("save_cluster_no","Save file"),
 
-                           
+                               div("3.2 Clustering - with a set of cluster variables produced from your shapefile",
+                                   style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
+                               p("If you do not want to produce the cluster variables yourself, you can automatically calculate a set of cluster variables (describing the share of activated areas per decision space variable) here.
+                                 Please provide pareto_fitness.txt, the objective names, the shapefile and the genome + lookup table first."),
+                               
+                               div(htmlOutput("automated_clustering"),style = "text-align: left; font-size:100%; color: blue; text-decoration: none;"),                               
+                               actionButton("runaclust", "Check Files"),
+                               
+                               tags$button(                               #becomes available once hru_in_optima.RDS is available
+                                 id = "runaclust2", 
+                                 class = "btn btn-default action-button", 
+                                 disabled = "disabled",  "Prepare Cluster Variables"),
+                               uiOutput("aclustout"),
+                               uiOutput("what_clp"),
                                
                                #######################################################################SWAT+/CoMOLA###############
                                hr(style = "border-top: 2px solid #03597F;"), 
                                
                                div("4. Additional files for an automated workflow (SWAT+/CoMOLA outputs)",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
-                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can use an automated workflow for calculating cluster parameters and consider competing measure allocation. (This is also possible if you can reproduce these two files).
+                               p("If you have used a model workflow based on SWAT+ and CoMOLA, you can consider overlapping/competing decision space elements and use an automated workflow for calculating cluster variables.
                                  The file names have to align with what is given here:"),
                               
                                div(
@@ -715,7 +725,7 @@ ui <-
                                            
                                          column(12,
                                                 div("Objective Range",
-                                                    tags$h5("For some of the visualisations and analyses in this tool, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
+                                                    tags$h5("For this visualisations and analysis, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
                                                     style = "text-align: left; font-size:150%; margin-top: 10px;"),
                                               
                                                 sliderInput(inputId = "obj1", label=  "Objective 1:", min = 0, max = 1, value = c(0,1), step = 0.01,width = "120%"),
@@ -735,11 +745,7 @@ ui <-
                                                 uiOutput("mes_sliders"),
                                                 div(id="mes_empty",
                                                   tags$div(textOutput("mes_empty"), style = "color: red;"))%>%hidden(),
-                                                # tags$p(
-                                                #   tags$strong("Please Note:"),
-                                                #   "For some of the visualisations and analyses in this tool, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."
-                                                # ),
-                                                # tags$p("The app does not display negative signs, only where an objective range covers both negative and positive values, a sign is added.")
+                                               
                                          ),
                                          div(id ="freq_title",
                                            "Frequency of area implemented",
@@ -805,8 +811,6 @@ ui <-
 
                                                   ")) ,
                            
-                           
-
                            div(id = "tab_play1",
 
                                div("Pareto Plot", style = "text-align: left; font-size:150%"),
@@ -888,7 +892,6 @@ ui <-
                               
                               div(id = "number_mes_tab","Number of distinct measures used in selection compared to full front",
                                   style = "display: flex; justify-content: center; font-size:150%"),
-                              # div("*please note that these numbers refer to the implementation/use of the total number of measures available in the catchment. They therefore differ from the selection made in the sliders which considers individual optima's implementation of measures.",
                               # style = "display: flex; justify-content: center; font-size: 80%"),
                               
                               div(style="display: flex; flex-direction: column; align-items: center;",
@@ -1213,9 +1216,9 @@ ui <-
                        
                        wellPanel(p("This tab allows you to analyse the cluster outputs and plot and compare the measure implementation across the pareto solutions selected in the clustering. The table shows those optima selected as representative for the different clusters. The plot on the right aligns with the one produced during the clustering.
                        It shows the location of the optima selected in the table. Please be aware that plotting the measure allocation takes around 20 seconds.")),
-
+                       uiOutput("analysis_needs_var"),
+                       
                         mainPanel(width = 12,
-                           textOutput("analysis_needs_var"),
                            id ="main_analysis",
                            div(id="analysis_random", #the whole right side of plots and extra stuff under plot can be hidden
                            fluidRow(
@@ -1288,18 +1291,8 @@ ui <-
                                uiOutput("comp_map")%>% withSpinner(color = "#F7A600", hide.ui = TRUE)),
                            br(),br(),br(),
                            br(),br(),br(),
-                           br(),br(),br()
-                           # ,
-                           # div(
-                           #   style = "display: inline-block; vertical-align: top; margin-right: 0px;",
-                           #   textInput("meas_plot_savename", label = NULL, value = "Measure implementation")
-                           # ),
-                           # div(
-                           #   style = "display: inline-block; vertical-align: top; margin-left: 0px;",
-                           #   downloadButton("download_meas_plot", "Download Plot")
-                           # )
-                           #
-                           ,
+                           br(),br(),br(),
+                           
                            div(id="ca_shp",
                                
                                style = "display: inline-block; vertical-align: top; margin-left: 0px; margin-top: 5px;",
