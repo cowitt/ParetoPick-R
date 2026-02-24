@@ -12,6 +12,7 @@ server <- function(input, output, session) {
   hru_da =  reactiveVal(if(file.exists("../input/hru_in_optima.RDS")) 1 else NULL) 
   pg_da = reactiveVal(if(file.exists("../data/pareto_genomes.txt")) 1 else NULL) 
   shp_da = reactiveVal(if(file.exists("../data/hru.shp")) 1 else NULL)
+  sq_da = reactiveVal(if(file.exists("../data/sq_fitness.txt")) 1 else NULL)
   
   ## reactive values
   objectives <- reactiveVal(character()) #objective names
@@ -180,17 +181,13 @@ server <- function(input, output, session) {
   
   #pull status quo
   observe({
-    if (file.exists("../data/sq_fitness.txt")) {
+    sq_da()
+    if (!is.null(sq_da())) {
       req(objectives())
-      
-      # shinyjs::enable("plt_sq")
-      
       st_q = read.table('../data/sq_fitness.txt', header = FALSE, stringsAsFactors = FALSE, sep = deli('../data/sq_fitness.txt'))
       names(st_q) = objectives()
       stq(st_q)
-    }#else{
-      # shinyjs::disable("plt_sq")} 
-    })
+    }})
   
   
   ## ggplot melt and change plotting order
@@ -297,6 +294,7 @@ server <- function(input, output, session) {
       par_fiti(list(path = file$datapath, name = file$name))
       save_path_par_fiti <- file.path(save_dir, "pareto_fitness.txt")
       file.copy(par_fiti()$path, save_path_par_fiti, overwrite = TRUE) #copy pareto_fitness.txt
+      pareto_da(1)
       })
     
   
@@ -308,7 +306,7 @@ server <- function(input, output, session) {
       sq_file(list(path=file$datapath, name = file$name))#name here superfluous
       save_path_sq <- file.path(save_dir, "sq_fitness.txt")
       file.copy(sq_file()$path,save_path_sq,overwrite = TRUE) #copy sq_fitness.txt
-      
+      sq_da(1)
     })
     
   
@@ -425,6 +423,7 @@ server <- function(input, output, session) {
     
     # text if visualisation would work
     observe({
+      sq_da()
       if (file.exists("../input/object_names.RDS") && file.exists(pareto_path) && file.exists("../data/sq_fitness.txt")) {
         output$can_visualise = renderText({
           "At this point you can use the Visualisation and AHP tab. If you haven't done so already, you can supply the genome, shapefile and/or cluster information below."
@@ -910,9 +909,12 @@ server <- function(input, output, session) {
 
     #### Hard Reset ####
     observe({ 
+      pareto_da()
+      pg_da()
       if(length(list.files(c(save_dir,output_dir), full.names = TRUE))==0){ #do not show reset option if there haven't been files uploaded
         shinyjs::hide(id="reset")
       }else{
+        shinyjs::show(id="reset")
         output$reset_prompt <- renderText({
           HTML(paste("<p style='color: red;'> If you would like to restart the app if it crashes or behaves inconsistently, you can hard reset it here. Clicking this button
                    deletes all files you provided. The contents of the Output folder are also deleted, please move or copy those files you would like to keep. For all changes to take effect please restart the app after each Hard Reset. Please proceed with caution!</p>"))
@@ -1191,11 +1193,13 @@ server <- function(input, output, session) {
  
     
     observe({
-      if (!file.exists("../data/sq_fitness.txt")) {
-        req(objectives())
-        
-        shinyjs::disable("add_sq_f")}
-        })
+      sq_da()
+      if (is.null(sq_da())) {
+        shinyjs::disable("add_sq_f")
+      } else{
+        shinyjs::enable("add_sq_f")
+      }
+    })
 
   observe({
     req(fit())
@@ -3053,7 +3057,7 @@ server <- function(input, output, session) {
       choices = readRDS("../input/object_names.RDS")
     }
     
-    if (!file.exists("../data/sq_fitness.txt")){shinyjs::disable("add_sq")}else{shinyjs::enable("add_sq")} 
+    if (is.null(sq_da())){shinyjs::disable("add_sq")}else{shinyjs::enable("add_sq")} 
     
     
     #update Analysis tab plot without "off"
@@ -3535,7 +3539,7 @@ server <- function(input, output, session) {
     }else{ shinyjs::hide("nothing_ran_ahp")
       shinyjs::runjs("toggleSidebar(false);")  # Hide sidebar
     }      
-    if (!file.exists("../data/sq_fitness.txt")){shinyjs::disable("show_status_quo")}else{shinyjs::enable("show_status_quo")} 
+    if (is.null(sq_da())){shinyjs::disable("show_status_quo")}else{shinyjs::enable("show_status_quo")} 
       
       if(!file.exists("../input/object_names.RDS")) {
       choices = "Please select objectives in Data Preparation Tab"

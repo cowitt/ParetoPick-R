@@ -640,7 +640,7 @@ ui <-
                                            
                                          column(12,
                                                 div("Objective Range",
-                                                    tags$h5("For some of the visualisations and analyses in this tool, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
+                                                    tags$h5("For this visualisations and analysis, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
                                                     style = "text-align: left; font-size:150%; margin-top: 10px;"),
                                               
                                                 sliderInput(inputId = "obj1", label=  "Objective 1:", min = 0, max = 1, value = c(0,1), step = 0.01,width = "120%"),
@@ -660,11 +660,7 @@ ui <-
                                                 uiOutput("mes_sliders"),
                                                 div(id="mes_empty",
                                                   tags$div(textOutput("mes_empty"), style = "color: red;"))%>%hidden(),
-                                                # tags$p(
-                                                #   tags$strong("Please Note:"),
-                                                #   "For some of the visualisations and analyses in this tool, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."
-                                                # ),
-                                                # tags$p("The app does not display negative signs, only where an objective range covers both negative and positive values, a sign is added.")
+                                               
                                          ),
                                          div(id ="freq_title",
                                            "Frequency of area implemented",
@@ -730,8 +726,6 @@ ui <-
 
                                                   ")) ,
                            
-                           
-
                            div(id = "tab_play1",
 
                                div("Pareto Plot", style = "text-align: left; font-size:150%"),
@@ -813,7 +807,6 @@ ui <-
                               
                               div(id = "number_mes_tab","Number of distinct measures used in selection compared to full front",
                                   style = "display: flex; justify-content: center; font-size:150%"),
-                              # div("*please note that these numbers refer to the implementation/use of the total number of measures available in the catchment. They therefore differ from the selection made in the sliders which considers individual optima's implementation of measures.",
                               # style = "display: flex; justify-content: center; font-size: 80%"),
                               
                               div(style="display: flex; flex-direction: column; align-items: center;",
