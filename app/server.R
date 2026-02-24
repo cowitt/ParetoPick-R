@@ -39,6 +39,13 @@ server <- function(input, output, session) {
         if (!dir.exists(DATA_PATH))   DATA_PATH   <- file.path(default_folder, "data")
         if (!dir.exists(INPUT_PATH))  INPUT_PATH  <- file.path(default_folder, "input")
         if (!dir.exists(OUTPUT_PATH)) OUTPUT_PATH <- file.path(default_folder, "output")
+        # Final fallback: use original flat dirs (../data, ../input, ../output) if default/ has no data
+        if (!base::file.exists(file.path(DATA_PATH, "pareto_fitness.txt")) &&
+            base::file.exists(file.path(base_dir, "data", "pareto_fitness.txt"))) {
+          DATA_PATH   <- file.path(base_dir, "data")
+          INPUT_PATH  <- file.path(base_dir, "input")
+          OUTPUT_PATH <- file.path(base_dir, "output")
+        }
         list(DATA_PATH=DATA_PATH, INPUT_PATH=INPUT_PATH, OUTPUT_PATH=OUTPUT_PATH)
       }
       .paths <- resolve_paths()
@@ -153,6 +160,13 @@ server <- function(input, output, session) {
         if (!dir.exists(DATA_PATH))   DATA_PATH   <- file.path(default_folder, "data")
         if (!dir.exists(INPUT_PATH))  INPUT_PATH  <- file.path(default_folder, "input")
         if (!dir.exists(OUTPUT_PATH)) OUTPUT_PATH <- file.path(default_folder, "output")
+        # Final fallback: use original flat dirs (../data, ../input, ../output) if default/ has no data
+        if (!base::file.exists(file.path(DATA_PATH, "pareto_fitness.txt")) &&
+            base::file.exists(file.path(base_dir, "data", "pareto_fitness.txt"))) {
+          DATA_PATH   <- file.path(base_dir, "data")
+          INPUT_PATH  <- file.path(base_dir, "input")
+          OUTPUT_PATH <- file.path(base_dir, "output")
+        }
         list(DATA_PATH=DATA_PATH, INPUT_PATH=INPUT_PATH, OUTPUT_PATH=OUTPUT_PATH)
       }
 

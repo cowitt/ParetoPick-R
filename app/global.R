@@ -41,6 +41,13 @@ default_folder <- file.path(base_dir, "default")
 save_dir <- file.path(default_folder, "data")
 input_dir <- file.path(default_folder, "input")
 output_dir <- file.path(default_folder, "output")
+# Fallback: use original flat dirs if default/ has no data
+if (!file.exists(file.path(save_dir, "pareto_fitness.txt")) &&
+    file.exists(file.path(base_dir, "data", "pareto_fitness.txt"))) {
+  save_dir <- file.path(base_dir, "data")
+  input_dir <- file.path(base_dir, "input")
+  output_dir <- file.path(base_dir, "output")
+}
 pareto_path <- file.path(save_dir, "pareto_fitness.txt")
 if(!dir.exists(save_dir)){  dir.create(save_dir, recursive = TRUE)}
 if(!dir.exists(output_dir)){  dir.create(output_dir, recursive = TRUE)}
