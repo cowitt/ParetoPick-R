@@ -193,18 +193,50 @@ Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
 │   ├── ui.R
 │   ├── server.R
 │   ├── global.R
+│   ├── functions.R
 │   └── convert_optain.R
+├── default           # default case study (used when no ?cs= is specified)
+│   ├── data
+│   ├── input
+│   └── output
+├── cs-<name>         # additional case studies (e.g. cs-12, cs-mycatchment)
+│   ├── data
+│   ├── input
+│   └── output
+├── data              # legacy flat layout (fallback if default/ has no data)
 ├── input
-├── data
 └── output
 ```
 **Folder purposes:**
 - **app**: UI and server logic
-- **input**: Configuration and processed data
-- **data**: User-supplied outputs from multi-objective optimisation
-- **output**: Analysis results and selected optima
+- **data / input / output**: User-supplied data, configuration and results (see below for resolution order)
 
-Files supplied through by the user are stored in the data folder, these are the outputs of the previous MOO, e.g. from SWAT+/CoMOLA [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793).
+## 4.0 Multiple Case Studies
+
+The app supports serving several case studies from a single deployment. Each browser tab can load a different case study via the `?cs=` query string parameter (e.g. `?cs=cs12`).
+
+**Directory resolution order** (per session):
+1. Nested case folder: `cs-12/data/`, `cs-12/input/`, `cs-12/output/`
+2. Legacy flat folders: `data-cs12/`, `input-cs12/`, `output-cs12/`
+3. Default nested: `default/data/`, `default/input/`, `default/output/`
+4. Original flat folders: `data/`, `input/`, `output/` (fallback when `default/` has no `pareto_fitness.txt`)
+
+Both `cs12` and `cs-12` naming conventions are supported. All existing `../data/`, `../input/`, `../output/` paths in the R code are transparently remapped per session.
+
+## 4.0.1 URL Query String Parameters
+
+| Parameter | Example | Effect |
+|-----------|---------|--------|
+| `cs` | `?cs=cs12` | Load a specific case study |
+| `default-tab` | `?default-tab=play_around` | Open a specific tab on load |
+| `sidebar` | `?sidebar=closed` | Collapse the sidebar on load (accepts `1`, `true`, `yes`, `on`, `closed`, `collapse`) |
+| `visonly` | `?visonly=1` | Restrict the UI to the "Visualising the Pareto Front" tab only (accepts `1`, `true`, `yes`, `on`) |
+
+The `visonly` restriction can also be set server-side via the environment variable `PARETOPICK_VIS_ONLY=1`.
+
+Parameters can be combined: `?cs=cs12&default-tab=play_around&sidebar=closed`
+
+Files supplied by the user are stored in the data folder, these are the outputs of the previous MOO, e.g. from SWAT+/CoMOLA [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793).
 
 
 ## 4.1 Files created during processing
