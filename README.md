@@ -27,7 +27,7 @@ The following files (their detailed structure is described in the next section) 
 ## 2.3 Data structures
 
 1. __Pareto Fitness (.txt)__ <a name="fitness-structure"></a>
-  * float
+  * float32
   * four columns for each of the objectives
   * rows are the different Pareto optima
   * can be either comma separated OR space separated
@@ -105,7 +105,7 @@ The following files (their detailed structure is described in the next section) 
   * if cluster parameters shall be calculated by the tool, an area column is required
 
 5. __Cluster Parameters (.csv)__<a name="cluster-structure"></a>
-  * float
+  * float32
   * rows are Pareto optima
   * columns should contain the Pareto fitness and cluster variables
   * column names can contain spaces and the column names of pareto fitness have to align with what is provided in the Data Preparation tab
@@ -254,7 +254,7 @@ Each script serves a specific purpose in the software’s architecture:
 
 ## 5.1 Current Limitations
 * hard-coded to FOUR objectives, less than four can be assessed by introducing a dummy variable but more is not possible atm
-* convert_optain.R is limited to the hard coded measure names; unmapped measures cannot be processed
+* convert_optain.R when using the automated SWAT+/CoMOLA workflow is limited to the hard coded measure names; unmapped measures cannot be processed. The distinction between linear and management measures cannot be automated.
 * Stratified variables (as sometimes happens through rounding) are not supported for sliders and there is no error message
 * not all input files supplied by the user are checked for consistency, focus on the most important files: fitness and genome
 
