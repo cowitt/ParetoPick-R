@@ -3530,7 +3530,16 @@ server <- function(input, output, session) {
       
     }
   )
-
+ observe({
+   sols()
+   if(is.null(sols())) {#turn off all cluster-related options
+     shinyjs::disable("best_cluster")
+     shinyjs::disable("show_extra_dat")
+   } else{
+     shinyjs::enable("best_cluster")
+     shinyjs::enable("show_extra_dat")
+   }
+ })
   
   ### AHP ####
   observeEvent(input$tabs == "ahp",{
@@ -3550,14 +3559,7 @@ server <- function(input, output, session) {
     
       } else{choices = readRDS("../input/object_names.RDS")}
     
-    if(is.null(sols())) {#turn off all cluster-related options
-      shinyjs::disable("best_cluster")
-      shinyjs::disable("show_extra_dat")
-    } else{
-      shinyjs::enable("best_cluster")
-      shinyjs::enable("show_extra_dat")
-    }
-    
+  
     ahp_choices(choices)
    
     updateSelectInput(session,inputId = "x_var", choices = choices,selected = rng_plt()[1])
