@@ -61,7 +61,7 @@ check_cvp = function(objs, var_path = "../input/cluster_params.csv", ws = T) {
  #only ever called for non-optain cluster.csvs
   clu_col = read.csv(var_path, nrows = 1, check.names = F)
   clu_col = names(clu_col)
-  params =  setdiff(clu_col, objs)
+  params =  setdiff(clu_col, c(objs,"id"))
   if(ws){saveRDS(params, file = "../input/all_var.RDS")}
   
   return(params)
