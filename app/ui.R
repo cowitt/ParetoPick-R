@@ -499,10 +499,10 @@ ui <-
                                ######################################################################## Full Visualisation
                                hr(style = "border-top: 1px solid #03597F;"), 
                                
-                               div("3.1 File Upload - Clustering with your own data",
+                               div("3.1 EITHER: File Upload - Clustering with your own data",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                
-                               p("If you can produce a .csv file with cluster variables following the Readme, please provide it here."),
+                               p("If you can produce a .csv file with cluster variables following the Readme, please provide it here. Otherwise you might want to consider 3.2"),
                                
                                div(
                                  tags$a(".csv file with cluster variables", 
@@ -514,7 +514,7 @@ ui <-
                                div(style = "margin-top: -15px;",fileInput("cluster_params","", accept = ".csv", placeholder = "")),
                                # actionButton("save_cluster_no","Save file"),
 
-                               div("3.2 Clustering - with a set of cluster variables produced from your shapefile",
+                               div("3.2 OR: Clustering - with a set of cluster variables produced from your shapefile",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                p("If you do not want to produce the cluster variables yourself, you can automatically calculate a set of cluster variables (describing the share of activated areas per decision space variable) here.
                                  Please provide pareto_fitness.txt, the objective names, the shapefile and the genome + lookup table first."),
