@@ -2925,16 +2925,16 @@ server <- function(input, output, session) {
   ## cluster specs
   observeEvent(input$write_clust, {
     fixbool = ifelse(input$clusyn == "No", TRUE, FALSE)
+    pca_rv$fixed_cluster_boolean = fixbool
+    
     if (input$clusyn == "No") {
       #old write_cluster()
-      pca_rv$fixed_clusters_boolean = fixbool
       pca_rv$fixed_clusters = input$clus_fix
       
       pca_rv$min_clusters = 0
       pca_rv$max_clusters = 0
       
       } else{
-        pca_rv$fixed_clusters_boolean = fixbool
 
         pca_rv$min_clusters = input$clus_min
         pca_rv$max_clusters = input$clus_max

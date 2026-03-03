@@ -1104,7 +1104,7 @@ ui <-
                                              conditionalPanel(
                                                condition = "input.clusyn == 'Yes'",
                                                h4("Please specify how many clusters to iterate through:"),
-                                               numericInput("clus_min", "Minimum number of Clusters", value = 3),
+                                               numericInput("clus_min", "Minimum number of Clusters",min = 2, value = 3),
                                                numericInput("clus_max", "Maximum number of Clusters",max=20, value = 3),
 
                                              ),

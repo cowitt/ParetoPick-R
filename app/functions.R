@@ -321,7 +321,7 @@ write_cluster<- function(min_cluster=0,max_cluster=0,fixed_cluster_boolean=T,fix
   }
   config <- read.ini(inipath)
   
-  config[[2]]$fixed_clusters_boolean = fixed_cluster_boolean
+  config[[2]]$fixed_cluster_boolean = fixed_cluster_boolean
   config[[2]]$fixed_clusters = fixed_clusters
   
   config[[2]]$min_clusters = min_cluster
@@ -606,12 +606,12 @@ find_closest_pareto_solution <- function(centroid, input_data) {
 ## rerun kmeans multiple times for its_cluster_time()
 
 run_kmeans_multiple_times <- function(pca_data, min_clusters, max_clusters, input_data, pca_object,
-                                      fixed_clusters_boolean, fixed_clusters) {
+                                      fixed_cluster_boolean, fixed_clusters) {
   text_output = c()
   best_score <- -1
   best_labels <- NULL
   best_centroids <- NULL
-  if (fixed_clusters_boolean) {
+  if (fixed_cluster_boolean) {
     result <- kmeans_clustering(pca_data, fixed_clusters)
     best_labels <- result$labels
     best_centroids <- result$centers
@@ -691,14 +691,14 @@ run_kmeans_multiple_times <- function(pca_data, min_clusters, max_clusters, inpu
 
 ## rerun kmedoid multiple times for its_cluster_time()
 
-run_kmedoids_multiple_times <- function(pca_data, min_clusters, max_clusters, input_data, pca_object, fixed_clusters_boolean, fixed_clusters) {
+run_kmedoids_multiple_times <- function(pca_data, min_clusters, max_clusters, input_data, pca_object, fixed_cluster_boolean, fixed_clusters) {
   text_output = c()
   best_score <- -1
   best_labels <- NULL
   best_medoids <- NULL
   best_medoids_index <- NULL
   
-  if (fixed_clusters_boolean) {
+  if (fixed_cluster_boolean) {
     result <- kmedoids_clustering(pca_data, input_data, fixed_clusters)
     best_labels <- result$labels
     best_medoids <- result$centers
@@ -766,7 +766,7 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
   columns <- corr_rv$columns
   min_clusters <- rv$min_clusters
   max_clusters <- rv$max_clusters
-  fixed_clusters_boolean <- rv$fixed_cluster_boolean
+  fixed_cluster_boolean <- rv$fixed_cluster_boolean
   fixed_clusters <- rv$fixed_clusters
   handle_outliers_boolean <- rv$handle_outliers_boolean
   deviations_min <- rv$deviations_min
@@ -886,7 +886,7 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
                 max_clusters,
                 input_data_no_outliers,
                 pca_result,
-                fixed_clusters_boolean,
+                fixed_cluster_boolean,
                 fixed_clusters
               )
             } else {
@@ -896,7 +896,7 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
                 max_clusters,
                 input_data_no_outliers,
                 pca_result,
-                fixed_clusters_boolean,
+                fixed_cluster_boolean,
                 fixed_clusters
               )
             }
@@ -993,9 +993,10 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
           max_clusters,
           input_data,
           pca_result,
-          fixed_clusters_boolean,
+          fixed_cluster_boolean,
           fixed_clusters
         )
+       
       } else {
         clustering_result <- run_kmedoids_multiple_times(
           pca_data,
@@ -1003,7 +1004,7 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
           max_clusters,
           input_data,
           pca_result,
-          fixed_clusters_boolean,
+          fixed_cluster_boolean,
           fixed_clusters
         )
       }
