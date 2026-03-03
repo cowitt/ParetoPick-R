@@ -9,6 +9,12 @@ foo1 <- function(x) {
     if (!requireNamespace(i, quietly = TRUE)) {
       install.packages(i, dependencies = TRUE, quiet = TRUE)
     }
+    if (!requireNamespace(i, quietly = TRUE) && i == "leaflet.extras") {
+      if (!requireNamespace("remotes", quietly = TRUE)) {
+        install.packages("remotes", quiet = TRUE)
+      }
+      remotes::install_github("trafficonese/leaflet.extras", dependencies = T, quiet = T)
+    }
     library(i, character.only = TRUE)
   }
 }
