@@ -2579,9 +2579,9 @@ server <- function(input, output, session) {
         if(file.exists("../output/correlation_matrix.csv")){
           
           corr <<- read.csv("../output/correlation_matrix.csv", row.names = 1) #global because of re-rendering of plot
-
+          nvar = ncol(corr)
           ## correlation plot (does not change for different thresholds)
-          output$corrplot <- renderPlot({plt_corr(corr)})
+          output$corrplot <- renderPlot({plt_corr(corr, nvar = nvar)})
         }else{ shinyjs::hide("show_conf")}
         
         } )
@@ -3688,7 +3688,6 @@ server <- function(input, output, session) {
     if (!is.null(input$best_cluster) && input$best_cluster) {
       shinyjs::show("ahp_cluster_div")
       bor = sols() %>% filter(if_all(objectives(), ~ . %in% best_option())) %>% as.data.frame()
-      
       
       if (
           (!is.null(mahp()) && nrow(mahp()) == 0) || 

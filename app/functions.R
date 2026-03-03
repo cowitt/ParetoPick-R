@@ -6,9 +6,17 @@
 
 #### Correlation Analysis Functions ####
 ## correlation plot
-plt_corr = function(corr,labelcol = "black",labelorder='alphabet',meth = 'square', tpe = 'lower'){
+plt_corr = function(corr,nvar = 7, labelcol = "black",labelorder='alphabet',meth = 'square', tpe = 'lower'){
 corma = as.matrix(corr)
-plt = try(corrplot(corma, method = meth, order =labelorder, tl.col = labelcol, type=tpe, diag=FALSE, tl.cex=1.6, cl.cex = 1.6))
+cl.cex <- case_when(
+  nvar <= 4 ~ 1.8,
+  nvar <= 6 ~ 1.6,
+  nvar <= 10 ~ 1.4,
+  nvar <= 15 ~ 1.1,
+  nvar <= 20 ~ 0.8,
+  TRUE ~ 0.5
+)
+plt = try(corrplot(corma, method = meth, order =labelorder, tl.col = labelcol, type=tpe, diag=FALSE, tl.cex=1.6, cl.cex = cl.cex, cl.length = 5))
 return(plt)
 }
 
