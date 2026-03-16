@@ -224,31 +224,6 @@ Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
 Files uploaded in the Data Preparation tab are stored in the data folder, these are the outputs of the previous MOO (e.g. from SWAT+/CoMOLA [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793)).
 
 
-## 4.1 Files created during processing
-(stored in input folder)
-
-* **object_names.RDS**: objective names
-* **nswrm_priorities.RDS**: measures and implementation priority
-* **hru_in_optima.RDS**: HRU-optimum connections
-* **all_var.RDS**: all clustering variables
-* **pca_content.RDS**: variables after correlation filtering
-* **buffers.RDS**: measures requiring buffer for map visibility
-* **units.RDS**: unit definitions
-* **hru.con**: shapefile center for plot settings (same name as what automated workflow uses for producing cluster variables)
-* **cluster_params.csv**: parameters for cluster variables
-* **var_corr_par.csv**: objectives and parameters for cluster analysis (SWAT+/CoMOLA only)
-
-
-## 4.2 Scripts
-ParetoPick-R is built using a standard structure for dividing shiny functionalities among scripts. The five R scripts contained in the app folder are: ui.R, app.R, server.R, global.R, and convert_optain.R.
-
-Each script serves a specific purpose in the software’s architecture:
-* ui.R: This script establishes the UI of the app. It organises the app's layout, including input controls for sliders, clustering parameters and visualisation options. Additionally, it specifies the locations for displaying plots, tables, and clustering results.
-* server.R: This is the core backend functionality containing the server-side logic of the software. It captures user inputs, processes data, performs calculations and updates outputs. It relies on reactive expressions to efficiently manage data flow and calls external functions from functions.R alongside defining its own to create dynamic visualisations and tables.
-* functions.R: This script defines all custom functions used throughout the app.
-* global.R: This short script defines global paths and app settings.  
-* convert_optain.R: This script is needed for applications relying on a SWAT+/CoMOLA workflow only. It prepares hru_in_optima.RDS with competing activation of individual spatial units (defined in measure_location.csv) and the cluster parameters.
-
 
 # 5. Assumptions and Planned Features
 
