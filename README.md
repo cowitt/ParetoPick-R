@@ -1,3 +1,18 @@
+- [1. Introduction](#1-introduction)
+- [2. Deployment, required input files and data structure](#2-deployment-required-input-files-and-data-structure)
+  - [2.1 Requirements for use in R/Rstudio](#21-requirements-for-use-in-rrstudio)
+  - [2.2 Input files for different levels of functionalities](#22-input-files-for-different-levels-of-functionalities)
+  - [2.3 Data structures](#23-data-structures)
+  - [2.4 Automated Clustering](#24-automated-clustering)
+  - [2.5 Automated Data Processing and Clustering with a SWAT+/CoMOLA workflow](#25-automated-data-processing-and-clustering-with-a-swatcomola-workflow)
+- [3. Process](#3-process)
+  - [3.1 Data Preparation tab](#31-data-preparation-tab)
+  - [3.2 Cluster tabs](#32-cluster-tabs)
+- [4. Folder and File Structure](#4-folder-and-file-structure)
+- [5. Assumptions and Planned Features](#5-assumptions-and-planned-features)
+  - [5.1 Current Limitations](#51-current-limitations)
+  - [5.2 Planned Features for Version 1.1.0](#52-planned-features-for-version-110)
+
 # 1. Introduction
 ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="150" height="200" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
 It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making.
@@ -180,7 +195,7 @@ The algorithm considers five variables:
 5. **lu_share** - share of land use measures (buffer, grassslope, hedge) in available area
 
 # 3. Process
-### Data Preparation tab
+## 3.1 Data Preparation tab
 Unless otherwise specified, you may use any file name. However, ensure the file is in the correct format.
 
 The one file that has to be uploaded to allow any functionality is a file describing the Pareto fitness. Additionally, the objective names have to be provided. These names have to align with the four columns in this file. Further functionalities become available when other files are uploaded. The app will tell you which functionalities are available at each step.
@@ -189,7 +204,7 @@ The one file that has to be uploaded to allow any functionality is a file descri
 
 **Note**: Changing objective names without a Hard Reset requires: (1) delete object_names.RDS, (2) manually update names in var_corr_par.csv/cluster_params.csv, (3) update names in the newest kmeans/kmedoid output file or delete these/this file/s.
 
-### Clustering Tabs
+## 3.2 Cluster tabs
 Clustering (manually & default) generates two files - correlation_matrix.csv and kmeans/kmedoid_data_w_clusters_representativesolutions.csv  
 
 ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
@@ -222,8 +237,6 @@ Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
 - **output**: Analysis results and selected optima
 
 Files uploaded in the Data Preparation tab are stored in the data folder, these are the outputs of the previous MOO (e.g. from SWAT+/CoMOLA [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793)).
-
-
 
 # 5. Assumptions and Planned Features
 
