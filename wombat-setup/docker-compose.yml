@@ -1,6 +1,6 @@
 services:
   shiny:
-    image: git.ufz.de:4567/optain/paretopick-r-main:1.0.0
+    image: registry.hzdr.de/ufz/tb1-eotf/cle/optain/paretopick-r:1.0.0
     ports:
       - "3838:3838"
     restart: always
