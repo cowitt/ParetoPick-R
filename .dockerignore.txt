@@ -1,0 +1,8 @@
+Dockerfile
+.git
+.gitignore
+.gitattributes
+dist/**
+README.md
+LICENSE
+renv/library
