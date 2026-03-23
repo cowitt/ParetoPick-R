@@ -590,11 +590,9 @@ ui <-
                                div("Buffers:", style="text-align: left; margin-top: 5px; font-size:115%; width: 150%;"),
                                
                                div(
-                                 style = "display: inline-block; vertical-align: top; margin-right: 0px; margin-top: 5px",
-                               selectInput("buffies",label  = "select measures",choices=NULL,selected=NULL,multiple = T)),
-                               div(
                                  style = "display: inline-block; vertical-align: top; margin-left: 0px; margin-top: 30px",
-                               actionButton("save_buff","Save buffers"))
+                                 selectInput("buffies",label  = "select measures",choices=NULL,selected=NULL,multiple = T),
+                                 actionButton("save_buff","Save buffers"))
                                ,
                                br(),br(),
                                
