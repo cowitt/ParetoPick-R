@@ -2,6 +2,7 @@
 This repo differs from [the main at github](https://github.com/cowitt/ParetoPick-R) in the following aspects:
   * global.R - doesn't install libraries, just calls them
   * server.R - uses webshot2::webshot instead of webshot::webshot
+  * ui.R - contains an About tab
 
 ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="150" height="200" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
 It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making.

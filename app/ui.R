@@ -12,7 +12,7 @@ ui <-
                   menuItem("Data Preparation", icon=icon("file",lib = "font-awesome"),tabName = "data_prep",selected=TRUE),
                   menuItem("Visualising the Pareto Front",tabName = "play_around",icon = icon("dashboard")),
                   menuItem("Configure Clustering", tabName = "configure", icon = icon("cog")),
-
+                  
                   conditionalPanel(
                     condition = "input.show_tabs == 'show'",
                     menuItem("Correlation Analysis",icon=icon("random", lib="font-awesome"), tabName = "correlation_analysis"),
@@ -21,6 +21,8 @@ ui <-
 
                   menuItem("Cluster Analysis", icon = icon("th"),tabName = "analysis"),
                   menuItem("AHP",icon=icon("sliders-h", lib="font-awesome"),tabName = "ahp"),
+                  menuItem("About", tabName = "about", icon = icon("circle-info")),
+                  
       dropdownButton(
         inputId = "glossary_button",
         label = "Glossary",
@@ -71,6 +73,12 @@ ui <-
                                   .skin-blue .main-sidebar {
                                     background-color: #03597F;
                                   }
+                                  
+                                  /* About tab background color */
+                                  .sidebar-menu li a[data-value="about"] {
+                                    background-color: #03597F !important;
+                                  }
+
 
                                   /* AHP tab background color */
                                   .sidebar-menu li a[data-value="ahp"] {
@@ -588,12 +596,10 @@ ui <-
                                
                                div("Please select those measures that are small and require a buffer to enhance their visibility in maps.", style = "text-align: left; font-size:120%; margin-top: 10px;"),
                                div("Buffers:", style="text-align: left; margin-top: 5px; font-size:115%; width: 150%;"),
-                               
-                               div(
-                                 style = "display: inline-block; vertical-align: top; margin-right: 0px; margin-top: 5px",
-                               selectInput("buffies",label  = "select measures",choices=NULL,selected=NULL,multiple = T)),
+                             
                                div(
                                  style = "display: inline-block; vertical-align: top; margin-left: 0px; margin-top: 30px",
+                                 selectInput("buffies",label  = "select measures",choices=NULL,selected=NULL,multiple = T),
                                actionButton("save_buff","Save buffers"))
                                ,
                                br(),br(),
@@ -1419,7 +1425,37 @@ ui <-
                          )
                        )
 
-                     )
+                     ),
+               tabItem(tabName = "about",
+                             h2("About this app", style = "margin-top: 0; padding-top: 0;"),
+                             
+                             mainPanel(width =12, div(
+                               style = "width: 100%;; margin: 0 auto; text-align: justify; font-size:100%;",
+                               p("This app allows to explore multi-objective optimisation outputs. It has been developed at UFZ Leipzig as part of the", tags$a("OPTAIN project", href = "https://www.optain.eu/"),"."),
+                               br(),
+                               p("Version 1.0.0 - Copyright (C) 2026 Helmholtz Centre for Environmental Research - UFZ"),
+                               p("This is a free software, you can modify it and/or redistribute it under the terms of the GNU General Public License as published by the Free Software Foundation,
+                                  either version 3 of the License or any later version.
+                                  This program is distributed in the hope that it will be useful, 
+                                  but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+                                  See the,", tags$a("GNU General Public License", href = "https://www.gnu.org/licenses/gpl-3.0.html"), "for more details."),
+                              
+                               br(),br(),
+                               
+                               h2("Impressum"),
+                                 div(style = "width: 100%;; margin: 0 auto; text-align: left; font-size:100%;",
+                                 p("Cordula Wittekind (", tags$a(href = "mailto:cordula.wittekind@ufz.de", "cordula.wittekind@ufz.de"),") and Michael Strauch (", tags$a(href = "mailto:michael.strauch@ufz.de", "michael.strauch@ufz.de"),")"),
+                                 p("Department of Computational Landscape Ecology"),
+                                 p("Helmholtz Centre for Environmental Research GmbH - UFZ"),
+                                 p("Permoserstraße 15, 04318 Leipzig, Germany")),
+                               div(
+                                 style = "width: 100%;; margin: 0 auto; text-align: justify; font-size:100%;",
+                                 tags$figure(
+                                   style = "float: left ; margin: 0 0 10px 0; text-align: center;",
+                                   img(src = "ufz.png", width = "400px")))
+
+                             )
+                             ))
                    )
     )
   )
