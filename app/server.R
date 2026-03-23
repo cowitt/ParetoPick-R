@@ -2289,6 +2289,13 @@ server <- function(input, output, session) {
   
 
   ### Configure ####
+  observeEvent(input$tabs, {
+    req(input$tabs == "configure")
+    clusp_da(
+      if (file.exists("../input/var_corr_par.csv") || 
+          file.exists("../input/cluster_params.csv")) 1 else NULL
+    )
+  })
   
   observe({
     clusp_da()
