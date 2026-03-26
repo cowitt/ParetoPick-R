@@ -1919,7 +1919,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   p = ggplot(dat, aes(x = !!sym(x_var), y = !!sym(y_var),
                       fill = !!sym(col_var), size = !!sym(size_var)), alpha = 0.5) +
     #essential scales added first to prevent warnings
-    viridis::scale_fill_viridis(alpha = 0.8, name = col_var, labels = function(x) abs(as.numeric(x)), limits=range(swiss_extra[[col_var]], na.rm = TRUE)) +
+    viridis::scale_fill_viridis(alpha = 0.8,name = str_wrap(col_var, width = 20), labels = function(x) abs(as.numeric(x)), limits=range(swiss_extra[[col_var]], na.rm = TRUE)) +
     scale_size(range = c(1, 10), limits=range(swiss_extra[[size_var]], na.rm = TRUE), name = size_var, labels = function(x) abs(as.numeric(x))) +
     scale_x_continuous(limits= range(swiss_extra[[x_var]], na.rm = TRUE), labels = function(x) {rem_min(x)}) +
     scale_y_continuous(limits= range(swiss_extra[[y_var]], na.rm = TRUE), labels = function(x) {rem_min(x)}) +
