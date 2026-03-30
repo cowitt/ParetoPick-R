@@ -93,8 +93,7 @@ RUN R -e "install.packages(c('renv', 'webshot2', 'fpc', 'remotes'), \
 # =============================================================================
 # STAGE 5: COPY APPLICATION FILES
 # =============================================================================
-#clean up
-RUN rm -rf /srv/shiny-server/* 
+RUN rm -rf /srv/shiny-server/*
 COPY --chown=shiny:shiny app/              /srv/shiny-server/app/
 COPY --chown=shiny:shiny shiny-server.conf /etc/shiny-server/shiny-server.conf
 COPY shiny-server.sh /usr/bin/shiny-server.sh
@@ -104,18 +103,18 @@ RUN chmod +x /usr/bin/shiny-server.sh
 # STAGE 6: DIRECTORY CREATION & PERMISSIONS
 # =============================================================================
 RUN mkdir -p \
-        /srv/shiny-server/data \
-        /srv/shiny-server/input \
-        /srv/shiny-server/output \
+        /srv/shiny-server/app/data \
+        /srv/shiny-server/app/input \
+        /srv/shiny-server/app/output \
         /home/shiny \
     && chown -R shiny:shiny \
-        /srv/shiny-server/data \
-        /srv/shiny-server/input \
-        /srv/shiny-server/output \
+        /srv/shiny-server/app/data \
+        /srv/shiny-server/app/input \
+        /srv/shiny-server/app/output \
         /home/shiny \
     && chmod -R 775 \
-        /srv/shiny-server/output \
-        /srv/shiny-server/data
+        /srv/shiny-server/app/output \
+        /srv/shiny-server/app/data
 
 # =============================================================================
 # STAGE 7: EXPOSE PORT & STARTUP
