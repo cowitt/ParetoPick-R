@@ -1,0 +1,22 @@
+{
+  "title": "ParetoPick-R",
+  "description": "ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. It facilitates the detailed analysis of Pareto fronts and supports decision making. It provides a dashboard for the user to supply their own data, visualise and explore it, produce maps, alter a range of parameters and perform clustering and an Analytical Hierarchy Process.",
+  "upload_type": "software",
+  "license": "LGPL-2.1",
+  "creators": [
+    {
+      "name": "Wittekind, Cordula",
+      "affiliation": "Helmholtz Centre for Environmental Research: Leipzig, DE",
+      "orcid": "0009-0006-3087-4720"
+    }
+  ],
+  "keywords": ["docker", "multi-objective optimisation", "decision-support", "stakeholder engagement", "Analytical Hierarchy Process", "SWAT+", "Pareto pruning", "spatial planning"],
+
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/cowitt/paretopick-r",
+      "relation": "isIdenticalTo",
+      "scheme": "url"
+    }
+  ]
+}
