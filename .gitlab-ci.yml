@@ -28,6 +28,7 @@ build-latest:
     - "docker push --all-tags ${CI_REGISTRY_IMAGE}"
   rules:
     - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      when: "manual"
     - when: "never"
 
 
