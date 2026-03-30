@@ -97,6 +97,8 @@ RUN R -e "install.packages(c('renv', 'webshot2', 'fpc', 'remotes'), \
 RUN rm -rf /srv/shiny-server/* 
 COPY --chown=shiny:shiny app/              /srv/shiny-server/app/
 COPY --chown=shiny:shiny shiny-server.conf /etc/shiny-server/shiny-server.conf
+COPY shiny-server.sh /usr/bin/shiny-server.sh
+RUN chmod +x /usr/bin/shiny-server.sh
 
 # =============================================================================
 # STAGE 6: DIRECTORY CREATION & PERMISSIONS
@@ -120,4 +122,4 @@ RUN mkdir -p \
 # =============================================================================
 USER shiny
 EXPOSE 3838
-CMD ["/usr/bin/shiny-server"]
+CMD ["/usr/bin/shiny-server.sh"]
