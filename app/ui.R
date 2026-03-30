@@ -8,8 +8,8 @@ ui <-
     dashboardHeader(title="ParetoPick-R"),
     dashboardSidebar(
       sidebarMenu(id = "tabs",
-                  menuItem("Introduction",tabName = "intro", icon = icon("home")),
-                  menuItem("Data Preparation", icon=icon("file",lib = "font-awesome"),tabName = "data_prep",selected=TRUE),
+                  menuItem("Introduction",tabName = "intro", icon = icon("home"),selected=TRUE),
+                  menuItem("Data Preparation", icon=icon("file",lib = "font-awesome"),tabName = "data_prep"),
                   menuItem("Visualising the Pareto Front",tabName = "play_around",icon = icon("dashboard")),
                   menuItem("Configure Clustering", tabName = "configure", icon = icon("cog")),
                   
