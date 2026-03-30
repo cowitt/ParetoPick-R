@@ -27,10 +27,12 @@ ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.opta
 # 2. Deployment, required input files and data structure
 
 ## 2.1 Requirements for use in R/Rstudio
+  * please refer to the docker-build branch for recreating the docker image
   * R version 4.4.2 or higher
   * package "promises" version 1.3.2 or higher
   * remove or upgrade (>4.0) package "tmap" to avoid conflicts
   * recommended to use renv::restore()
+
 
 ## 2.2 Input files for different levels of functionalities
 
