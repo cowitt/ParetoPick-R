@@ -1,0 +1,19 @@
+name: Zenodo Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  zenodo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload to Zenodo
+        uses: rseng/zenodo-release@main
+        with:
+          token: ${{ secrets.ZENODO_TOKEN }}
+          version: ${{ github.ref_name }}
+          zenodo_json: .zenodo.json
