@@ -9,7 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Create archive
+        run: |
+          zip -r release.zip . -x "*.git*"
 
       - name: Upload to Zenodo
         uses: rseng/zenodo-release@main
@@ -17,3 +21,4 @@ jobs:
           token: ${{ secrets.ZENODO_TOKEN }}
           version: ${{ github.ref_name }}
           zenodo_json: .zenodo.json
+          archive: release.zip
