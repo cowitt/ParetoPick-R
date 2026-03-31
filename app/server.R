@@ -739,8 +739,8 @@ server <- function(input, output, session) {
       
       # Start the process
       cvp <<- process$new(
-        "Rscript",
-        c("convert_optain.R"),
+        "/usr/local/bin/Rscript",
+        c("/srv/shiny-server/app/convert_optain.R"),
         stdout = "|",
         stderr = "|",
         env = c(current = Sys.getenv(), MY_MODE = "fast")#communicate w/ covert_optain.R
@@ -840,8 +840,8 @@ server <- function(input, output, session) {
       
       # Start the process
       optain <<- process$new(
-        "Rscript",
-        c("convert_optain.R"),
+        "/usr/local/bin/Rscript",
+        c("/srv/shiny-server/app/convert_optain.R"),
         stdout = "|",
         stderr = NULL
       )
