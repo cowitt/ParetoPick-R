@@ -1829,14 +1829,14 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
     current_obj_order = c(x_var, y_var,
                           col_var, size_var)
     
-    original_order = names(dat)#=objectives()
+    original_order = names(dat)[1:4]#=objectives()
     # 
     reorder_current = match(original_order, current_obj_order)
     reorder_original = match(current_obj_order,original_order)
     # 
     units[which(is.na(units) | units %in% c(" ", "","unitless","no unit"))] <- "-"
     # 
-    colnames(dat) = paste(original_order, " [",units,"]", sep = "") #needs old order
+    colnames(dat)[1:4] = paste(original_order, " [",units,"]", sep = "") #needs old order
     
     new_order = paste(original_order, " [",units,"]", sep = "")[reorder_original]
     

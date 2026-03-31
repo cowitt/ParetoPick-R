@@ -38,6 +38,7 @@ invisible(lapply(packages, library, character.only = TRUE))
 
 
 options(shiny.maxRequestSize = 1000*1024^2)
+options(chromote.chrome.args = c("--no-sandbox", "--disable-dev-shm-usage"))
 
 options(warn = -1)
 source("functions.R")

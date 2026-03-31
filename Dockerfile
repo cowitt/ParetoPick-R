@@ -10,7 +10,7 @@ FROM rocker/shiny-verse:4.4.2
 # Build-time tools (wget, gnupg, git, cmake) are removed at the end of the
 # same layer so they never persist in the image.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libgdal-dev \
+      libgdal-dev \
         libgeos-dev \
         libproj-dev \
         libabsl-dev \
@@ -27,7 +27,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libxml2-dev \
         libglpk-dev \
         librsvg2-dev \
-        # Chrome runtime deps
         fonts-liberation \
         libxkbcommon0 \
         libxdamage1 \
@@ -36,32 +35,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libgbm1 \
         libasound2t64 \
         xdg-utils \
-        # Transient build tools – purged at end of this layer
-        wget \
+        curl \
         gnupg \
         cmake \
         git \
-    # ── Chrome ──────────────────────────────────────────────────────────────
-    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
-        | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg \
+    && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
+        | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] \
         http://dl.google.com/linux/chrome/deb/ stable main" \
         > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends google-chrome-stable \
-    # ── Remove build tools & apt caches in the SAME layer ───────────────────
-    && apt-get remove -y wget gnupg cmake git \
+    && apt-get remove -y curl gnupg cmake git \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
 # =============================================================================
 # STAGE 3: ENVIRONMENT VARIABLES & WORKING DIRECTORY
 # =============================================================================
 ENV CHROMOTE_CHROME=/usr/bin/google-chrome \
-    CHROMOTE_CHROME_ARGS="--no-sandbox --disable-dev-shm-usage" \
     HOME=/home/shiny \
-    # Tell renv to use a shared, purgeable cache location
     RENV_PATHS_CACHE=/tmp/renv-cache
 
 WORKDIR /srv/shiny-server/
@@ -113,8 +106,10 @@ RUN chown -R shiny:shiny \
     && chmod -R 775 \
         /srv/shiny-server/data \
         /srv/shiny-server/input \
-        /srv/shiny-server/output
-
+        /srv/shiny-server/output \
+    && mkdir -p /home/shiny/.cache /home/shiny/.config /tmp \
+    && chmod 1777 /tmp \
+    && chown -R shiny:shiny /home/shiny/.cache /home/shiny/.config
 # =============================================================================
 # STAGE 7: EXPOSE PORT & STARTUP
 # =============================================================================
