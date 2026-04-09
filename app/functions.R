@@ -1658,13 +1658,13 @@ plot_parline = function(datt,sizz=rep(.5, length(unique(datt$id))),colols=rep("g
     theme_minimal() +
     theme(legend.position = "none",
           plot.title = element_blank(),
-          axis.text.y = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.title.y = element_text(size = 18),
+          axis.text.y = element_text(size = 22),
+          axis.text.x = element_text(size = 22),
+          axis.title.y = element_text(size = 22),
           axis.title.x = element_blank()
     )+
     scale_y_continuous(limits = c(0,1)) +
-    scale_x_discrete(expand = expansion(mult =  c(-0.05, 0.035)),labels = function(x) str_wrap(x, width = 8)) + 
+    scale_x_discrete(expand = expansion(mult =  c(-0.05, 0.05)),labels = function(x) str_wrap(x, width = 8)) + 
     labs(x = "Factors", y = "Scaled Values") +
     scale_size_manual(values = sizz) +
     scale_color_manual(values = colols)+
@@ -1782,7 +1782,7 @@ plt_sc = function(dat, ranges, col=rep("grey",nrow(dat)),
        alpha = 0.7
      )+annotate("text", x = Inf, y = -Inf,#add R²
                 label = paste("R² =", coef_dat$r_val),
-                hjust = 1.1, vjust = -0.5, size = 4)+    #correct for negative scale aesthetics
+                hjust = 1.1, vjust = -0.5, size = 8)+    #correct for negative scale aesthetics
        scale_x_continuous(limits = c(x_min, x_max),labels = rem_min, expand = expansion(mult =  c(0.015, 0.015))) +
        scale_y_continuous(limits = c(y_min, y_max),labels = rem_min, expand = c(0.15, 0))
      
