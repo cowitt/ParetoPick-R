@@ -3746,7 +3746,8 @@ server <- function(input, output, session) {
     }
       coma(comparison_matrix)
       
-      normalized_matrix <- comparison_matrix / colSums(comparison_matrix)
+     # normalized_matrix <- comparison_matrix / colSums(comparison_matrix)#amplifies low weights for non-weighted objectives
+      normalized_matrix <- sweep(comparison_matrix, 2, colSums(comparison_matrix), FUN="/")
 
       weights <- rowMeans(normalized_matrix)
 
