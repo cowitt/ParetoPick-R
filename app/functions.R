@@ -1957,7 +1957,12 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   #cluster number labels if needed
   if(an_tab && "cluster number" %in% colnames(dat2)){
     p = p + geom_text(data = dat2, aes(x = !!sym(x_var)+(0.03*diff(range(!!sym(x_var)))), y = !!sym(y_var), label = `cluster number`),
-                      position = position_dodge(width = 0.85), hjust = 0, size=6)
+                      nudge_x = 0.001 * diff(range(dat[[x_var]], na.rm = TRUE)),
+                      nudge_y = -0.001 * diff(range(dat[[y_var]], na.rm = TRUE)),
+                      hjust = 0,
+                      vjust = 1,
+                      size = 6,
+                      color = scales::alpha("black", 0.6))
   }
   
   #extra data points

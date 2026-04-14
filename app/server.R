@@ -1042,11 +1042,7 @@ server <- function(input, output, session) {
       yo2 <- pull_high_range(fit(),num_order=T)
       rng_plt_axes(yo2)
       
-      # output$uploaded_pareto <- renderText({"All Files found.
-      #                                        You can now examine the Pareto front.
-      #                                        How does it change when the objective ranges are modified?"})
-      
-      
+    
       ## adapt sliders in ahp and configure tab
       if(!(initial_update_done$initial)){ #making sure this only runs once
         min_max <-data.frame(t(sapply(data, function(x) range(x, na.rm = TRUE))))
@@ -1133,8 +1129,6 @@ server <- function(input, output, session) {
         
       }
     
- 
-    
     ## update slider labels based on objectives
     observe({
       req(objectives())
@@ -1185,9 +1179,7 @@ server <- function(input, output, session) {
         )
       })
       
-      
       slider_mes_ini(TRUE)
-      
       sliders
     })
  
@@ -1200,45 +1192,45 @@ server <- function(input, output, session) {
         shinyjs::enable("add_sq_f")
       }
     })
-
-  observe({
-    req(fit())
-      req(slider_mes_ini(),mt())
-    req(length(names(mt())[sapply(mt(), is.numeric)]) > 0)
     
-    numeric_cols <- names(mt())[sapply(mt(), is.numeric)]
-    values <- setNames(
-      lapply(numeric_cols, function(col) input[[paste0("slider_", col)]]),
-      numeric_cols
-    )
+    mes_slider_debounced <- debounce(reactive({
+      req(slider_mes_ini(), mt())
+      numeric_cols <- names(mt())[sapply(mt(), is.numeric)]
+      values <- setNames(
+        lapply(numeric_cols, function(col) input[[paste0("slider_", col)]]),
+        numeric_cols
+      )
+      if (any(sapply(values, is.null))) return(NULL)
+      values
+    }), 600)
     
-    if (any(sapply(values, is.null))) return()
-
-    names(values) = numeric_cols #slider current setting
-    
-    df_values <- as.data.frame(values)
-
-    df_first_values <- as.data.frame(memima_ini())
-    rownames(df_first_values) <- NULL
-    
-    if (!identical(df_values, df_first_values)) {#otherwise sometimes run too soon
-      isolate(mes_touched(TRUE))
+    observe({
+      req(fit())
+      req(slider_mes_ini(), mt(), mes_slider_debounced())
+      req(length(names(mt())[sapply(mt(), is.numeric)]) > 0)
       
-
-      ff <- mt() %>%
-        rownames_to_column("optimum") %>%
-        reduce(numeric_cols, function(df, col) {
-          df %>% filter(.data[[col]] >= values[[col]][1] & .data[[col]] <= values[[col]][2])
-        }, .init = .)
+      values <- mes_slider_debounced()  #debounced vals read
+      numeric_cols <- names(values)
       
-      mt_optis = ff$optimum #optima
-      opti_mima(fit1()%>%filter(optimum %in% mt_optis) %>% select(-optimum))
+      df_values <- as.data.frame(values)
+      df_first_values <- as.data.frame(memima_ini())
+      rownames(df_first_values) <- NULL
       
-    }else{opti_mima(FALSE)} 
-   
-  })
-  
-
+      if (!identical(df_values, df_first_values)) {#otherwise sometimes run too soon
+        isolate(mes_touched(TRUE))
+        
+        ff <- mt() %>%
+          rownames_to_column("optimum") %>%
+          reduce(numeric_cols, function(df, col) {
+            df %>% filter(.data[[col]] >= values[[col]][1] & .data[[col]] <= values[[col]][2])
+          }, .init = .)
+        
+        mt_optis = ff$optimum
+        opti_mima(fit1() %>% filter(optimum %in% mt_optis) %>% select(-optimum))
+        
+      } else { opti_mima(FALSE) }
+    })
+    
     })#end of play tab observer
 
   
@@ -1268,34 +1260,27 @@ server <- function(input, output, session) {
     }
   })
   
-
   # cache slider observations
-  # cache slider observations
-  input_ranges_valid <- reactive({
-    all(
-      !is.null(input$obj1), !is.null(input$obj2), 
+  
+  input_ranges_debounced <- debounce(reactive({
+    req(
+      !is.null(input$obj1), !is.null(input$obj2),
       !is.null(input$obj3), !is.null(input$obj4),
       length(input$obj1) == 2, length(input$obj2) == 2,
       length(input$obj3) == 2, length(input$obj4) == 2
     )
-  })
-  
-  #extract min/max vals
-  input_ranges <- reactive({
-    req(input_ranges_valid())
-    
     list(
       minvals = c(input$obj1[1], input$obj2[1], input$obj3[1], input$obj4[1]),
       maxvals = c(input$obj1[2], input$obj2[2], input$obj3[2], input$obj4[2])
     )
-  })
+  }), 600)
+  
   
   #filtered_data and scaled_filtered_data(), currently rather verbose setup
   scaled_filtered_data <- reactive({ 
-    req(input_ranges_valid())
-    req(f_scaled())
     
-    ranges <- input_ranges()
+    req(input_ranges_debounced(), f_scaled())
+    ranges <- input_ranges_debounced()
     
     match_scaled(minval_s = ranges$minvals, maxval_s = ranges$maxvals,
                  scal_tab=f_scaled(),allobs=objectives(), abs_tab = fit(),  
@@ -1303,10 +1288,9 @@ server <- function(input, output, session) {
   })
   
   filtered_data <- reactive({
-    req(scaled_filtered_data())
-    req(f_scaled())
-
-    ranges <- input_ranges()
+  
+    req(input_ranges_debounced(), f_scaled())
+    ranges <- input_ranges_debounced()
  
     scaled_abs_match(minval_s = ranges$minvals,#to be merged with above function, subset with row indices
                      maxval_s = ranges$maxvals,
@@ -2296,6 +2280,7 @@ server <- function(input, output, session) {
           file.exists("../input/cluster_params.csv")) 1 else NULL
     )
   })
+  
   observe({
     clusp_da()
     if(!is.null(clusp_da())){
@@ -3594,9 +3579,6 @@ server <- function(input, output, session) {
   
   observe({ #create ahpmt() for measure sliders
     req(aep_100(), hru_ever())
-    # ks = hru_ever() %>% select(-measure)
-   
-    # fk = aep_100()  %>% left_join(ks, by =c("hru"="id")) %>% select(-hru)
   
     fk = aep_100() %>% inner_join(hru_ever(),by = c("hru" = "id", "nswrm" = "measure"))%>% select(-hru)
  
@@ -3718,7 +3700,6 @@ server <- function(input, output, session) {
     for (i in 1:(n_criteria - 1)) {
       for (j in (i + 1):n_criteria) {
         slider_id <- paste0("c", i, "_c", j)
-        
         value = input[[slider_id]]
         if(is.null(value) || value=="Equal"){
           comparison_value =1
@@ -3744,13 +3725,12 @@ server <- function(input, output, session) {
       }
     }
       coma(comparison_matrix)
+     
+      # normalized_matrix <- comparison_matrix / colSums(comparison_matrix) #amplifies low weights for non-weighted objectives
+      normalized_matrix <- sweep(comparison_matrix, 2, colSums(comparison_matrix), FUN="/")
       
-      normalized_matrix <- comparison_matrix / colSums(comparison_matrix)
-
       weights <- rowMeans(normalized_matrix)
-
       weights <- weights/sum(weights)
-      
       pass_to_manual(weights) #weights for passing and changing
       
       calculate_weights(weights) #weights for direct use
