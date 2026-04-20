@@ -14,6 +14,18 @@ server <- function(input, output, session) {
   shp_da = reactiveVal(if(file.exists("../data/hru.shp")) 1 else NULL)
   sq_da = reactiveVal(if(file.exists("../data/sq_fitness.txt")) 1 else NULL)
   
+  clus_file_check <- reactiveTimer(2000)
+  
+  observe({
+    clus_file_check()  
+    has_file <- list.files(path = output_dir, pattern = "clusters_representativesolutions.*\\.csv$", 
+                           full.names = TRUE) %>% length() > 0
+    if (has_file) {
+      clus_out(1)
+    } else {
+      clus_out(NULL)
+    }
+  })
   ## reactive values
   objectives <- reactiveVal(character()) #objective names
   
