@@ -134,6 +134,7 @@ server <- function(input, output, session) {
   sols <- reactiveVal()
   sols2 <- reactiveVal() #for boxplot
   sols3 <- reactiveVal() #for objectives vs. cluster variables
+  bprv = reactiveVal()
   #figure in analysis rendering
   is_rendering <- reactiveVal(FALSE)
   #catchment shapes
@@ -1657,6 +1658,7 @@ server <- function(input, output, session) {
       pull(optimum) %>%as.numeric()#slice needed for duplicate optima values
   }
   
+ 
   
   click_table_data <- reactive({
     req(sel_tay())
@@ -1706,20 +1708,29 @@ server <- function(input, output, session) {
    
   }
   
-  observeEvent(input$save_click_line,{
-    
-    if(input$save_click_line){
-      req(m_opt)
-      if(file.exists(paste0(output_dir,"selected_optima.csv"))){
-        
-      write.table(m_opt, file = paste0(output_dir,"selected_optima.csv"), sep = ",",
-                  append = TRUE, col.names = FALSE, row.names = FALSE)
-      
-    }else{write.csv(m_opt,file=paste0(output_dir,"selected_optima.csv"),row.names = F)
-    
-    }}
-  })
+  # observeEvent(input$save_click_line,{
+  #   
+  #   if(input$save_click_line){
+  #     req(m_opt)
+  #     if(file.exists(paste0(output_dir,"selected_optima.csv"))){
+  #       
+  #     write.table(m_opt, file = paste0(output_dir,"selected_optima.csv"), sep = ",",
+  #                 append = TRUE, col.names = FALSE, row.names = FALSE)
+  #     
+  #   }else{write.csv(m_opt,file=paste0(output_dir,"selected_optima.csv"),row.names = F)
+  #   
+  #   }}
+  # })
   
+  output$save_click_line <- downloadHandler(
+    filename = function(){
+      curt = format(Sys.time(), "_%Y%m%d")
+      paste0(input$save_click_line_name, curt, ".csv")
+    },
+    content = function(file){
+      write.csv(sel_tay(),file,row.names = T) #rownames needed for optimum
+    }
+  )
   
   
   output$download_line_plot <- downloadHandler(
@@ -3102,7 +3113,7 @@ server <- function(input, output, session) {
         })}else{shinyjs::hide("meas_low")}
       
       observe({
-
+        
         all_files <- list.files(output_dir, pattern = "clusters_representativesolutions.*\\.csv", full.names = TRUE)
         
         if(length(all_files)>1){
@@ -3682,7 +3693,6 @@ server <- function(input, output, session) {
 
   observe({
     #best_option() is set to cluster in other table
-    
     req(sols(), best_option(), dfx())
     
     if (!is.null(input$best_cluster) && input$best_cluster) {
@@ -3766,11 +3776,13 @@ server <- function(input, output, session) {
   )
   
   #main datasets for this tab: sols_ahp() and whole_ahp()
-  observeEvent(ahp_combined_debounced(), {
-    req(fit())
+ observe({
+    clus_out()  
+    req(ahp_combined_debounced(), fit())
+    
     inputs <- ahp_combined_debounced()
     
-    whole_ahp(match_abs(#always produced
+    whole_ahp(match_abs(
       minval = c(inputs$obj1[1], inputs$obj2[1], inputs$obj3[1], inputs$obj4[1]),
       maxval = c(inputs$obj1[2], inputs$obj2[2], inputs$obj3[2], inputs$obj4[2]),
       abs_tab = fit(), 
@@ -3779,8 +3791,8 @@ server <- function(input, output, session) {
       mes_df = inputs$mahp_data
     ))
     
-    if(!is.null(sols())){#only produced when clustering has run
-      df1 = subset(sols(), select = -c(optimum, `cluster number`, `cluster size`, outlier)) #best option out of optima
+    if(!is.null(sols())){
+      df1 = subset(sols(), select = -c(optimum, `cluster number`, `cluster size`, outlier))
       
       sols_ahp(match_abs(
         minval = c(inputs$obj1[1], inputs$obj2[1], inputs$obj3[1], inputs$obj4[1]),
@@ -4125,30 +4137,49 @@ server <- function(input, output, session) {
     #   if(!is.null(best_option())) {shinyjs::show("save_ahp")}})
     
     observe({
-      req(best_option(), fit(), objectives())
+      req(best_option(), fit1(), objectives())
       updateCheckboxInput(session, "save_ahp", value = FALSE) 
-      bp <-best_option()
+      # bprv(fit()%>% rownames_to_column("optimum") %>% filter(if_all(all_of(objectives()), ~ . %in% bp)))
+
+      bp_vals <- as.data.frame(best_option())
+      objs <- objectives()
+      tol_abs <- 1e-3
       
-      bp <<- fit()%>% rownames_to_column("optimum") %>% filter(if_all(objectives(), ~ . %in% bp))
+      #plain named vector (see values)
+      bp_vec <- setNames(as.numeric(bp_vals[1, objs]), objs)
+
+      bprv(fit1() %>% mutate(match = rowSums(across(all_of(objs), ~ abs(. - bp_vec[[cur_column()]]) < tol_abs)) == length(objs)) %>%
+        filter(match) %>%
+        select(-match))
+    
       })
     
-      
     
-    observeEvent(input$save_ahp,{
-      
-      if(input$save_ahp){
-        
-        if(file.exists(paste0(output_dir,"selected_optima.csv"))){
-          
-          write.table(bp, file = paste0(output_dir,"selected_optima.csv"), sep = ",",
-                      append = TRUE, col.names = FALSE, row.names = FALSE)
-
-        }else{
-        write.csv(bp,file=paste0(output_dir,"selected_optima.csv"),row.names = F)
-
-        }}
-    })
+    
+    # observeEvent(input$save_ahp,{
+    #   
+    #   if(input$save_ahp){
+    #     
+    #     if(file.exists(paste0(output_dir,"selected_optima.csv"))){
+    #       
+    #       write.table(bp, file = paste0(output_dir,"selected_optima.csv"), sep = ",",
+    #                   append = TRUE, col.names = FALSE, row.names = FALSE)
+    # 
+    #     }else{
+    #     write.csv(bp,file=paste0(output_dir,"selected_optima.csv"),row.names = F)
+    # 
+    #     }}
+    # })
   
+    output$save_ahp <- downloadHandler(
+      filename = function(){
+        curt = format(Sys.time(), "_%Y%m%d")
+        paste0(input$save_ahp_name, curt, ".csv")
+      },
+      content = function(file){
+        write.csv(bprv(),file,row.names = F) #optimum as column included, not rownames
+      }
+    )
     
     
     weight_plt_fun = function(){

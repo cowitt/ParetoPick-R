@@ -805,9 +805,12 @@ ui <-
                                         div("measures", style = "text-align: center; font-size:150%")
                                       ),
                                       div(style = "margin: 0 auto; text-align: center;", tableOutput("aep_tab_one")),
-                                      div(style = "margin: 0 auto; text-align: center;",  
-                                          checkboxInput("save_click_line", label = "Click here to save the selected optimum to the output folder (selected_optima.csv)", value = FALSE)
-                                      )
+                                      fluidRow(
+                                        column(4,textInput("save_click_line_name",label = NULL, value = "optimum_selection")),
+                                        column(2,downloadButton("save_click_line", "Download the selected optimum as .csv")))		   
+                                      #div(style = "margin: 0 auto; text-align: center;",  
+                                         # checkboxInput("save_click_line", label = "Click here to save the selected optimum to the output folder (selected_optima.csv)", value = FALSE)
+                                      #)
                                     )
                                   ),
                               
@@ -1344,8 +1347,10 @@ ui <-
                                div("The starting point is the currently selected best optimum", style = "text-align: center; font-size: 60%;"),
                            div(tableOutput("manual_ahp_tab"), style = "margin: 0 auto; width: fit-content;"))%>%hidden(),
                            
-
-                         checkboxInput("save_ahp",label = "Click here to save the selected optimum to the output folder (selected_optima.csv)",value=F, width = "100%"),
+                           fluidRow(
+                             column(4,textInput("save_ahp_name",label = NULL, value = "AHP_selection")),
+                             column(2,downloadButton("save_ahp", "Download the selected optimum as .csv"))),
+                         # checkboxInput("save_ahp",label = "Click here to save the selected optimum to the output folder (selected_optima.csv)",value=F, width = "100%"),
 
 
 
