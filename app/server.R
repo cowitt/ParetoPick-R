@@ -134,6 +134,7 @@ server <- function(input, output, session) {
   sols <- reactiveVal()
   sols2 <- reactiveVal() #for boxplot
   sols3 <- reactiveVal() #for objectives vs. cluster variables
+  bprv = reactiveVal()
   #figure in analysis rendering
   is_rendering <- reactiveVal(FALSE)
   #catchment shapes
@@ -3030,7 +3031,7 @@ server <- function(input, output, session) {
       
      
     }else{
-      
+      output$analysis_needs_var = NULL
       shinyjs::hide("analysis_needs_var")
       shinyjs::runjs("toggleSidebar(true);")  #show sidebar
       shinyjs::show("main_analysis")
@@ -3053,6 +3054,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$tabs == "analysis", { #this could be combined with the ahp tab for analysis
+    clus_out <- reactiveVal(if (list.files(path = output_dir, pattern = "clusters_representativesolutions.*\\.csv$", full.names = TRUE) %>% length() > 0) 1 else NULL) #observer for cluster output availability
     
     if(!file.exists("../input/object_names.RDS")) {
       choices = "Please select objectives in Data Preparation Tab"
@@ -3682,25 +3684,23 @@ server <- function(input, output, session) {
 
   observe({
     #best_option() is set to cluster in other table
-    
     req(sols(), best_option(), dfx())
-    
     if (!is.null(input$best_cluster) && input$best_cluster) {
       shinyjs::show("ahp_cluster_div")
       bor = sols() %>% filter(if_all(objectives(), ~ . %in% best_option())) %>% as.data.frame()
       
-      if (
-          (!is.null(mahp()) && nrow(mahp()) == 0) || 
+      if ((!is.null(mahp()) && nrow(mahp()) == 0) ||
           nrow(bor) == 0) {
         output$ahp_cluster_num <- renderText({paste0("none of the clusters fall within your selection!")})
-          shinyjs::disable("save_ahp")
+        shinyjs::disable("save_ahp")
         
-      }else{
-        output$ahp_cluster_num <- renderText({paste("cluster number: ", 
-                bor$`cluster number`,"; the representative optima is ", bor$optimum,sep = "")})
-        
+      } else{
+        output$ahp_cluster_num <- renderText({
+          paste("cluster number: ", bor$`cluster number`, "; the representative optima is ", bor$optimum, sep = "")
+        })
       }
-    }else{shinyjs::hide("ahp_cluster_div")}
+    } else{shinyjs::hide("ahp_cluster_div")
+    }
   })
   
   observe({
@@ -3793,7 +3793,6 @@ server <- function(input, output, session) {
         mes_df = inputs$mahp_data
       ))
     } 
-    
   })
   
   observe({ #switch between datasets
@@ -4126,13 +4125,23 @@ server <- function(input, output, session) {
     #   req(dfx(),objectives())
     #   if(!is.null(best_option())) {shinyjs::show("save_ahp")}})
     
-    observe({
-      req(best_option(), fit(), objectives())
-      updateCheckboxInput(session, "save_ahp", value = FALSE) 
-      bp <-best_option()
-      
-      bp <<- fit()%>% rownames_to_column("optimum") %>% filter(if_all(objectives(), ~ . %in% bp))
-      })
+        observe({
+          req(best_option(), fit1(), objectives())
+          updateCheckboxInput(session, "save_ahp", value = FALSE) 
+          # bprv(fit()%>% rownames_to_column("optimum") %>% filter(if_all(all_of(objectives()), ~ . %in% bp)))
+          
+          bp_vals <- as.data.frame(best_option())
+          objs <- objectives()
+          tol_abs <- 1e-3
+          
+          #plain named vector (see values)
+          bp_vec <- setNames(as.numeric(bp_vals[1, objs]), objs)
+
+          bprv(fit1() %>% mutate(match = rowSums(across(all_of(objs), ~ abs(. - bp_vec[[cur_column()]]) < tol_abs)) == length(objs)) %>%
+                 filter(match) %>%
+                 select(-match))
+          
+        })
     
       
     
@@ -4142,11 +4151,11 @@ server <- function(input, output, session) {
         
         if(file.exists(paste0(output_dir,"selected_optima.csv"))){
           
-          write.table(bp, file = paste0(output_dir,"selected_optima.csv"), sep = ",",
+          write.table(bprv(), file = paste0(output_dir,"selected_optima.csv"), sep = ",",
                       append = TRUE, col.names = FALSE, row.names = FALSE)
 
         }else{
-        write.csv(bp,file=paste0(output_dir,"selected_optima.csv"),row.names = F)
+        write.csv(bprv(),file=paste0(output_dir,"selected_optima.csv"),row.names = F)
 
         }}
     })
