@@ -3707,7 +3707,7 @@ server <- function(input, output, session) {
         
       }else{
         output$ahp_cluster_num <- renderText({paste("cluster number: ", 
-                bor$`cluster number`,"; the representative optima is ", bor$optimum,sep = "")})
+                bor$`cluster number`,"; the representative optimum is ", bor$optimum,sep = "")})
         
       }
     }else{shinyjs::hide("ahp_cluster_div")}
