@@ -3766,11 +3766,13 @@ server <- function(input, output, session) {
   )
   
   #main datasets for this tab: sols_ahp() and whole_ahp()
-  observeEvent(ahp_combined_debounced(), {
-    req(fit())
+  observe({
+    clus_out()  
+    req(ahp_combined_debounced(), fit())
+    
     inputs <- ahp_combined_debounced()
     
-    whole_ahp(match_abs(#always produced
+    whole_ahp(match_abs(
       minval = c(inputs$obj1[1], inputs$obj2[1], inputs$obj3[1], inputs$obj4[1]),
       maxval = c(inputs$obj1[2], inputs$obj2[2], inputs$obj3[2], inputs$obj4[2]),
       abs_tab = fit(), 
@@ -3779,8 +3781,8 @@ server <- function(input, output, session) {
       mes_df = inputs$mahp_data
     ))
     
-    if(!is.null(sols())){#only produced when clustering has run
-      df1 = subset(sols(), select = -c(optimum, `cluster number`, `cluster size`, outlier)) #best option out of optima
+    if(!is.null(sols())){
+      df1 = subset(sols(), select = -c(optimum, `cluster number`, `cluster size`, outlier))
       
       sols_ahp(match_abs(
         minval = c(inputs$obj1[1], inputs$obj2[1], inputs$obj3[1], inputs$obj4[1]),
@@ -3791,7 +3793,7 @@ server <- function(input, output, session) {
         mes_df = inputs$mahp_data
       ))
     } 
- 
+    
   })
   
   observe({ #switch between datasets
