@@ -1482,12 +1482,14 @@ server <- function(input, output, session) {
         content = function(file) {
           shinyjs::show("spinner_download_play")
           measmap <- single_meas_fun2(fs = F)[[1]]
-          saveWidget(measmap, "temp.html", selfcontained = FALSE)
-          webshot2::webshot("temp.html", file = file, cliprect = "viewport",vwidth = 900,
+          tmp_html<-file.path("/srv/shiny-server/output",paste0("temp_", session$token, ".html"))
+          tmp_dir<-paste0(tmp_html, "_files")
+          saveWidget(measmap, tmp_html, selfcontained = FALSE)
+          webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
                            vheight = 900)
           shinyjs::hide("spinner_download_play")
-          file.remove("temp.html")
-          unlink("temp_files", recursive = TRUE)
+          file.remove(tmp_html)
+          unlink(tmp_dir, recursive = TRUE)
           }
     )
     
@@ -2034,13 +2036,14 @@ server <- function(input, output, session) {
       shinyjs::show("spinner_download_play2")
       
       freqmap <- play_freq(leg=FALSE)#exports global pal and mes
-      
-      saveWidget(freqmap, "temp.html", selfcontained = FALSE)
-      webshot2::webshot("temp.html", file = file, cliprect = "viewport",vwidth = 900,
+      tmp_html<-file.path("/srv/shiny-server/output",paste0("temp_", session$token, ".html"))
+      tmp_dir<-paste0(tmp_html, "_files")
+      saveWidget(freqmap,tmp_html,selfcontained = FALSE)
+      webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
                        vheight = 900)
       shinyjs::hide("spinner_download_play2")
-      file.remove("temp.html")
-      unlink("temp_files", recursive = TRUE)
+      file.remove(tmp_html)
+      unlink(tmp_dir, recursive = TRUE)
       }
   )
   
@@ -4392,12 +4395,14 @@ server <- function(input, output, session) {
     content = function(file) {
       shinyjs::show("spinner_download_ahp")  
       mp =single_meas_fun(fs = F)[[1]]
-      saveWidget(mp, "temp.html", selfcontained = FALSE)
-      webshot2::webshot("temp.html", file = file, cliprect = "viewport",vwidth = 900,
+      tmp_html<-file.path("/srv/shiny-server/output",paste0("temp_", session$token, ".html"))
+      tmp_dir <-paste0(tmp_html, "_files")
+      saveWidget(mp,tmp_html, selfcontained = FALSE)
+      webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
                        vheight = 900)
       shinyjs::hide("spinner_download_ahp")  
-      file.remove("temp.html")
-      unlink("temp_files", recursive = TRUE)
+      file.remove(tmp_html)
+      unlink(tmp_dir, recursive = TRUE)
       }
   )
   
