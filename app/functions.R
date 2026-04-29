@@ -1399,7 +1399,7 @@ pull_shp_new = function(layername = "hru", hru_in_opt_path="../input/hru_in_opti
     if(class(cm)[1]=="sfg" || class(cm$geometry)[2]=="sfc"){
       sfc_mixed <- st_as_sfc(cm, crs = 4326)
       
-      sfc_mixed <- st_cast(sfc_mixed, "POLYGON")#if there are other elements like points
+      sfc_mixed <- st_cast(sfc_mixed, "MULTIPOLYGON")#if there are other elements like points
       
       cm <- st_sf(cm, geometry = sfc_mixed)
 
