@@ -65,7 +65,7 @@ WORKDIR /srv/shiny-server/
 COPY --chown=shiny:shiny renv.lock renv.lock
 COPY --chown=shiny:shiny renv/     renv/
 
-RUN R -e "install.packages(c('renv', 'webshot2', 'fpc', 'remotes'), \
+RUN R -e "install.packages(c('renv', 'webshot2', 'fpc', 'remotes','chromote'), \
             repos='https://cloud.r-project.org/', \
             dependencies = FALSE)" \
     && R -e "remotes::install_github('trafficonese/leaflet.extras', \
