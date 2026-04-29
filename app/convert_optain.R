@@ -106,14 +106,14 @@ if(mode == "fast"){
   })
   
   
-land_u = c("hedge", "buffer","edgefilter","grasshedge", "shrubhedge", "grassbuffer", "shrubbuffer", "grassslope","grassland","grassrchrg", "terrace", "floodres","swale", "rip_forest", "afforest", "afforestation", "contr")
+land_u = c("hedge", "buffer","edgefilter","grasshedge", "shrubhedge", "grassbuffer", "shrubbuffer","grww", "grassslope","grassland","grassrchrg", "terrace", "floodres","swale", "rip_forest","fstrip", "afforest", "afforestation", "contr")
 
 ## check, assign and write priorities, hardcodes what has been used in CoMOLA
 nswrm_priorities <- function(lu) {
   prio_groups <- list(
     structural = c("pond", "constr_wetland", "wetland"), # structural elements (1st prio)
     land_use = land_u, #land use (2nd prio)
-    management = c("constill","lowtillcc", "lowtill", "droughtplt","mintill", "notill", "intercrop", "covcrop", "rotation", "rot") # management (3rd prio)
+    management = c("constill","lowtillcc", "lowtill", "droughtplt","mintill","stubble", "notill", "intercrop", "covcrop", "rotation", "rot") # management (3rd prio)
   )
   
   prio <- data.frame(nswrm = character(), priority = integer(), mngmt = integer(), stringsAsFactors = FALSE)
