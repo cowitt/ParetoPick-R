@@ -1215,7 +1215,7 @@ server <- function(input, output, session) {
       )
       if (any(sapply(values, is.null))) return(NULL)
       values
-    }), 600)
+    }), 400)
     
     observe({
       req(fit())
@@ -1286,7 +1286,7 @@ server <- function(input, output, session) {
       minvals = c(input$obj1[1], input$obj2[1], input$obj3[1], input$obj4[1]),
       maxvals = c(input$obj1[2], input$obj2[2], input$obj3[2], input$obj4[2])
     )
-  }), 600)
+  }), 400)
   
   
   #filtered_data and scaled_filtered_data(), currently rather verbose setup
@@ -1484,9 +1484,9 @@ server <- function(input, output, session) {
           measmap <- single_meas_fun2(fs = F)[[1]]
           tmp_html<-file.path("/srv/shiny-server/output",paste0("temp_", session$token, ".html"))
           tmp_dir<-paste0(tmp_html, "_files")
-          saveWidget(measmap, tmp_html, selfcontained = FALSE)
+          saveWidget(measmap, tmp_html, selfcontained = TRUE)
           webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                           vheight = 900)
+                           vheight = 900, delay =3)
           shinyjs::hide("spinner_download_play")
           file.remove(tmp_html)
           unlink(tmp_dir, recursive = TRUE)
@@ -2038,9 +2038,9 @@ server <- function(input, output, session) {
       freqmap <- play_freq(leg=FALSE)#exports global pal and mes
       tmp_html<-file.path("/srv/shiny-server/output",paste0("temp_", session$token, ".html"))
       tmp_dir<-paste0(tmp_html, "_files")
-      saveWidget(freqmap,tmp_html,selfcontained = FALSE)
+      saveWidget(freqmap,tmp_html,selfcontained = TRUE)
       webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                       vheight = 900)
+                       vheight = 900, delay = 3)
       shinyjs::hide("spinner_download_play2")
       file.remove(tmp_html)
       unlink(tmp_dir, recursive = TRUE)
@@ -3775,7 +3775,7 @@ server <- function(input, output, session) {
         mahp_touched = mahp_touched()
       )
     }), 
-    600
+    400
   )
   
   #main datasets for this tab: sols_ahp() and whole_ahp()
@@ -4397,9 +4397,9 @@ server <- function(input, output, session) {
       mp =single_meas_fun(fs = F)[[1]]
       tmp_html<-file.path("/srv/shiny-server/output",paste0("temp_", session$token, ".html"))
       tmp_dir <-paste0(tmp_html, "_files")
-      saveWidget(mp,tmp_html, selfcontained = FALSE)
+      saveWidget(mp,tmp_html, selfcontained = TRUE)
       webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                       vheight = 900)
+                       vheight = 900, delay = 3)
       shinyjs::hide("spinner_download_ahp")  
       file.remove(tmp_html)
       unlink(tmp_dir, recursive = TRUE)
