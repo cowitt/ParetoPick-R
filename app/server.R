@@ -1486,7 +1486,7 @@ server <- function(input, output, session) {
           tmp_dir<-paste0(tmp_html, "_files")
           saveWidget(measmap, tmp_html, selfcontained = TRUE)
           webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                           vheight = 900, delay =3)
+                           vheight = 900)
           shinyjs::hide("spinner_download_play")
           file.remove(tmp_html)
           unlink(tmp_dir, recursive = TRUE)
@@ -2040,7 +2040,7 @@ server <- function(input, output, session) {
       tmp_dir<-paste0(tmp_html, "_files")
       saveWidget(freqmap,tmp_html,selfcontained = TRUE)
       webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                       vheight = 900, delay = 3)
+                       vheight = 900)
       shinyjs::hide("spinner_download_play2")
       file.remove(tmp_html)
       unlink(tmp_dir, recursive = TRUE)
@@ -4399,7 +4399,7 @@ server <- function(input, output, session) {
       tmp_dir <-paste0(tmp_html, "_files")
       saveWidget(mp,tmp_html, selfcontained = TRUE)
       webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                       vheight = 900, delay = 3)
+                       vheight = 900)
       shinyjs::hide("spinner_download_ahp")  
       file.remove(tmp_html)
       unlink(tmp_dir, recursive = TRUE)
