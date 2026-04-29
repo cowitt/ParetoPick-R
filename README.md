@@ -255,6 +255,7 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
   * write/load full scenario run from previous uses
   * dynamic printing of progress during clustering
   * easier reuse of cluster results with selection and renaming
+  * add option to turn off automated cluster calculation for SWAT+/CoMOLA workflow
    
 Other
   * optimum number display in AHP
