@@ -26,7 +26,7 @@
 # }
 
 ## check if any packages are missing (not only here but also for external convert_optain)
-packages <- c("cluster", "corrplot", "DT", "fpc", "fs", "fst",
+packages <- c("cluster", "corrplot","chromote", "DT", "fpc", "fs", "fst",
               "geosphere", "ggplot2", "gridExtra", "ini", "leaflet",
               "leaflet.extras", "leafsync", "patchwork", "plotly",
               "processx", "quanteda", "scales", "sf", "shiny",
@@ -38,8 +38,11 @@ invisible(lapply(packages, library, character.only = TRUE))
 
 
 options(shiny.maxRequestSize = 1000*1024^2)
-options(chromote.chrome.args = c("--no-sandbox", "--disable-dev-shm-usage"))
-
+b <- Chromote$new(Chrome$new(path = '/usr/bin/google-chrome',
+                             args = c('--no-sandbox', '--disable-dev-shm-usage', '--disable-setuid-sandbox')
+  )
+)
+set_default_chromote_object(b)
 options(warn = -1)
 source("functions.R")
 
