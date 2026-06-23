@@ -23,6 +23,10 @@ The code allows the user to select variables to be analysed in a correlation ana
 
 ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.optain.eu/).
 
+The recommended workflow consists of examining the optimisation outputs in the Visualisation tab using the sliders and the scatter, parallel axis, frequency and objective-objective plot and then performing the AHP.
+The two Cluster tabs, as well as the more in-depth analyses on the Visualisation tab, are recommended as part of an advanced workflow. 
+
+
 
 # 2. Deployment, required input files and data structure
 
