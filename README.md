@@ -1,4 +1,5 @@
 # Table of Contents
+- [Table of Contents](#table-of-contents)
 - [1. Introduction](#1-introduction)
 - [2. Deployment, required input files and data structure](#2-deployment-required-input-files-and-data-structure)
   - [2.1 Requirements for use in R/Rstudio](#21-requirements-for-use-in-rrstudio)
@@ -23,8 +24,9 @@ The code allows the user to select variables to be analysed in a correlation ana
 
 ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.optain.eu/).
 
-The recommended workflow consists of examining the optimisation outputs in the Visualisation tab using the sliders and the scatter, parallel axis, frequency and objective-objective plot and then performing the AHP.
-The two Cluster tabs, as well as the more in-depth analyses on the Visualisation tab, are recommended as part of an advanced workflow. 
+**Recommended workflow**: Using the sliders, examine the optimisation outputs in the Visualisation tab with the scatter, parallel axis, frequency and objective-objective plots. Then perform the AHP.
+
+**Advanced workflow**: Examine the optimisation outputs in the Visualisation tab including the Advanced Analysis panel. Perform a default and manual clustering in the two Cluster tabs. Then perform the AHP across the full Pareto front or across the cluster results. 
 
 
 
@@ -251,7 +253,7 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
 * hard-coded to FOUR objectives, less than four can be assessed by introducing a dummy variable but more is not possible atm
 * convert_optain.R when using the automated SWAT+/CoMOLA workflow is limited to the hard coded measure names; unmapped measures cannot be processed. The distinction between linear and management measures cannot be automated.
 * Stratified variables (as sometimes happens through rounding) are not supported for sliders and there is no error message
-* not all input files supplied by the user are checked for consistency, focus on the most important files: fitness and genome
+* not all input files supplied by the user are checked for consistency, focus on the most important files: fitness, genome and shapefile
 
 
 ## 5.2 Planned Features for Version 1.1.0
