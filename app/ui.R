@@ -11,7 +11,7 @@ ui <-
                   menuItem("Introduction",tabName = "intro", icon = icon("home")),
                   menuItem("Data Preparation", icon=icon("file",lib = "font-awesome"),tabName = "data_prep",selected=TRUE),
                   menuItem("Visualising the Pareto Front",tabName = "play_around",icon = icon("dashboard")),
-                  menuItem("Configure Clustering", tabName = "configure", icon = icon("cog")),
+                  menuItem(HTML("Configure Clustering <sup><b style='color: white; background-color: #e07b00; padding: 1px 4px; border-radius: 3px; font-size: 9px;margin-left: -5px;'>advanced</b></sup>"), tabName = "configure", icon = icon("cog")),
 
                   conditionalPanel(
                     condition = "input.show_tabs == 'show'",
@@ -19,7 +19,7 @@ ui <-
                     menuItem("PCA & kmeans/kmedoids",icon=icon("project-diagram", lib="font-awesome"), tabName = "pca")
                   ),
 
-                  menuItem("Cluster Analysis", icon = icon("th"),tabName = "analysis"),
+                  menuItem(HTML("Cluster Analysis <sup><b style='color: white; background-color: #e07b00; padding: 1px 4px; border-radius: 3px; font-size: 9px;'>advanced</b></sup>"), icon = icon("th"),tabName = "analysis"),
                   menuItem("AHP",icon=icon("sliders-h", lib="font-awesome"),tabName = "ahp"),
       dropdownButton(
         inputId = "glossary_button",
@@ -320,23 +320,23 @@ ui <-
                              
                              mainPanel(width =12, div(
                                style = "width: 100%;; margin: 0 auto; text-align: justify; font-size:135%;",
-                               p("This application analyses multi-objective optimisation outputs and shall support decision making.
-                                  "),
+                               p("This application analyses multi-objective optimisation outputs and supports decision making."),
                                br(),
-                               p("To reduce complexity while minimising information loss, this application provides two ways to filter/reduce the pareto front:"),
-                               tags$ol(tags$li("A clustering algorithm based on a Principal Component Analysis (PCA) and kmeans/kmedoids.
-                                                The user can modify the clustering process, alter the number of tested clusters and the way outliers are handled or how much correlation is accepted across the considered variables.
-                                                Finally, those optima  representative for different clusters can be plotted and the measure implementation they recommend can be compared.
-                                               "),
-                                       br(),
-                                       tags$li("An Analytical Hierarchy Process that can be run as standalone method as well as as additional feature on top of the clustered pareto front. ")),
-                                       br(),
-                                       br(),
-                               p(" The application is structured the following way:"),
-                               p(HTML("The second tab <b>Data Preparation</b> is needed to upload and produce the data required for the subsequent analyses.")),
-                               p(HTML("The third tab <strong>Visualising the Pareto Front</strong> provides an overview over the optimisation results. The user can gain insights into the relationships between the objectives and the pareto front by selecting and plotting preferred objective ranges.")),
-                               p(HTML("The fourth tab <strong>Configure Clustering</strong> allows to perform the clustering with default settings or to jump to the optional tabs for manual clustering.")),
+                               p(HTML("First, the datasets required for the subsequent analyses are uploaded in the <b>Data Preparation</b> tab.")),
+                               br(),
                                
+                               p("The", shiny::span("recommended workflow", style = "color: #2e8b57; font-weight: bold;")," consists of:"),
+                               tags$ol(tags$li(HTML("Examining the Pareto front in the <strong>Visualising the Pareto Front</strong> tab to gain an overview of the optimisation results. Use the sliders to receive insights into the relationships between the objectives (and, if supplied, the decision space variables) and the Pareto front.")),
+                                       br(),
+                                       tags$li(HTML("Perform an <strong>AHP - Analytical Hierarchy Process</strong> in the corresponding tab. Determine priorities across the Pareto front by assigning weights across the optima."))),
+                               
+                               br(),
+                               br(),
+                              
+                               p("An", shiny::span("advanced workflow", style = "color: #e07b00; font-weight: bold;"), "extends this pathway with the Clustering:"),
+                               p(HTML("The fourth tab <strong>Configure Clustering</strong> allows to perform the clustering with default settings or to jump to the optional tabs for manual clustering,
+                               where the user can modify the clustering process, alter the number of tested clusters and the way outliers are handled or how much correlation is accepted across the considered variables.
+                                               ")),
                                p(HTML("
                                <ul>
                                  <li>The tab <strong>Clustering Part 1 - Correlation Analysis</strong> can only be accessed if manual clustering is chosen in the Configure Clustering tab. It allows to assess and alter variables considered in the subsequent clustering.</li>
@@ -344,11 +344,9 @@ ui <-
   
                                </ul>
                                       ")),
-                               
-                               p(HTML("The <strong>Cluster Analysis</strong> tab lets the user plot the optima remaining after the clustering. Each of these optima is representative for one cluster.")),
-                               p(HTML("The tab <strong>AHP - Analytical Hierarchy Process</strong> allows to determine priorities across the pareto front in a different way through assigning weights across the optima. It is possible to combine the clustering results with the AHP.")),
-                               br(),br(),
-                               p(HTML("To ensure compatibility with algorithms (e.g. CoMOLA) designed for maximisation, some projects used negative numbers. Please note that, unless an objective uses mixed signs, this app omits the minus sign of these values. The interpretation however remains unchanged."))
+                               p(HTML("Finally, the <strong>Cluster Analysis</strong> tab lets the user plot the optima remaining after the clustering. Each of these optima is representative for one cluster. It is possible to combine the clustering results with the AHP. The AHP optimum is then chosen from the dataset of representative optima.")),
+                               br(),
+                               p(HTML("To ensure compatibility with algorithms (e.g. CoMOLA) designed for maximisation, some projects use negative numbers. Please note that, unless an objective uses mixed signs, this app omits the minus sign of these values. The interpretation however remains unchanged."))
 
 
                              )
