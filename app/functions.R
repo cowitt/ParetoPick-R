@@ -1819,7 +1819,9 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
                           unit = FALSE,
                           ahp_man = FALSE, #adapt label in AHP for manual selection
                           anchor = FALSE, #anchors button
-                          anchors = NULL #anchors dataset
+                          anchors = NULL, #anchors dataset
+                          utopia = FALSE, #utopia button
+                          utopia_set = NULL 
 ) {
   
   if(is.null(full_front)){return(NULL)}
@@ -1919,7 +1921,14 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
     anchors1$set = "Anchor Points"
     aed[[length(aed)+1]] = anchors1
     
-    }
+  }
+  
+  if(utopia){
+    names(utopia_set) = names(dat)
+    utopia_set$set = "Utopia & Compromise"
+    aed[[length(aed)+1]] = utopia_set
+    
+  }
   
   if (length(aed) > 0) {
     swiss_extra <- bind_rows(list(whole, aed)) %>% select(-set)
@@ -1951,11 +1960,12 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   if(length(aed)>0){
     p = p + 
       scale_shape_manual(labels = function(x) gsub("-", "", x),
-                         values = c("cluster solutions" = 21, "AHP - best option" = 22, "Manual Selection" = 22, "Selection" = 21, "Status Quo" = 21, "Anchor Points" = 22), name="") +
+                         values = c("cluster solutions" = 21, "AHP - best option" = 22, "Manual Selection" = 22, "Selection" = 21, "Status Quo" = 21, "Anchor Points" = 22, "Utopia & Compromise" = 21), name="") +
       scale_color_manual(labels = function(x) gsub("-", "", x),
-                         values = c("cluster solutions" = "cyan", "AHP - best option" = "#FF4D4D", "Manual Selection" = "#FF4D4D", "Selection" = "black", "Status Quo" = "#FF00FF", "Anchor Points" = "#FF8C00"), name="") +
-      guides(color = guide_legend(override.aes = list(size = 6)),
-             shape = guide_legend(override.aes = list(size = 6)))
+                         values = c("cluster solutions" = "cyan", "AHP - best option" = "#FF4D4D", "Manual Selection" = "#FF4D4D",
+                                    "Selection" = "black", "Status Quo" = "#FF00FF", "Anchor Points" = "black", "Utopia & Compromise" = "black"), name="") +
+      guides(color = guide_legend(override.aes = list(size = 7)),
+             shape = guide_legend(override.aes = list(size = 7)))
   }
   
   #the optional whole dataset 
@@ -1987,6 +1997,20 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
                       color = scales::alpha("black", 0.9))
   }
   
+  if(utopia){
+    p = p + annotate(
+      "segment",
+      x = utopia_set[[x_var]][1],
+      y = utopia_set[[y_var]][1],
+      xend = utopia_set[[x_var]][2],
+      yend = utopia_set[[y_var]][2],
+      arrow = arrow(length = unit(0.3, "cm"), type = "closed"),
+      colour = "grey30",
+      linewidth = 0.5,
+      linetype = "dashed"
+    )
+  }
+ 
   #extra data points
   # if (!is.null(all_extra_data)) {
   if(length(aed)>0){
