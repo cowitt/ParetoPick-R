@@ -45,7 +45,8 @@ server <- function(input, output, session) {
   sq_file <- reactiveVal(NULL)#handling sq_fitness
   fit <- reactiveVal(NULL) #absolute value dataframe
   f_scaled <- reactiveVal(NULL) #scaled value dataframe
-  anchor_fit = reactiveVal(NULL)
+  anchor_fit = reactiveVal(NULL)#anchor (ahp)
+  utopia = reactiveVal(NULL) #utopia and closest point (ahp)
   rng_plt <- reactiveVal(NULL) #getting the highest range across dataframe
   rng_plt_axes <- reactiveVal(NULL) #getting matching axis labels for highest range
   pca_remove <- reactiveVal(NULL) #variables removed from pca
@@ -374,12 +375,30 @@ server <- function(input, output, session) {
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)
   
+      #anchor (ahp)
       max_rows <- do.call(rbind, lapply(names(data), function(col) {
         row <- data[which.max(data[[col]]), ]
         row$anchor_label <- col
         row
       }))
       anchor_fit(max_rows)
+      
+      #utopia (ahp)
+      utopiap <- apply(data, 2, max)
+      
+      obj_min <- apply(data, 2, min)
+      obj_max <- apply(data, 2, max)
+      
+      pareto_normalised <- sweep(data, 2, obj_min, "-")
+      pareto_normalised <- sweep(pareto_normalised, 2,(obj_max - obj_min),"/")
+      
+      utopiap_n <- (utopiap - obj_min) / (obj_max - obj_min) #(1,1,1,1)
+
+      dista <- apply(pareto_normalised, 1, function(x) {sqrt(sum((x - utopiap_n)^2))})
+      
+      closest_index <- which.min(dista)
+      utopia_closest <- data[closest_index, ]
+      utopia(rbind(utopiap,utopia_closest))
       }
       pareto_da(1) #trigger for pareto front availability, used in other tabs to show/hide content
       
@@ -1055,12 +1074,30 @@ server <- function(input, output, session) {
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)
       
+      #anchor (ahp)
       max_rows <- do.call(rbind, lapply(names(data), function(col) {
         row <- data[which.max(data[[col]]), ]
         row$anchor_label <- col
         row
       }))
       anchor_fit(max_rows)
+      
+      #utopia (ahp)
+      utopiap <- apply(data, 2, max) #utopia point outside, 1st row in utopia()
+      
+      obj_min <- apply(data, 2, min)
+      obj_max <- apply(data, 2, max)
+      
+      pareto_normalised <- sweep(data, 2, obj_min, "-")
+      pareto_normalised <- sweep(pareto_normalised, 2,(obj_max - obj_min),"/")
+      
+      utopiap_n <- (utopiap - obj_min) / (obj_max - obj_min) #(1,1,1,1)
+      
+      dista <- apply(pareto_normalised, 1, function(x) {sqrt(sum((x - utopiap_n)^2))})
+      
+      closest_index <- which.min(dista)
+      utopia_closest <- data[closest_index, ]#utopia point closest, 2nd row in utopia()
+      utopia(rbind(utopiap,utopia_closest))
       
       yo2 <- pull_high_range(fit())
       rng_plt(yo2)
@@ -4189,7 +4226,8 @@ server <- function(input, output, session) {
       return(plt_sc_optima(dat=df3,x_var=input$x_var,y_var=input$y_var,
                            col_var=input$col_var,size_var=input$size_var,high_point=bo, extra_dat = sol, full_front = fit(),
                            plt_extra = input$show_extra_dat, status_q = input$show_status_quo,an_tab = F,rev = input$rev_box3,
-                           unit=input$unit_add3, ahp_man = input$make_manual_ahp, anchor = input$anchors, anchors = anchor_fit()
+                           unit=input$unit_add3, ahp_man = input$make_manual_ahp, anchor = input$anchors, anchors = anchor_fit(),
+                           utopia = input$utopia, utopia_set = utopia()
       ))
     }
     

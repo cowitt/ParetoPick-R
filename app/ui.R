@@ -1356,13 +1356,22 @@ ui <-
                              column(3,selectInput(inputId = "col_var",label = "Colour", choices = NULL, multiple = F,selected=NULL)),
                              column(3,selectInput(inputId = "size_var",label = "Size", choices = NULL, multiple = F,selected=NULL))),
 
-                             checkboxInput("show_extra_dat", label = "Show cluster solutions", value = F),
-                             checkboxInput("show_status_quo", label = "Show Status Quo", value = FALSE),
-                             checkboxInput("unit_add3",label = "Show units",value = TRUE),
-                             tags$div(title = "Displays the individual objective's maximum point on the plot",
-                               checkboxInput("anchors", label="Show the objectives' anchor points", value = FALSE)
+                             fluidRow(
+                               column(6,
+                                      checkboxInput("show_extra_dat", label = "Show cluster solutions", value = FALSE),
+                                      checkboxInput("unit_add3", label = "Show units", value = TRUE),
+                                      tags$div(title = "Displays the individual objective's maximum point on the plot.",
+                                               checkboxInput("anchors", label = "Show the objectives' anchor points", value = FALSE)
+                                      )
+                               ),
+                               column(6,
+                                      checkboxInput("show_status_quo", label = "Show Status Quo", value = FALSE),
+                                      tags$div(title = "Displays two points: the hypothetical point at which all objectives are maximised simultaneously (added outside the Pareto front) and the Pareto solution that is closest to this hypothetical point.",
+                                               checkboxInput("utopia", label = "Show the utopia point and closest Pareto solution", value = FALSE)
+                                      ),
+                                      div(id = "rev_plot3", checkboxInput("rev_box3", label = "Reverse x and y axes", value = FALSE)) %>% hidden()
+                               )
                              ),
-                             div(id="rev_plot3",checkboxInput("rev_box3",label="reverse x and y axes",value = FALSE))%>%hidden(),
 
                              div(
                                style = "display: inline-block; vertical-align: top; margin-right: 0px;",
