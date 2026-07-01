@@ -1468,6 +1468,7 @@ server <- function(input, output, session) {
         if(is.null(shp_da()) || is.null(hru_da())){ 
           return(NULL)
         }else{
+          shinyjs::show("download_sel_csv")
           actionButton("map_sel", "Plot decision space of selected optimum")
         } 
       }
@@ -1712,7 +1713,7 @@ server <- function(input, output, session) {
   click_table_data <- reactive({
     req(sel_tay())
     
-    m_opt = pull_opt_number()
+    m_opt <<- pull_opt_number()
     
     colnms <- objectives()
     new_colnms <- if(!is.null(axiselected())){
@@ -1759,16 +1760,19 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_click_line,{
     
-    if(input$save_click_line){
-      req(m_opt)
+      req(sel_tay())
+    
+    m_opt <- cbind(m_opt, as.data.frame(sel_tay()[1, , drop = FALSE]))
+    colnames(m_opt) <- c("optimum", objectives())
+    
       if(file.exists(paste0(output_dir,"selected_optima.csv"))){
-        
+     
       write.table(m_opt, file = paste0(output_dir,"selected_optima.csv"), sep = ",",
                   append = TRUE, col.names = FALSE, row.names = FALSE)
       
     }else{write.csv(m_opt,file=paste0(output_dir,"selected_optima.csv"),row.names = F)
     
-    }}
+    }
   })
   
   

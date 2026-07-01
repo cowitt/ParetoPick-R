@@ -636,7 +636,7 @@ ui <-
                                            
                                          column(12,
                                                 div("Objective Range",
-                                                    tags$h5("For this visualisations and analysis, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
+                                                    tags$h5("For these visualisations and analysis, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
                                                     style = "text-align: left; font-size:150%; margin-top: 10px;"),
                                               
                                                 sliderInput(inputId = "obj1", label=  "Objective 1:", min = 0, max = 1, value = c(0,1), step = 0.01,width = "120%"),
@@ -754,7 +754,12 @@ ui <-
                                  uiOutput("spinner_play"),
                                  type = 4  , color = "#F7A600"
                                ),
-
+                               div(id = "download_sel_csv", style = "margin: 0 auto; text-align: center;",
+                                   checkboxInput("save_click_line", 
+                                                 label = "Click here to save the selected optimum to the output folder (selected_optima.csv)", 
+                                                 value = FALSE)
+                               )%>%hidden(),
+                               
                                div(id="download_play_id",
                                    div(
                                      style = "display: inline-block; vertical-align: top; margin-right: 0px; margin-top: 5px;",
@@ -770,6 +775,7 @@ ui <-
                                    div(class = "spinspin")
                                   ) ),
                                  br(),
+                                br(),
                                  div(
                                    style = "display: inline-block; vertical-align: top; margin-left: 0px; margin-top: 5px;",
                                    downloadButton("download_shp", "Download map as shapefile"),
@@ -783,57 +789,67 @@ ui <-
                               br(),
                               br(),
                               
-                                  conditionalPanel(
-                                    condition = "output.selectionmade",
-                                    div(
-                                      style = "display: flex; flex-direction: column; align-items: center;",
-                                      tags$h3("Selected Optimum"),
-                                      div("objectives", style = "text-align: center; font-size:150%"),
-                                      div(style = "margin: 0 auto; text-align: center;", tableOutput("click_info")),
-                                      conditionalPanel(
-                                        condition = "output.hru_available",
-                                        div("measures", style = "text-align: center; font-size:150%")
-                                      ),
-                                      div(style = "margin: 0 auto; text-align: center;", tableOutput("aep_tab_one")),
-                                      div(style = "margin: 0 auto; text-align: center;",  
-                                          checkboxInput("save_click_line", label = "Click here to save the selected optimum to the output folder (selected_optima.csv)", value = FALSE)
-                                      )
-                                    )
-                                  ),
-                              
-                              div(id = "number_mes_tab","Number of distinct measures used in selection compared to full front",
-                                  style = "display: flex; justify-content: center; font-size:150%"),
-                              # style = "display: flex; justify-content: center; font-size: 80%"),
-                              
-                              div(style="display: flex; flex-direction: column; align-items: center;",
-                                  # tags$h4("Range (slider selection)"),
-                                  div(style = "margin: 0 auto; text-align: center;",tableOutput("aep_tab_full"))
+                              conditionalPanel(
+                                condition = "output.selectionmade",
+                                tags$details(
+                                  tags$summary("▶ Advanced Information on selected Optimum",
+                                               style = "cursor: pointer; font-size: 115%; padding: 10px 15px;
+                          background-color: #f0f0f0; border-radius: 4px;
+                          border-left: 4px solid #2c7bb6;
+                          list-style: none; user-select: none;
+                          display: block; width: 100%;"),
+                                  div(
+                                    style = "display: flex; flex-direction: column; align-items: center;",
+                                    div("objectives", style = "text-align: center; font-size:150%"),
+                                    div(style = "margin: 0 auto; text-align: center;", tableOutput("click_info")),
+                                    conditionalPanel(
+                                      condition = "output.hru_available",
+                                      div("number of measures", style = "text-align: center; font-size:150%")
+                                    ),
+                                    div(style = "margin: 0 auto; text-align: center;", tableOutput("aep_tab_one")),
+                                  
+                                  )
+                                )
                               ),
-
-                              br(),
-                              br(),
-
-                               # hr(style = "border-top: 2px solid #03597F;"),
-                               br(),
-                               fluidRow(
-                                 column(12,
-                                        fluidRow(column(6, div("Selected Objective Ranges (scaled)", style = "text-align: left; font-size:150%"),
-                                                        tableOutput("sliders")),
-                                                 
-                                                 column(6, 
-                                                        div("Maximum Objective Ranges",style = "text-align: left; font-size:150%"),
-                                                        title = "objectives optimised across negative and positive ranges are shown with signs. All other objectives are given without signs.",
-                                                        
-                                                        tableOutput("whole_range")#,
-                                                        # div("*objectives optimised across negative and positive ranges are shown with signs. All other objectives are given without signs.", style = "text-align: left; font-size:100%")
+                              br(), br(),
+                              tags$details(
+                                tags$summary("▶ Display Advanced Analyses",
+                                             style = "cursor: pointer; font-size: 115%; padding: 10px 15px;
+                        background-color: #f0f0f0; border-radius: 4px;
+                        border-left: 4px solid #2c7bb6;
+                        list-style: none; user-select: none;
+                        display: block; width: 100%;"),
+                                fluidRow(
+                                  column(12,
+                                         fluidRow(#one row alone
+                                           column(6, offset = 3,
+                                                  div(id = "number_mes_tab",
+                                                      "Number of distinct measures used in selection compared to full front",
+                                                      style = "text-align: center; word-wrap: break-word; white-space: normal; font-size: 150%;"),
+                                                  div(style = "display: flex; flex-direction: column; align-items: center;",
+                                                      div(style = "margin: 0 auto; text-align: center;", 
+                                                          tableOutput("aep_tab_full")))
                                                  )
-                                                ),
-                                        fluidRow(
-
-                                                 column(6, offset = 6, div(id = "status_quo_title", "Difference to status quo",
-                                                                           style = "text-align: left; font-size:150%"),
-                                                        tableOutput("sliders_abs"))
-                                        ))),
+                                                 ),br(),
+                                         fluidRow(
+                                           column(6,
+                                                  div("Selected Objective Ranges (scaled)", style = "text-align: left; font-size:150%"),
+                                                  tableOutput("sliders")),
+                                           column(6,
+                                                  div("Maximum Objective Ranges", style = "text-align: left; font-size:150%"),
+                                                  title = "objectives optimised across negative and positive ranges are shown with signs. All other objectives are given without signs.",
+                                                  tableOutput("whole_range"))
+                                                  ),
+                                         fluidRow(#one row alone, right bound
+                                           column(6, offset = 6,
+                                                  div(id = "status_quo_title", "Difference to status quo", 
+                                                      style = "text-align: left; font-size:150%"),
+                                                  tableOutput("sliders_abs"))
+                                                 )
+                                       )
+                                       )
+                                    ),
+                              br(),br(),
 
 
 
