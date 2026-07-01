@@ -1359,7 +1359,9 @@ ui <-
                              checkboxInput("show_extra_dat", label = "Show cluster solutions", value = F),
                              checkboxInput("show_status_quo", label = "Show Status Quo", value = FALSE),
                              checkboxInput("unit_add3",label = "Show units",value = TRUE),
-                             
+                             tags$div(title = "Displays the individual objective's maximum point on the plot",
+                               checkboxInput("anchors", label="Show the objectives' anchor points", value = FALSE)
+                             ),
                              div(id="rev_plot3",checkboxInput("rev_box3",label="reverse x and y axes",value = FALSE))%>%hidden(),
 
                              div(

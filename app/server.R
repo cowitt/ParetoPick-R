@@ -45,6 +45,7 @@ server <- function(input, output, session) {
   sq_file <- reactiveVal(NULL)#handling sq_fitness
   fit <- reactiveVal(NULL) #absolute value dataframe
   f_scaled <- reactiveVal(NULL) #scaled value dataframe
+  anchor_fit = reactiveVal(NULL)
   rng_plt <- reactiveVal(NULL) #getting the highest range across dataframe
   rng_plt_axes <- reactiveVal(NULL) #getting matching axis labels for highest range
   pca_remove <- reactiveVal(NULL) #variables removed from pca
@@ -371,7 +372,15 @@ server <- function(input, output, session) {
       fit(data)
       fit1(fit() %>% rownames_to_column("optimum"))
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
-      f_scaled(yo)}
+      f_scaled(yo)
+  
+      max_rows <- do.call(rbind, lapply(names(data), function(col) {
+        row <- data[which.max(data[[col]]), ]
+        row$anchor_label <- col
+        row
+      }))
+      anchor_fit(max_rows)
+      }
       pareto_da(1) #trigger for pareto front availability, used in other tabs to show/hide content
       
       
@@ -391,11 +400,8 @@ server <- function(input, output, session) {
                                      max = logical(0),
                                      stringsAsFactors = FALSE)}  
       },rownames = T)
-      
-      
     })
     
-  
     
     ## get unit input 
     observeEvent(input$save_unit,{
@@ -1048,6 +1054,13 @@ server <- function(input, output, session) {
       fit1(fit() %>% rownames_to_column("optimum"))
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)
+      
+      max_rows <- do.call(rbind, lapply(names(data), function(col) {
+        row <- data[which.max(data[[col]]), ]
+        row$anchor_label <- col
+        row
+      }))
+      anchor_fit(max_rows)
       
       yo2 <- pull_high_range(fit())
       rng_plt(yo2)
@@ -4176,7 +4189,7 @@ server <- function(input, output, session) {
       return(plt_sc_optima(dat=df3,x_var=input$x_var,y_var=input$y_var,
                            col_var=input$col_var,size_var=input$size_var,high_point=bo, extra_dat = sol, full_front = fit(),
                            plt_extra = input$show_extra_dat, status_q = input$show_status_quo,an_tab = F,rev = input$rev_box3,
-                           unit=input$unit_add3, ahp_man = input$make_manual_ahp
+                           unit=input$unit_add3, ahp_man = input$make_manual_ahp, anchor = input$anchors, anchors = anchor_fit()
       ))
     }
     

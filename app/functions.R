@@ -1817,7 +1817,9 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
                           status_q = FALSE,
                           rev = FALSE,
                           unit = FALSE,
-                          ahp_man = FALSE #adapt label in AHP for manual selection
+                          ahp_man = FALSE, #adapt label in AHP for manual selection
+                          anchor = FALSE, #anchors button
+                          anchors = NULL #anchors dataset
 ) {
   
   if(is.null(full_front)){return(NULL)}
@@ -1909,6 +1911,16 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
     
   }
   
+  if(anchor){
+    
+    names(anchors)[1:4] = names(dat)
+    anchors1 = anchors %>%select(-anchor_label)
+    
+    anchors1$set = "Anchor Points"
+    aed[[length(aed)+1]] = anchors1
+    
+    }
+  
   if (length(aed) > 0) {
     swiss_extra <- bind_rows(list(whole, aed)) %>% select(-set)
   } else{
@@ -1939,11 +1951,11 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   if(length(aed)>0){
     p = p + 
       scale_shape_manual(labels = function(x) gsub("-", "", x),
-                         values = c("cluster solutions" = 21, "AHP - best option" = 22, "Manual Selection" = 22, "Selection" = 21, "Status Quo" = 21), name="") +
+                         values = c("cluster solutions" = 21, "AHP - best option" = 22, "Manual Selection" = 22, "Selection" = 21, "Status Quo" = 21, "Anchor Points" = 22), name="") +
       scale_color_manual(labels = function(x) gsub("-", "", x),
-                         values = c("cluster solutions" = "cyan", "AHP - best option" = "#FF4D4D", "Manual Selection" = "#FF4D4D", "Selection" = "black", "Status Quo" = "#FF00FF"), name="") +
-      guides(color = guide_legend(override.aes = list(size = 5)),
-             shape = guide_legend(override.aes = list(size = 5)))
+                         values = c("cluster solutions" = "cyan", "AHP - best option" = "#FF4D4D", "Manual Selection" = "#FF4D4D", "Selection" = "black", "Status Quo" = "#FF00FF", "Anchor Points" = "#FF8C00"), name="") +
+      guides(color = guide_legend(override.aes = list(size = 6)),
+             shape = guide_legend(override.aes = list(size = 6)))
   }
   
   #the optional whole dataset 
@@ -1963,6 +1975,16 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
                       vjust = 1,
                       size = 6,
                       color = scales::alpha("black", 0.6))
+  }
+  
+  if(anchor){
+    p = p + geom_text(data = anchors,aes(x = !!sym(x_var)+(0.018*diff(range(!!sym(x_var)))), y = !!sym(y_var),  label = anchor_label ),
+                      nudge_x = 0.001 * diff(range(dat[[x_var]], na.rm = TRUE)),
+                      nudge_y = -0.001 * diff(range(dat[[y_var]], na.rm = TRUE)),
+                      hjust = 0,
+                      vjust = 1,
+                      size = 6,
+                      color = scales::alpha("black", 0.9))
   }
   
   #extra data points
