@@ -1399,7 +1399,7 @@ pull_shp_new = function(layername = "hru", hru_in_opt_path="../input/hru_in_opti
     if(class(cm)[1]=="sfg" || class(cm$geometry)[2]=="sfc"){
       sfc_mixed <- st_as_sfc(cm, crs = 4326)
       
-      sfc_mixed <- st_cast(sfc_mixed, "POLYGON")#if there are other elements like points
+      sfc_mixed <- st_cast(sfc_mixed, "MULTIPOLYGON")#if there are other elements like points
       
       cm <- st_sf(cm, geometry = sfc_mixed)
 
@@ -1658,13 +1658,13 @@ plot_parline = function(datt,sizz=rep(.5, length(unique(datt$id))),colols=rep("g
     theme_minimal() +
     theme(legend.position = "none",
           plot.title = element_blank(),
-          axis.text.y = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.title.y = element_text(size = 18),
+          axis.text.y = element_text(size = 22),
+          axis.text.x = element_text(size = 22),
+          axis.title.y = element_text(size = 22),
           axis.title.x = element_blank()
     )+
     scale_y_continuous(limits = c(0,1)) +
-    scale_x_discrete(expand = expansion(mult =  c(-0.05, 0.035)),labels = function(x) str_wrap(x, width = 8)) + 
+    scale_x_discrete(expand = expansion(mult =  c(-0.05, 0.05)),labels = function(x) str_wrap(x, width = 8)) + 
     labs(x = "Factors", y = "Scaled Values") +
     scale_size_manual(values = sizz) +
     scale_color_manual(values = colols)+
@@ -1782,7 +1782,7 @@ plt_sc = function(dat, ranges, col=rep("grey",nrow(dat)),
        alpha = 0.7
      )+annotate("text", x = Inf, y = -Inf,#add R²
                 label = paste("R² =", coef_dat$r_val),
-                hjust = 1.1, vjust = -0.5, size = 4)+    #correct for negative scale aesthetics
+                hjust = 1.1, vjust = -0.5, size = 8)+    #correct for negative scale aesthetics
        scale_x_continuous(limits = c(x_min, x_max),labels = rem_min, expand = expansion(mult =  c(0.015, 0.015))) +
        scale_y_continuous(limits = c(y_min, y_max),labels = rem_min, expand = c(0.15, 0))
      
@@ -1817,7 +1817,11 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
                           status_q = FALSE,
                           rev = FALSE,
                           unit = FALSE,
-                          ahp_man = FALSE #adapt label in AHP for manual selection
+                          ahp_man = FALSE, #adapt label in AHP for manual selection
+                          anchor = FALSE, #anchors button
+                          anchors = NULL, #anchors dataset
+                          utopia = FALSE, #utopia button
+                          utopia_set = NULL 
 ) {
   
   if(is.null(full_front)){return(NULL)}
@@ -1909,6 +1913,23 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
     
   }
   
+  if(anchor){
+    
+    names(anchors)[1:4] = names(dat)
+    anchors1 = anchors %>%select(-anchor_label)
+    
+    anchors1$set = "Anchor Points"
+    aed[[length(aed)+1]] = anchors1
+    
+  }
+  
+  if(utopia){
+    names(utopia_set) = names(dat)
+    utopia_set$set = "Utopia & Compromise"
+    aed[[length(aed)+1]] = utopia_set
+    
+  }
+  
   if (length(aed) > 0) {
     swiss_extra <- bind_rows(list(whole, aed)) %>% select(-set)
   } else{
@@ -1939,11 +1960,12 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   if(length(aed)>0){
     p = p + 
       scale_shape_manual(labels = function(x) gsub("-", "", x),
-                         values = c("cluster solutions" = 21, "AHP - best option" = 22, "Manual Selection" = 22, "Selection" = 21, "Status Quo" = 21), name="") +
+                         values = c("cluster solutions" = 21, "AHP - best option" = 22, "Manual Selection" = 22, "Selection" = 21, "Status Quo" = 21, "Anchor Points" = 22, "Utopia & Compromise" = 21), name="") +
       scale_color_manual(labels = function(x) gsub("-", "", x),
-                         values = c("cluster solutions" = "cyan", "AHP - best option" = "#FF4D4D", "Manual Selection" = "#FF4D4D", "Selection" = "black", "Status Quo" = "#FF00FF"), name="") +
-      guides(color = guide_legend(override.aes = list(size = 5)),
-             shape = guide_legend(override.aes = list(size = 5)))
+                         values = c("cluster solutions" = "cyan", "AHP - best option" = "#FF4D4D", "Manual Selection" = "#FF4D4D",
+                                    "Selection" = "black", "Status Quo" = "#FF00FF", "Anchor Points" = "black", "Utopia & Compromise" = "black"), name="") +
+      guides(color = guide_legend(override.aes = list(size = 7)),
+             shape = guide_legend(override.aes = list(size = 7)))
   }
   
   #the optional whole dataset 
@@ -1965,6 +1987,30 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
                       color = scales::alpha("black", 0.6))
   }
   
+  if(anchor){
+    p = p + geom_text(data = anchors,aes(x = !!sym(x_var)+(0.018*diff(range(!!sym(x_var)))), y = !!sym(y_var),  label = anchor_label ),
+                      nudge_x = 0.001 * diff(range(dat[[x_var]], na.rm = TRUE)),
+                      nudge_y = -0.001 * diff(range(dat[[y_var]], na.rm = TRUE)),
+                      hjust = 0,
+                      vjust = 1,
+                      size = 6,
+                      color = scales::alpha("black", 0.9))
+  }
+  
+  if(utopia){
+    p = p + annotate(
+      "segment",
+      x = utopia_set[[x_var]][1],
+      y = utopia_set[[y_var]][1],
+      xend = utopia_set[[x_var]][2],
+      yend = utopia_set[[y_var]][2],
+      arrow = arrow(length = unit(0.3, "cm"), type = "closed"),
+      colour = "grey30",
+      linewidth = 0.5,
+      linetype = "dashed"
+    )
+  }
+ 
   #extra data points
   # if (!is.null(all_extra_data)) {
   if(length(aed)>0){
