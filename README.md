@@ -16,7 +16,7 @@
   - [5.2 Planned Features for Version 1.1.0](#52-planned-features-for-version-110)
 
 # 1. Introduction
-ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="200" height="230" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
+<img align = "right" width="200" height="230" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. 
 It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making.
 It provides a dashboard for the user to supply their own data, visualise and explore it, produce maps, alter a range of parameters and perform clustering and an Analytical Hierarchy Process.
 
@@ -32,12 +32,17 @@ ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.opta
 
 # 2. Deployment, required input files and data structure
 
-## 2.1 Requirements for use in R/Rstudio
-  * please refer to the docker-build branch for recreating the docker image
+## 2.1 Deployment
+
+Docker
+  * pull docker image with `docker pull ghcr.io/cowitt/paretopick-r:1.2.1` 
+ 
+In R:
+  * recommended to use renv::restore()
   * R version 4.4.2 or higher
   * package "promises" version 1.3.2 or higher
   * remove or upgrade (>4.0) package "tmap" to avoid conflicts
-  * recommended to use renv::restore()
+  
 
 
 ## 2.2 Input files for different levels of functionalities
