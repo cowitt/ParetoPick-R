@@ -16,7 +16,7 @@
   - [5.2 Planned Features for Version 1.1.0](#52-planned-features-for-version-110)
 
 # 1. Introduction
-ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="200" height="200" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
+ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="200" height="230" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
 It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making.
 It provides a dashboard for the user to supply their own data, visualise and explore it, produce maps, alter a range of parameters and perform clustering and an Analytical Hierarchy Process.
 
