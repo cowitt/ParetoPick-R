@@ -1,0 +1,6 @@
+.cs-active
+.cs-count
+cs-*/
+default/
+app/temp_files
+app/temp.html
