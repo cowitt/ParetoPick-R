@@ -271,7 +271,7 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
    
 Other
   * optimum number display in AHP
-  * dynamic regression line with R2 in scatter plot in red, other R2 in blue
+  * users are likely more interested in their subset than in the whole front: add dynamic regression line with R2 in scatter plot in red, other R2 in blue. Pull point closest to utopia from subset not from whole front
   * optima selection via direct number input
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed
