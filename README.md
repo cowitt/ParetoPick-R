@@ -262,7 +262,8 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
 
 
 ## 5.2 Planned Features for Version 1.1.0
-  * debounce slider settings in visualisation tab
+  * stronger debounce slider settings in visualisation tab
+  * allow variable number of objectives with adapted visualisation options
   * allow mixed discrete/continuous MOO with additional secondery sliders (includes: adapt genome check)
   * write/load full scenario run from previous uses
   * dynamic printing of progress during clustering
