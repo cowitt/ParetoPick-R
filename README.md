@@ -13,7 +13,9 @@
 - [4. Folder and File Structure](#4-folder-and-file-structure)
 - [5. Assumptions and Planned Features](#5-assumptions-and-planned-features)
   - [5.1 Current Limitations](#51-current-limitations)
-  - [5.2 Planned Features for Version 1.1.0](#52-planned-features-for-version-110)
+  - [5.2 Planned Features](#52-planned-features)
+    -[5.2.2 Small Release](#521-small-release)
+    -[5.2.2 Big Release](#522-big-release)
 
 # 1. Introduction
 <img align = "right" width="200" height="230" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. 
@@ -261,17 +263,22 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
 * not all input files supplied by the user are checked for consistency, focus on the most important files: fitness, genome and shapefile
 
 
-## 5.2 Planned Features for Version 1.1.0
+## 5.2 Planned Features
+### 5.2.1 Small Release
+  * alternative base layer or implement API for continuous access to carto
+  * add option to turn off automated cluster calculation for SWAT+/CoMOLA workflow
+  * select anchor and utopia points from subselection instead of whole set 
+  * optimum number display in AHP
+
+### 5.2.2 Big Release
   * stronger debounce slider settings in visualisation tab
   * allow variable number of objectives with adapted visualisation options
   * allow mixed discrete/continuous MOO with additional secondery sliders (includes: adapt genome check)
   * write/load full scenario run from previous uses
   * dynamic printing of progress during clustering
   * easier reuse of cluster results with selection and renaming
-  * add option to turn off automated cluster calculation for SWAT+/CoMOLA workflow
    
 Other
-  * optimum number display in AHP
   * users are likely more interested in their subset than in the whole front: add dynamic regression line with R2 in scatter plot in red, other R2 in blue. Pull point closest to utopia from subset not from whole front
   * optima selection via direct number input
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
