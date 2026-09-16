@@ -265,10 +265,9 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
 
 ## 5.2 Planned Features
 ### 5.2.1 Small Release
-  * alternative base layer or implement API for continuous access to carto
+  * alternative base layer w/o API (done on main, missing for both docker and web version)
   * add option to turn off automated cluster calculation for SWAT+/CoMOLA workflow
   * select anchor and utopia points from subselection instead of whole set 
-  * optimum number display in AHP
 
 ### 5.2.2 Big Release
   * stronger debounce slider settings in visualisation tab
