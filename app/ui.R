@@ -3,6 +3,11 @@
 # Project: Clustering Pareto solutions/Multi-objective visualisation
 # author: cordula.wittekind@ufz.de
 ####################################################################
+
+# Read env var to optionally restrict UI to the Visualising the Pareto Front tab only
+.paretopick_vis_only_env <- tolower(Sys.getenv("PARETOPICK_VIS_ONLY", ""))
+.paretopick_vis_only_flag <- if (.paretopick_vis_only_env %in% c("1", "true", "yes", "on")) TRUE else FALSE
+
 ui <-
   dashboardPage(
     dashboardHeader(title="ParetoPick-R"),
@@ -50,7 +55,70 @@ ui <-
         )
           )))
     ,
-    dashboardBody(  
+    dashboardBody(
+
+    tags$script(HTML(paste0('\n      window.PARETOPICK_VIS_ONLY = ', if (.paretopick_vis_only_flag) 'true' else 'false', ';\n    '))),
+
+    tags$script(HTML("
+      $(function(){
+        function getQueryParam(name){
+          var urlParams = new URLSearchParams(window.location.search);
+          return urlParams.get(name);
+        }
+
+        function selectTab(tabValue){
+          if(!tabValue) return;
+          var $link = $('.sidebar-menu a[data-value=\"' + tabValue + '\"]');
+          if($link.length){
+            $link.trigger('click');
+          }
+        }
+
+        // Initial selection from query string: ?default-tab=play_around
+        var initialTab = getQueryParam('default-tab');
+        if(initialTab){
+          selectTab(initialTab);
+        }
+
+        // Optionally collapse the sidebar by default via query param
+        // Usage examples: ?sidebar=1, ?sidebar=true, ?sidebar=yes, ?sidebar=on, ?sidebar=closed, ?sidebar=collapse
+        var qpSidebar = getQueryParam('sidebar');
+        var collapseSidebar = (qpSidebar && (function(v){
+          v = v.toLowerCase();
+          return v === '1' || v === 'true' || v === 'yes' || v === 'on' || v === 'closed' || v === 'collapse';
+        })(qpSidebar));
+        if(collapseSidebar){
+          $('body').addClass('sidebar-collapse');
+        }
+
+        // Determine whether to restrict UI to only the Visualising tab
+        var qpVisOnly = getQueryParam('visonly');
+        var qpVisOnlyActive = (qpVisOnly && (qpVisOnly.toLowerCase() === '1' || qpVisOnly.toLowerCase() === 'true' || qpVisOnly.toLowerCase() === 'yes' || qpVisOnly.toLowerCase() === 'on'));
+        var envVisOnlyActive = (typeof window.PARETOPICK_VIS_ONLY !== 'undefined') ? !!window.PARETOPICK_VIS_ONLY : false;
+        var visOnlyActive = qpVisOnlyActive || envVisOnlyActive;
+
+        if(visOnlyActive){
+          selectTab('play_around');
+          $('.sidebar-menu a').not('[data-value=\"play_around\"]').closest('li').hide();
+
+          $(document).on('click', '.sidebar-menu a', function(e){
+            var val = $(this).attr('data-value');
+            if(val && val !== 'play_around'){
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              selectTab('play_around');
+              return false;
+            }
+          });
+
+          try{
+            var url = new URL(window.location);
+            url.searchParams.set('default-tab','play_around');
+            window.history.replaceState({}, '', url);
+          }catch(err){ /* no-op */ }
+        }
+      });
+    ")),
 
     tags$style(HTML('
                                   /* File status message font size adjustment */
@@ -282,7 +350,24 @@ ui <-
 
                      useShinyjs(),
                    tags$script(src = "iframeResizer.contentWindow.min.js"),
-                  
+                   tags$script(HTML("
+                     (function(){
+                       function triggerResize(){
+                         if(window.parentIFrame && window.parentIFrame.size){
+                           try{ window.parentIFrame.size(); }catch(e){}
+                         }
+                       }
+
+                       $(function(){
+                         $('.content-wrapper').attr('data-iframe-size','');
+
+                         // Sidebar toggle - wait for animation to finish
+                         $(document).on('click', '.sidebar-toggle', function(){
+                           setTimeout(triggerResize, 350);
+                         });
+                       });
+                     })();
+                   ")),
                    tags$script(HTML("
                                     $(document).on('shiny:value', function(event) {
                                       function removeMinusSigns() {
@@ -725,7 +810,7 @@ ui <-
                            div(id = "tab_play1",
 
                                div("Pareto Plot", style = "text-align: left; font-size:150%"),
-                               plotOutput("first_pareto",click="clickpoint"),
+                               withSpinner(plotOutput("first_pareto",click="clickpoint"), type = 4, color = "#F7A600"),
                                checkboxInput("add_sq_f",label = "Show status quo",value = FALSE),
                                checkboxInput("unit_add1",label = "Show units",value = TRUE),
                                div(id="rev_plot",checkboxInput("rev_box",label="reverse x and y axes",value = FALSE))%>%hidden(),
@@ -855,7 +940,7 @@ ui <-
 
 
                            div(id = "tab_play2",div("Parallel Axis plot", style = "text-align: left; font-size:150%"),
-                               plotOutput("linePlot",click="clickline"),
+                               withSpinner(plotOutput("linePlot",click="clickline"), type = 4, color = "#F7A600"),
                                checkboxInput("plt_sq", label = "Show status quo", value = FALSE)),
                            
                                div(
@@ -870,7 +955,7 @@ ui <-
                                verbatimTextOutput("lineDetails"),
 
                                div(id="scatter","Scatter Plot",style = "text-align: left; font-size:150%"),
-                               plotOutput("scatter_plot"),
+                               withSpinner(plotOutput("scatter_plot"), type = 4, color = "#F7A600"),
 
                                div(
                                  style = "display: inline-block; vertical-align: top; margin-right: 0px;",
@@ -1106,7 +1191,7 @@ ui <-
 
                                              conditionalPanel(
                                                condition = "input.outlyn == 'No'",
-                                               actionButton("write_outl", "Confirm No Outlier Testing") ),
+                                               actionButton("write_outl_no", "Confirm No Outlier Testing") ),
 
 
                                              #  Cluster number
@@ -1233,14 +1318,17 @@ ui <-
                          ),
                        tags$script(HTML("
                         function toggleSidebar(show) {
+                          var sidebar = document.getElementById('analysis_sidebar');
+                          var main = document.getElementById('main_analysis');
+                          if (!sidebar || !main) return;
                           if (show) {
-                            document.getElementById('analysis_sidebar').style.display = 'block';
-                            document.getElementById('main_analysis').classList.remove('main-panel-full-width');
-                            document.getElementById('main_analysis').classList.add('main-panel');
+                            sidebar.style.display = 'block';
+                            main.classList.remove('main-panel-full-width');
+                            main.classList.add('main-panel');
                           } else {
-                            document.getElementById('analysis_sidebar').style.display = 'none';
-                            document.getElementById('main_analysis').classList.remove('main-panel');
-                            document.getElementById('main_analysis').classList.add('main-panel-full-width');
+                            sidebar.style.display = 'none';
+                            main.classList.remove('main-panel');
+                            main.classList.add('main-panel-full-width');
                           }
                         }
                          "))),

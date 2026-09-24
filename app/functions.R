@@ -4,6 +4,13 @@
 # author: cordula.wittekind@ufz.de
 ####################################################################
 
+# Session-aware path mapper (set by server per session; no-op if not set)
+path_map_opt <- function(p) {
+  pm <- getOption("wp5_path_map", NULL)
+  if (is.null(pm)) return(p)
+  pm(p)
+}
+
 #### Correlation Analysis Functions ####
 ## correlation plot
 plt_corr = function(corr,nvar = 7, labelcol = "black",labelorder='alphabet',meth = 'square', tpe = 'lower'){
