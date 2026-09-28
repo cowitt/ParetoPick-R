@@ -1260,7 +1260,7 @@ plt_freq = function(data, lo, la, buffers = NULL, remaining, dispal = pal,
   
   if(!basemap){ #show basemap if anonymise NOT selected
     m = m %>%
-      addProviderTiles(providers$CartoDB.Positron)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
+      addProviderTiles(providers$Esri.WorldGrayCanvas)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
   }
   
   #buffer first otherwise small elements not selectable
@@ -1519,7 +1519,7 @@ plt_lf <- function(data, lo=NULL, la=NULL, buff_els, col_sel, buffers, dispal = 
     
     if(!basemap){ #show basemap if anonymise NOT selected
       p = p %>%
-        addProviderTiles(providers$CartoDB.Positron)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
+        addProviderTiles(providers$Esri.WorldGrayCanvas)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
     }
     
     if(!is.null(buffers)){
