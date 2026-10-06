@@ -24,7 +24,7 @@ It provides a dashboard for the user to supply their own data, visualise and exp
 
 The code allows the user to select variables to be analysed in a correlation analysis and a cluster algorithm. 
 
-ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.optain.eu/).
+ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.optain.eu/) and is described in detail in [Wittekind et al. (2026)](https://doi.org/10.1016/j.envsoft.2026.107180)
 
 **Recommended workflow**: Using the sliders, examine the optimisation outputs in the Visualisation tab with the scatter, parallel axis, frequency and objective-objective plots. Then perform the AHP.
 
