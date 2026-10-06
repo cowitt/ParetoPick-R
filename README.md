@@ -1,25 +1,54 @@
-# 1. Introduction
-This repo differs from [the main at github](https://github.com/cowitt/ParetoPick-R) in the following aspects:
-  * global.R - doesn't install libraries, just calls them
-  * server.R - uses webshot2::webshot instead of webshot::webshot
-  * ui.R - contains an About tab
+# Table of Contents
+- [Table of Contents](#table-of-contents)
+- [1. Introduction](#1-introduction)
+- [2. Deployment, required input files and data structure](#2-deployment-required-input-files-and-data-structure)
+  - [2.1 Requirements for use in R/Rstudio](#21-requirements-for-use-in-rrstudio)
+  - [2.2 Input files for different levels of functionalities](#22-input-files-for-different-levels-of-functionalities)
+  - [2.3 Data structures](#23-data-structures)
+  - [2.4 Automated Clustering](#24-automated-clustering)
+  - [2.5 Automated Data Processing and Clustering with a SWAT+/CoMOLA workflow](#25-automated-data-processing-and-clustering-with-a-swatcomola-workflow)
+- [3. Process](#3-process)
+  - [3.1 Data Preparation tab](#31-data-preparation-tab)
+  - [3.2 Cluster tabs](#32-cluster-tabs)
+- [4. Folder and File Structure](#4-folder-and-file-structure)
+- [5. Assumptions and Planned Features](#5-assumptions-and-planned-features)
+  - [5.1 Current Limitations](#51-current-limitations)
+  - [5.2 Planned Features](#52-planned-features)
+    -[5.2.2 Small Release](#521-small-release)
+    -[5.2.2 Big Release](#522-big-release)
 
-ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. <img align = "right" width="150" height="200" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" />
+# 1. Introduction
+<img align = "right" width="200" height="230" alt="Image" src="https://github.com/user-attachments/assets/cf993a43-162e-46ef-80d5-71439fb9d84a" /> ParetoPick-R has been developed for post-processing multi-objective optimisation outputs. 
 It facilitates the detailed analysis of Pareto fronts for four objectives and supports decision making.
 It provides a dashboard for the user to supply their own data, visualise and explore it, produce maps, alter a range of parameters and perform clustering and an Analytical Hierarchy Process.
 
 The code allows the user to select variables to be analysed in a correlation analysis and a cluster algorithm. 
 
-ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.optain.eu/).
+ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.optain.eu/) and is described in detail in [Wittekind et al. (2026)](https://doi.org/10.1016/j.envsoft.2026.107180)
 
+**Recommended workflow**: Using the sliders, examine the optimisation outputs in the Visualisation tab with the scatter, parallel axis, frequency and objective-objective plots. Then perform the AHP.
+
+**Advanced workflow**: Examine the optimisation outputs in the Visualisation tab including the Advanced Analysis panel. Perform a default and manual clustering in the two Cluster tabs. Then perform the AHP across the full Pareto front or across the cluster results. 
+
+This repo differs from [the main at github](https://github.com/cowitt/ParetoPick-R) in the following aspects:
+  * global.R - doesn't install libraries, just calls them
+  * server.R - uses webshot2::webshot instead of webshot::webshot
+  * ui.R - contains an About tab
 
 # 2. Deployment, required input files and data structure
 
-## 2.1 Requirements for use in R/Rstudio
+## 2.1 Deployment
+
+Docker
+  * pull docker image with `docker pull ghcr.io/cowitt/paretopick-r:1.2.1` 
+ 
+In R:
+  * recommended to use renv::restore()
   * R version 4.4.2 or higher
   * package "promises" version 1.3.2 or higher
   * remove or upgrade (>4.0) package "tmap" to avoid conflicts
-  * recommended to use renv::restore()
+  
+
 
 ## 2.2 Input files for different levels of functionalities
 
@@ -185,7 +214,7 @@ The algorithm considers five variables:
 5. **lu_share** - share of land use measures (buffer, grassslope, hedge) in available area
 
 # 3. Process
-### Data Preparation tab
+## 3.1 Data Preparation tab
 Unless otherwise specified, you may use any file name. However, ensure the file is in the correct format.
 
 The one file that has to be uploaded to allow any functionality is a file describing the Pareto fitness. Additionally, the objective names have to be provided. These names have to align with the four columns in this file. Further functionalities become available when other files are uploaded. The app will tell you which functionalities are available at each step.
@@ -194,7 +223,7 @@ The one file that has to be uploaded to allow any functionality is a file descri
 
 **Note**: Changing objective names without a Hard Reset requires: (1) delete object_names.RDS, (2) manually update names in var_corr_par.csv/cluster_params.csv, (3) update names in the newest kmeans/kmedoid output file or delete these/this file/s.
 
-### Clustering Tabs
+## 3.2 Cluster tabs
 Clustering (manually & default) generates two files - correlation_matrix.csv and kmeans/kmedoid_data_w_clusters_representativesolutions.csv  
 
 ParetoPick-R employs Principal Component Analysis (PCA) and kmeans/kmedoid clustering, with customisable settings for outlier treatment and component selection. It integrates an Analytical Hierarchy Process (AHP) for objective weighting based on pairwise comparisons. The clustering and AHP results can be combined using various visualisation methods.
@@ -228,26 +257,32 @@ Original cluster code (in Python): [S. White](https://github.com/SydneyEWhite)
 
 Files uploaded in the Data Preparation tab are stored in the data folder, these are the outputs of the previous MOO (e.g. from SWAT+/CoMOLA [Strauch and Schürz, 2024](https://doi.org/10.5281/zenodo.11473793)).
 
-
-
 # 5. Assumptions and Planned Features
 
 ## 5.1 Current Limitations
 * hard-coded to FOUR objectives, less than four can be assessed by introducing a dummy variable but more is not possible atm
 * convert_optain.R when using the automated SWAT+/CoMOLA workflow is limited to the hard coded measure names; unmapped measures cannot be processed. The distinction between linear and management measures cannot be automated.
 * Stratified variables (as sometimes happens through rounding) are not supported for sliders and there is no error message
-* not all input files supplied by the user are checked for consistency, focus on the most important files: fitness and genome
+* not all input files supplied by the user are checked for consistency, focus on the most important files: fitness, genome and shapefile
 
 
-## 5.2 Planned Features for Version 1.1.0
-  * debounce slider settings in visualisation tab
+## 5.2 Planned Features
+### 5.2.1 Small Release
+  * alternative base layer w/o API (done on main, missing for both docker and web version)
+  * add option to turn off automated cluster calculation for SWAT+/CoMOLA workflow
+  * select anchor and utopia points from subselection instead of whole set 
+
+### 5.2.2 Big Release
+  * stronger debounce slider settings in visualisation tab
+  * allow variable number of objectives with adapted visualisation options
+  * allow mixed discrete/continuous MOO with additional secondery sliders (includes: adapt genome check)
   * write/load full scenario run from previous uses
   * dynamic printing of progress during clustering
   * easier reuse of cluster results with selection and renaming
    
 Other
-  * optimum number display in AHP
-  * dynamic regression line with R2 in scatter plot in red, other R2 in blue
+  * users are likely more interested in their subset than in the whole front: add dynamic regression line with R2 in scatter plot in red, other R2 in blue. Pull point closest to utopia from subset not from whole front
   * optima selection via direct number input
   * scaled_filtered_data() and filtered_data() use two different functions that do almost the exact same, merging would increase efficiency
   * clearer error messages for aborted/failed clustering needed
+
