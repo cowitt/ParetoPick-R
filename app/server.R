@@ -3828,9 +3828,9 @@ server <- function(input, output, session) {
 
   
   observe({
-    req(dfx())
-    sk = dfx()
-   
+    req(whole_ahp())
+    sk = whole_ahp()
+    
       output$ahp_count <- renderUI({
         tagList("The remaining number of optima is: ",tags$b(nrow(sk)))
       })
