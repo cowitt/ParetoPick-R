@@ -267,7 +267,7 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
 ### 5.2.1 Small Release
   * alternative base layer w/o API (done on main, missing for both docker and web version)
   * add option to turn off automated cluster calculation for SWAT+/CoMOLA workflow
-  * select anchor and utopia points from subselection instead of whole set 
+  * done: select anchor and utopia points from subselection instead of whole set 
 
 ### 5.2.2 Big Release
   * stronger debounce slider settings in visualisation tab
