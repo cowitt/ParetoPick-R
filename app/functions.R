@@ -1260,7 +1260,12 @@ plt_freq = function(data, lo, la, buffers = NULL, remaining, dispal = pal,
   
   if(!basemap){ #show basemap if anonymise NOT selected
     m = m %>%
-      addProviderTiles(providers$Esri.WorldGrayCanvas)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
+      # addProviderTiles(providers$Esri.WorldGrayCanvas)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
+      addTiles(
+        urlTemplate = "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_3mvg_1_798be0f3801cd5243ccdefb6",
+        attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        options = tileOptions(referrerPolicy = "strict-origin-when-cross-origin")
+        )
   }
   
   #buffer first otherwise small elements not selectable
@@ -1519,8 +1524,14 @@ plt_lf <- function(data, lo=NULL, la=NULL, buff_els, col_sel, buffers, dispal = 
     
     if(!basemap){ #show basemap if anonymise NOT selected
       p = p %>%
-        addProviderTiles(providers$Esri.WorldGrayCanvas)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
-    }
+        # addProviderTiles(providers$Esri.WorldGrayCanvas)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
+
+      addTiles(
+        urlTemplate = "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_3mvg_1_798be0f3801cd5243ccdefb6",
+        attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        options = tileOptions(referrerPolicy = "strict-origin-when-cross-origin")
+      )
+      }
     
     if(!is.null(buffers)){
       relevant_data <- data[data[[col]] %in% buff_els, ]
@@ -1807,7 +1818,6 @@ return(plots)
 }
 
 ## scatter plot in analysis tab and AHP tab
-
 plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NULL, full_front = NULL, sq_path ="../data/sq_fitness.txt",
                           extra_dat = NULL, #highlight optima in AHP tab
                           an_tab = FALSE,
@@ -1828,6 +1838,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   
   if(file.exists("../input/units.RDS")){units = readRDS("../input/units.RDS")}else{units = rep("-",ncol(dat))}
   
+  if (utopia && (is.null(utopia_set)||nrow(utopia_set) == 0|| !all(is.finite(as.matrix(utopia_set))))) {utopia <- FALSE}
   
   if(unit){
     current_obj_order = c(x_var, y_var,
@@ -1868,7 +1879,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   #all extra data prepared first
   # all_extra_data = NULL
   aed = list() #all extra data
-
+  
   if (!is.null(extra_dat) && plt_extra) {
     names(extra_dat) = names(dat)
     # swiss_extra <- rbind(swiss_extra, extra_dat)
@@ -1899,8 +1910,8 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
     
     # if(!is.null(all_extra_data)){all_extra_data <- rbind(all_extra_data,sel_tab)}else{all_extra_data = sel_tab}
     aed[[length(aed) + 1]] = sel_tab
-      
-     }
+    
+  }
   
   if (status_q) {
     st_q <- read.table(sq_path, header = FALSE, stringsAsFactors = FALSE, sep = deli(sq_path),colClasses = rep("numeric",4))
@@ -2010,7 +2021,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
       linetype = "dashed"
     )
   }
- 
+  
   #extra data points
   # if (!is.null(all_extra_data)) {
   if(length(aed)>0){
@@ -2027,7 +2038,6 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   
   return(p)
 }
-
 ## scatter plot in Analysis tab for comparing decision and objective space 
 
 pcs_vs_var <- function(dat, x_var, y_var, col_var, size_var,flip=F, sel_tab=NULL){
@@ -2104,7 +2114,21 @@ check_inconsistencies <- function(comparison_matrix, weights) {
   return(unique(inconsistencies))
 }
 
-
+## utopia point search 
+find_utopia = function(data){#data is fit(data)
+  m = as.matrix(data)
+  
+  obj_min = apply(m,2,min)
+  obj_max = apply(m,2,max)
+  rng = obj_max - obj_min
+  rng[rng==0] = 1
+  
+  normalised = sweep(sweep(m,2,obj_min,"-"),2, rng,"/")
+  dista = sqrt(rowSums((normalised -1)^2))
+  
+  closest_index = which.min(dista)
+  as.data.frame(rbind(utopia = obj_max, closest = m[closest_index,]))
+}
 
 #### Rescaling and matching Functions ####
 ## return the original value and the position of scaled value in the original dataset
