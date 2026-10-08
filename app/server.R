@@ -45,8 +45,6 @@ server <- function(input, output, session) {
   sq_file <- reactiveVal(NULL)#handling sq_fitness
   fit <- reactiveVal(NULL) #absolute value dataframe
   f_scaled <- reactiveVal(NULL) #scaled value dataframe
-  anchor_fit = reactiveVal(NULL)#anchor (ahp)
-  utopia = reactiveVal(NULL) #utopia and closest point (ahp)
   rng_plt <- reactiveVal(NULL) #getting the highest range across dataframe
   rng_plt_axes <- reactiveVal(NULL) #getting matching axis labels for highest range
   pca_remove <- reactiveVal(NULL) #variables removed from pca
@@ -374,31 +372,7 @@ server <- function(input, output, session) {
       fit1(fit() %>% rownames_to_column("optimum"))
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)
-  
-      #anchor (ahp)
-      max_rows <- do.call(rbind, lapply(names(data), function(col) {
-        row <- data[which.max(data[[col]]), ]
-        row$anchor_label <- col
-        row
-      }))
-      anchor_fit(max_rows)
-      
-      #utopia (ahp)
-      utopiap <- apply(data, 2, max)
-      
-      obj_min <- apply(data, 2, min)
-      obj_max <- apply(data, 2, max)
-      
-      pareto_normalised <- sweep(data, 2, obj_min, "-")
-      pareto_normalised <- sweep(pareto_normalised, 2,(obj_max - obj_min),"/")
-      
-      utopiap_n <- (utopiap - obj_min) / (obj_max - obj_min) #(1,1,1,1)
-
-      dista <- apply(pareto_normalised, 1, function(x) {sqrt(sum((x - utopiap_n)^2))})
-      
-      closest_index <- which.min(dista)
-      utopia_closest <- data[closest_index, ]
-      utopia(rbind(utopiap,utopia_closest))
+ 
       }
       pareto_da(1) #trigger for pareto front availability, used in other tabs to show/hide content
       
@@ -1073,32 +1047,7 @@ server <- function(input, output, session) {
       fit1(fit() %>% rownames_to_column("optimum"))
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)
-      
-      #anchor (ahp)
-      max_rows <- do.call(rbind, lapply(names(data), function(col) {
-        row <- data[which.max(data[[col]]), ]
-        row$anchor_label <- col
-        row
-      }))
-      anchor_fit(max_rows)
-      
-      #utopia (ahp)
-      utopiap <- apply(data, 2, max) #utopia point outside, 1st row in utopia()
-      
-      obj_min <- apply(data, 2, min)
-      obj_max <- apply(data, 2, max)
-      
-      pareto_normalised <- sweep(data, 2, obj_min, "-")
-      pareto_normalised <- sweep(pareto_normalised, 2,(obj_max - obj_min),"/")
-      
-      utopiap_n <- (utopiap - obj_min) / (obj_max - obj_min) #(1,1,1,1)
-      
-      dista <- apply(pareto_normalised, 1, function(x) {sqrt(sum((x - utopiap_n)^2))})
-      
-      closest_index <- which.min(dista)
-      utopia_closest <- data[closest_index, ]#utopia point closest, 2nd row in utopia()
-      utopia(rbind(utopiap,utopia_closest))
-      
+  
       yo2 <- pull_high_range(fit())
       rng_plt(yo2)
       
@@ -3849,6 +3798,8 @@ server <- function(input, output, session) {
     } 
   })
   
+ 
+  
   observe({ #switch between datasets
     
     req( whole_ahp())
@@ -3856,8 +3807,25 @@ server <- function(input, output, session) {
     if(!is.null(sols_ahp()) && !is.null(input$best_cluster) && input$best_cluster){dfx(sols_ahp())}else{
       dfx(whole_ahp()) #default
     }
-    
   })
+  
+  utopia= reactive({
+    df = dfx()
+    if (is.null(df) || nrow(df) == 0) return(NULL)
+    find_utopia(dfx())
+  })
+  
+ 
+  anchor_fit = reactive({
+    df = dfx()
+    if (is.null(df) || nrow(df) == 0) return(NULL)
+    
+    aid = vapply(df,which.max,integer(1))
+    max_rows = df[aid,]
+    max_rows$anchor_label = names(df)
+    max_rows
+  })
+
   
   observe({
     req(dfx())
@@ -4221,10 +4189,10 @@ server <- function(input, output, session) {
       req(whole_ahp())
       req(input$x_var, input$y_var, input$col_var, input$size_var)
       
-     if(!is.null(sols())){ sol<<-sols()[,objectives()]}else{sol = NULL}
+      if(!is.null(sols())){ sol<<-sols()[,objectives()]}else{sol = NULL}
       bo = best_option()
       df3 = whole_ahp()
-      
+      req(nrow(df3) > 0, any(is.finite(df3[[input$col_var]])))
       if(nrow(df3)==0){bo = NULL}
       
       return(plt_sc_optima(dat=df3,x_var=input$x_var,y_var=input$y_var,

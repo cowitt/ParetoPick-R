@@ -636,7 +636,7 @@ ui <-
                                            
                                          column(12,
                                                 div("Objective Range",
-                                                    tags$h5("For these visualisations and analysis, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
+                                                    tags$h5("For these visualisations and analyses, the objectives have been scaled to between 0 (worst) and 1 (best) for easier comparison."),
                                                     style = "text-align: left; font-size:150%; margin-top: 10px;"),
                                               
                                                 sliderInput(inputId = "obj1", label=  "Objective 1:", min = 0, max = 1, value = c(0,1), step = 0.01,width = "120%"),

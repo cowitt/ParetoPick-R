@@ -1123,7 +1123,7 @@ its_cluster_time <- function(rv = pca_rv, corr_rv = write_corr_rv,
       geom_point() +
       geom_text(aes(label = Representative_Solution), hjust = 0, vjust = 0, color = "black") +  # Override color
       labs(title = "Representative Solutions", x = var_1_label, y = var_2_label) +
-      scale_color_viridis_c() +
+      scale_color_viridis_c(limits = c(0,1)) +
       theme_bw() +
       theme(panel.background = element_blank(),
             panel.grid.major = element_line(color = "lightgray", size = 0.3),
@@ -1261,7 +1261,8 @@ plt_freq = function(data, lo, la, buffers = NULL, remaining, dispal = pal,
   if(!basemap){ #show basemap if anonymise NOT selected
     m = m %>%
       addProviderTiles(providers$Esri.WorldGrayCanvas)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
-
+      # addTiles(urlTemplate = "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_3mvg_1_798be0f3801cd5243ccdefb6",)
+    
      }
   
   #buffer first otherwise small elements not selectable
@@ -1521,6 +1522,7 @@ plt_lf <- function(data, lo=NULL, la=NULL, buff_els, col_sel, buffers, dispal = 
     if(!basemap){ #show basemap if anonymise NOT selected
       p = p %>%
         addProviderTiles(providers$Esri.WorldGrayCanvas)#poviders$Esri.NatGeoWorldMap, $Stadia.StamenToner, $OpenTopoMap
+          # addTiles(urlTemplate = "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_3mvg_1_798be0f3801cd5243ccdefb6",)
         }
     
     if(!is.null(buffers)){
@@ -1829,6 +1831,7 @@ plt_sc_optima <- function(dat, x_var, y_var, col_var, size_var, high_point = NUL
   
   if(file.exists("../input/units.RDS")){units = readRDS("../input/units.RDS")}else{units = rep("-",ncol(dat))}
   
+  if (utopia && (is.null(utopia_set)||nrow(utopia_set) == 0|| !all(is.finite(as.matrix(utopia_set))))) {utopia <- FALSE}
   
   if(unit){
     current_obj_order = c(x_var, y_var,
@@ -2105,6 +2108,21 @@ check_inconsistencies <- function(comparison_matrix, weights) {
   return(unique(inconsistencies))
 }
 
+## utopia point search 
+find_utopia = function(data){#data is fit(data)
+ m = as.matrix(data)
+ 
+ obj_min = apply(m,2,min)
+ obj_max = apply(m,2,max)
+ rng = obj_max - obj_min
+ rng[rng==0] = 1
+ 
+ normalised = sweep(sweep(m,2,obj_min,"-"),2, rng,"/")
+ dista = sqrt(rowSums((normalised -1)^2))
+ 
+ closest_index = which.min(dista)
+ as.data.frame(rbind(utopia = obj_max, closest = m[closest_index,]))
+}
 
 
 #### Rescaling and matching Functions ####
