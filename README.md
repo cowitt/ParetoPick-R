@@ -32,7 +32,7 @@ ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.opta
 
 This repo differs from [the main at github](https://github.com/cowitt/ParetoPick-R) in the following aspects:
   * global.R - doesn't install libraries, just calls them
-  * server.R - uses webshot2::webshot instead of webshot::webshot
+  * server.R - uses webshot2::webshot instead of webshot::webshot and other baselayer for leaflet maps with plt_sc_optima() etc
   * ui.R - contains an About tab
 
 # 2. Deployment, required input files and data structure
@@ -268,9 +268,9 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
 
 ## 5.2 Planned Features
 ### 5.2.1 Small Release
-  * alternative base layer w/o API (done on main, missing for both docker and web version)
+  * done alternative base layer w/o API 
   * add option to turn off automated cluster calculation for SWAT+/CoMOLA workflow
-  * select anchor and utopia points from subselection instead of whole set 
+  * done select anchor and utopia points from subselection instead of whole set 
 
 ### 5.2.2 Big Release
   * stronger debounce slider settings in visualisation tab
