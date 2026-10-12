@@ -1,15 +1,15 @@
 ####################  Convert OPTAIN ###########################################
 # Project: Clustering Pareto solutions/Multi-objective visualisation
-# creates a .csv to be used in the Correlation and PCA
-# comment: new variables for the pca require adapted functions.R and ui.R
-# each row one Pareto-optimal solution
-# 1.- 4. = objectives to be maximised
-# 5 - end = variables considered in clustering (=all_var provided separately)
-# used files: pareto_genomes.txt, hru.con, measure_location.csv
+# leaving out MY_MODE means the else path, additionally leaving MY_RUN_CLUSTER
+# means only CoMOLA-based measure allocation
+# comment: else ->> CoMOLA hard-coded measures and new variables for the pca require adapted
+# functions.R and ui.R
+# used files: pareto_genomes.txt, hru.con, rout_unit.con, measure_location.csv
 # author: cordula.wittekind@ufz.de
 ################################################################################
 
 mode <- Sys.getenv("MY_MODE", unset = "default") #communicate with server.R
+run_cluster <- Sys.getenv("MY_RUN_CLUSTER", unset = "run_cluster_no") #cluster yes or no in CoMOLA
 source("functions.R")
 
 #### 1. Creating a small dataset with the variables for clustering and correlation ####
@@ -245,6 +245,8 @@ for(op in paste0("V", 1:nopt)){
   saveRDS(hru,file= "../input/hru_in_optima.RDS")
   print(paste0("check: made hru land use available for future plotting..."),quote=F)
   
+  
+  if (run_cluster == "run_cluster_yes") {  
   ## Moran's, share in total and activated area and linE
   con = read.table("../data/hru.con",header=T,skip=1)
   
@@ -491,4 +493,5 @@ for(op in paste0("V", 1:nopt)){
   all_var = colnames(test_clu)[5:ncol(test_clu)]  #assuming four variables here
   saveRDS(all_var,file = "../input/all_var.RDS") #required for PCA
   print("check: provided variable names ---> /input/all_var...", quote = FALSE)
+  }
   }

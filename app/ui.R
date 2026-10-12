@@ -533,6 +533,7 @@ ui <-
                                div("4. Additional files for an automated workflow (SWAT+/CoMOLA outputs)",
                                    style = "text-align: left; font-size:130%; font-weight: bold; margin-top: 10px;"),
                                p("If you have used a model workflow based on SWAT+ and CoMOLA, you can consider overlapping/competing decision space elements and use an automated workflow for calculating cluster variables.
+                               Providing only measure_location.csv allows to prepare the measure allocation, additionally providing 2. and 3. allows to prepare the automated cluster variables.
                                  The file names have to align with what is given here:"),
                               
                                div(
@@ -571,8 +572,12 @@ ui <-
                                uiOutput("fileStatusMessage"),
                                
                                
-                               div(id="runprep_show",p("Check files and click Run Prep when ready (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:100%; width: 150%;"),
-                                   actionButton("runprep", "Run Prep"))%>%hidden,
+                               div(id="runprep_show",p("Check files and click either 'Run Prep: Measure Allocation' or 'Run Prep: Both' when ready 
+                                                       (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:100%; width: 100%;"),
+                                   actionButton("runprep", "Run Prep: Both"))%>%hidden,
+                               
+                               div(id="runhruprep_show",p("Click here if you want to prepare the measure allocation only:",style =  "text-align: left; font-size:100%; width: 150%;"),
+                                   actionButton("runhruprep", "Run Prep: Measure Allocation"))%>%hidden,
                                uiOutput("scriptdp"),
                                #####################################
                                

@@ -70,7 +70,8 @@ server <- function(input, output, session) {
   stq <- reactiveVal(NULL) #status quo
   
   #data prep
-  run_prep_possible = reactiveValues(files_avail = FALSE) #allow prep script to run when all required files available
+  run_prep_possible = reactiveValues(files_avail = FALSE,#allow prep script to run when all required files available
+                                     hru_avail = FALSE) #run part script
   script_output <- reactiveVal("") # data prep R output
   cscript_output <- reactiveVal("") # cluster prep R output
   
@@ -477,7 +478,7 @@ server <- function(input, output, session) {
     save_pathhrucon <- file.path(save_dir, save_hruname)
     file.copy(file_hrucon()$path, save_pathhrucon, overwrite = TRUE)})
 
-    #SWAT+/CoMOLA
+    #SWAT+/CoMOLA three-way data check with two options; either with or without clustering
     
     observeEvent(input$files_avail, ignoreInit = TRUE,{
       required_files <- c("../data/pareto_genomes.txt","../data/hru.con",
@@ -485,28 +486,46 @@ server <- function(input, output, session) {
                           "../data/hru.shp","../data/hru.shx", "../data/hru.dbf", "../data/hru.prj",
                           "../data/rout_unit.con",
                           "../data/pareto_fitness.txt")
-
-      checkFiles <- sapply(required_files, function(file) file.exists(file))
-
-      if (all(checkFiles)) {
-        if(file.exists("../input/object_names.RDS")){
+      cluster_files = c("../data/hru.con", "../data/rout_unit.con")
+      missing_files <- required_files[!file.exists(required_files)]
+      names_avail   <- file.exists("../input/object_names.RDS")
+      
+      #case 1 - Everything available
+      if (length(missing_files) == 0) {
+        if(names_avail){
           run_prep_possible$files_avail = T
-          output$fileStatusMessage <- renderText({HTML("All Files found.")})
+          run_prep_possible$hru_avail = T
+          msg = "All files found."
+          shinyjs::show(id = "runprep_show")
+          shinyjs::show(id = "runhruprep_show")
+          
         }else{
-          output$fileStatusMessage <- renderText({HTML(
-            "All files found. <br>Please provide the names of the objectives represented in the Pareto front.
+          msg ="All files found. 
+          <br>Please provide the names of the objectives represented in the Pareto front.
              The names and the order in which they are given have
              to align with what is provided in the first four columns of pareto_fitness.txt"
-          )
-          })
+          
         }
+        }else if (all(missing_files %in% cluster_files)){
+        # case 2 - cluster stuff missing (the all-prep option is removed)
+        
+          run_prep_possible$hru_avail = T
+       
+          msg = paste("You can perform the allocation of measures by clicking 'Run Prep: Measure Allocation'.",
+                      "If you additionally provide the following files you can also perform the automated clustering:<br/>",
+                      paste(basename(missing_files), collapse = "<br/>"))
+          shinyjs::hide(id = "runprep_show")
+          shinyjs::show(id = "runhruprep_show")
+          
+        # case 3 - files missing
         }else{
-        missing_files = required_files[!checkFiles]
-        output$fileStatusMessage <- renderText({HTML(paste("The following file(s) are missing:<br/>",
-            paste(sub('../data/', '', missing_files), collapse = "<br/> ")
-          ))
-        })
+        msg=paste("The following file(s) are missing:<br/>",paste(basename(missing_files),collapse="<br/>"))
+          shinyjs::hide(id = "runprep_show")
+          shinyjs::hide(id = "runhruprep_show")
+          
+        
         }
+      output$fileStatusMessage = renderUI(HTML(msg))
 
 })
 
@@ -514,14 +533,11 @@ server <- function(input, output, session) {
     
     #cannot run if already exists, has to be deleted manually
     
-    observe({
-        if (!file.exists("../input/var_corr_par.csv")) {
-      shinyjs::show(id = "runprep_show")
-      } 
-      
-    })
-    observe({if (run_prep_possible$files_avail) {  shinyjs::enable("runprep")} else{  shinyjs::disable("runprep")
-    } })
+    observe({if (!file.exists("../input/var_corr_par.csv")) { shinyjs::show(id = "runprep_show")}})
+    observe({if (run_prep_possible$files_avail) {  shinyjs::enable("runprep")} else{  shinyjs::disable("runprep")}})
+    
+    observe({if (!file.exists("../input/hru_in_optima.RDS")) { shinyjs::show(id = "runhruprep_show")}})
+    observe({if(run_prep_possible$hru_avail){shinyjs::enable("runhruprep")}else{shinyjs::disable("runhruprep")}})
   
     
     #### File Upload - Decision Space ####
@@ -755,7 +771,8 @@ server <- function(input, output, session) {
         c("convert_optain.R"),
         stdout = "|",
         stderr = "|",
-        env = c(current = Sys.getenv(), MY_MODE = "fast")#communicate w/ covert_optain.R
+        env = c(current = Sys.getenv(), 
+                MY_MODE = "fast")#communicate w/ covert_optain.R
       )
       
     })
@@ -843,21 +860,39 @@ server <- function(input, output, session) {
     
     #### Automated workflow Data Prep ####
     
-    optain <- NULL 
+    optain <- NULL
     output_handled <- reactiveVal(FALSE)
+    # 
+    # observeEvent(input$runprep, {
+    #   dp_done(FALSE)
+    #   script_output(character()) # Clear old output
+    #   
+    #   # Start the process
+    #   optain <<- process$new(
+    #     "Rscript",
+    #     c("convert_optain.R"),
+    #     stdout = "|",
+    #     stderr = NULL
+    #   )
+    # })
     
-    observeEvent(input$runprep, {
+    start_prep = function(run_cluster){
+      if(!is.null(optain)&& optain$is_alive()) return()
       dp_done(FALSE)
       script_output(character()) # Clear old output
-      
-      # Start the process
+      output_handled(FALSE)
       optain <<- process$new(
-        "Rscript",
-        c("convert_optain.R"),
-        stdout = "|",
-        stderr = NULL
-      )
-    })
+            "Rscript",
+            c("convert_optain.R"),
+            stdout = "|",
+            stderr = NULL,
+            env = c("current",MY_RUN_CLUSTER = run_cluster)
+          )
+      
+    }
+    
+    observeEvent(input$runprep,    start_prep("run_cluster_yes"))
+    observeEvent(input$runhruprep, start_prep("run_cluster_no"))
     
     autoInvalidate <- reactiveTimer(100)
     
@@ -870,7 +905,7 @@ server <- function(input, output, session) {
         
         if (length(new_output) > 0) {
           current_output <- script_output()
-          updated_output <- unique(c(current_output, new_output))
+          updated_output <- c(current_output, new_output)
           
           if (length(updated_output) > 10) {
             updated_output <- tail(updated_output, 10)
@@ -881,38 +916,31 @@ server <- function(input, output, session) {
         }
         
       } else if (!is.null(optain)) {
-        final_output <- optain$read_output_lines()
+        final_output <- optain$read_all_output_lines()
         
-        if (length(final_output) > 0 && !output_handled()) {
-          current_output <- script_output()
-          updated_output <- c(current_output, final_output)
-          
-          if (length(updated_output) > 10) {
-            updated_output <- tail(updated_output, 10)
-          }
-          
+        if (length(final_output) > 0 ) {
+          updated_output <- tail(c(script_output(), final_output), 10)
           script_output(updated_output)
-        }
+          }
         
         dp_done(TRUE)
         hru_da(if(file.exists("../input/hru_in_optima.RDS")) 1 else NULL) 
         clusp_da(if(file.exists("../input/var_corr_par.RDS")) 1 else NULL)
         
         optain <<- NULL # clear
-        output_handled(TRUE) 
       }
     })
     
     
     # Render UI output
-    output$scriptdp <- renderUI({
-      if (dp_done() && file.exists("../input/var_corr_par.csv")) {
-        tags$strong("The data preparation was successful. You can now continue with the Correlation and Principal Component Analysis. You will not need this tab again.")
-      } else {
-        verbatimTextOutput("rscriptcmd")
-      }
-    })
-    
+    output$scriptdp <- renderUI({   if(dp_done() && file.exists("../input/var_corr_par.csv")){
+      tags$strong("The data preparation was successful. You can now continue with the Correlation and Principal Component Analysis. You will not need this tab again.")
+    }else if(dp_done() && file.exists("../input/hru_in_optima.RDS")) {
+      tags$strong("The measure allocation was prepared successfully.")
+    }else {
+      verbatimTextOutput("rscriptcmd")
+    }})
+
     # Render process output
     output$rscriptcmd <- renderText({
       paste(script_output(), collapse = "\n")
