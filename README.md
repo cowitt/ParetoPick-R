@@ -37,7 +37,7 @@ ParetoPick-R has been developed as part of the [OPTAIN Project](https://www.opta
 ## 2.1 Deployment
 
 Docker
-  * pull docker image with `docker pull ghcr.io/cowitt/paretopick-r:1.2.1` 
+  * pull docker image with `docker pull ghcr.io/cowitt/paretopick-r:1.3.0` 
  
 In R:
   * recommended to use renv::restore()
@@ -264,13 +264,9 @@ Files uploaded in the Data Preparation tab are stored in the data folder, these 
 
 
 ## 5.2 Planned Features
-### 5.2.1 Small Release 13.10
-  * alternative base layer w/ API only in Docker version
-  * added option to turn off automated cluster calculation for SWAT+/CoMOLA workflow
-  * anchor and utopia points drawn from subselection instead of whole set 
-
-### 5.2.2 Big Release
+### Version 2.0.0
   * stronger debounce slider settings in visualisation tab
+  * add option to analyse stability of selected optimum under different weights (e.g. Monte Carlo)
   * allow variable number of objectives with adapted visualisation options
   * allow mixed discrete/continuous MOO with additional secondery sliders (includes: adapt genome check)
   * write/load full scenario run from previous uses
