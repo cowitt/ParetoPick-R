@@ -70,7 +70,8 @@ server <- function(input, output, session) {
   stq <- reactiveVal(NULL) #status quo
   
   #data prep
-  run_prep_possible = reactiveValues(files_avail = FALSE) #allow prep script to run when all required files available
+  run_prep_possible = reactiveValues(files_avail = FALSE,#allow prep script to run when all required files available
+                                     hru_avail = FALSE) #run part script
   script_output <- reactiveVal("") # data prep R output
   cscript_output <- reactiveVal("") # cluster prep R output
   
@@ -372,8 +373,8 @@ server <- function(input, output, session) {
       fit1(fit() %>% rownames_to_column("optimum"))
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)
-	 
-	  }
+ 
+      }
       pareto_da(1) #trigger for pareto front availability, used in other tabs to show/hide content
       
       
@@ -393,11 +394,8 @@ server <- function(input, output, session) {
                                      max = logical(0),
                                      stringsAsFactors = FALSE)}  
       },rownames = T)
-      
-      
     })
     
-  
     
     ## get unit input 
     observeEvent(input$save_unit,{
@@ -480,7 +478,7 @@ server <- function(input, output, session) {
     save_pathhrucon <- file.path(save_dir, save_hruname)
     file.copy(file_hrucon()$path, save_pathhrucon, overwrite = TRUE)})
 
-    #SWAT+/CoMOLA
+    #SWAT+/CoMOLA three-way data check with two options; either with or without clustering
     
     observeEvent(input$files_avail, ignoreInit = TRUE,{
       required_files <- c("../data/pareto_genomes.txt","../data/hru.con",
@@ -488,28 +486,46 @@ server <- function(input, output, session) {
                           "../data/hru.shp","../data/hru.shx", "../data/hru.dbf", "../data/hru.prj",
                           "../data/rout_unit.con",
                           "../data/pareto_fitness.txt")
-
-      checkFiles <- sapply(required_files, function(file) file.exists(file))
-
-      if (all(checkFiles)) {
-        if(file.exists("../input/object_names.RDS")){
+      cluster_files = c("../data/hru.con", "../data/rout_unit.con")
+      missing_files <- required_files[!file.exists(required_files)]
+      names_avail   <- file.exists("../input/object_names.RDS")
+  
+      #case 1 - Everything available
+      if (length(missing_files) == 0) {
+        if(names_avail){
           run_prep_possible$files_avail = T
-          output$fileStatusMessage <- renderText({HTML("All Files found.")})
+          run_prep_possible$hru_avail = T
+          msg = "All files found."
+          shinyjs::show(id = "runprep_show")
+          shinyjs::show(id = "runhruprep_show")
+          
         }else{
-          output$fileStatusMessage <- renderText({HTML(
-            "All files found. <br>Please provide the names of the objectives represented in the Pareto front.
+          msg ="All files found. 
+          <br>Please provide the names of the objectives represented in the Pareto front.
              The names and the order in which they are given have
              to align with what is provided in the first four columns of pareto_fitness.txt"
-          )
-          })
+          
         }
+        }else if (all(missing_files %in% cluster_files)){
+        # case 2 - cluster stuff missing (the all-prep option is removed)
+        
+          run_prep_possible$hru_avail = T
+       
+          msg = paste("You can perform the allocation of measures by clicking 'Run Prep: Measure Allocation'.",
+                      "If you additionally provide the following files you can also perform the automated clustering:<br/>",
+                      paste(basename(missing_files), collapse = "<br/>"))
+          shinyjs::hide(id = "runprep_show")
+          shinyjs::show(id = "runhruprep_show")
+          
+        # case 3 - files missing
         }else{
-        missing_files = required_files[!checkFiles]
-        output$fileStatusMessage <- renderText({HTML(paste("The following file(s) are missing:<br/>",
-            paste(sub('../data/', '', missing_files), collapse = "<br/> ")
-          ))
-        })
+        msg=paste("The following file(s) are missing:<br/>",paste(basename(missing_files),collapse="<br/>"))
+          shinyjs::hide(id = "runprep_show")
+          shinyjs::hide(id = "runhruprep_show")
+          
+        
         }
+      output$fileStatusMessage = renderUI(HTML(msg))
 
 })
 
@@ -517,14 +533,11 @@ server <- function(input, output, session) {
     
     #cannot run if already exists, has to be deleted manually
     
-    observe({
-        if (!file.exists("../input/var_corr_par.csv")) {
-      shinyjs::show(id = "runprep_show")
-      } 
-      
-    })
-    observe({if (run_prep_possible$files_avail) {  shinyjs::enable("runprep")} else{  shinyjs::disable("runprep")
-    } })
+    observe({if (!file.exists("../input/var_corr_par.csv")) { shinyjs::show(id = "runprep_show")}})
+    observe({if (run_prep_possible$files_avail) {  shinyjs::enable("runprep")} else{  shinyjs::disable("runprep")}})
+    
+    observe({if (!file.exists("../input/hru_in_optima.RDS")) { shinyjs::show(id = "runhruprep_show")}})
+    observe({if(run_prep_possible$hru_avail){shinyjs::enable("runhruprep")}else{shinyjs::disable("runhruprep")}})
   
     
     #### File Upload - Decision Space ####
@@ -758,7 +771,8 @@ server <- function(input, output, session) {
         c("/srv/shiny-server/app/convert_optain.R"),
         stdout = "|",
         stderr = "|",
-        env = c(current = Sys.getenv(), MY_MODE = "fast")#communicate w/ covert_optain.R
+        env = c(current = Sys.getenv(), 
+                MY_MODE = "fast")#communicate w/ covert_optain.R
       )
       
     })
@@ -846,21 +860,26 @@ server <- function(input, output, session) {
     
     #### Automated workflow Data Prep ####
     
-    optain <- NULL 
+    optain <- NULL
     output_handled <- reactiveVal(FALSE)
-    
-    observeEvent(input$runprep, {
+  
+    start_prep = function(run_cluster){
+      if(!is.null(optain)&& optain$is_alive()) return()
       dp_done(FALSE)
       script_output(character()) # Clear old output
-      
-      # Start the process
+      output_handled(FALSE)
       optain <<- process$new(
-        "/usr/local/bin/Rscript",
-        c("/srv/shiny-server/app/convert_optain.R"),
-        stdout = "|",
-        stderr = NULL
-      )
-    })
+            "/usr/local/bin/Rscript",
+            c("/srv/shiny-server/app/convert_optain.R"),
+            stdout = "|",
+            stderr = NULL,
+            env = c("current",MY_RUN_CLUSTER = run_cluster)
+          )
+      
+    }
+    
+    observeEvent(input$runprep,    start_prep("run_cluster_yes"))
+    observeEvent(input$runhruprep, start_prep("run_cluster_no"))
     
     autoInvalidate <- reactiveTimer(100)
     
@@ -873,7 +892,7 @@ server <- function(input, output, session) {
         
         if (length(new_output) > 0) {
           current_output <- script_output()
-          updated_output <- unique(c(current_output, new_output))
+          updated_output <- c(current_output, new_output)
           
           if (length(updated_output) > 10) {
             updated_output <- tail(updated_output, 10)
@@ -884,38 +903,31 @@ server <- function(input, output, session) {
         }
         
       } else if (!is.null(optain)) {
-        final_output <- optain$read_output_lines()
+        final_output <- optain$read_all_output_lines()
         
-        if (length(final_output) > 0 && !output_handled()) {
-          current_output <- script_output()
-          updated_output <- c(current_output, final_output)
-          
-          if (length(updated_output) > 10) {
-            updated_output <- tail(updated_output, 10)
-          }
-          
+        if (length(final_output) > 0 ) {
+          updated_output <- tail(c(script_output(), final_output), 10)
           script_output(updated_output)
-        }
+          }
         
         dp_done(TRUE)
         hru_da(if(file.exists("../input/hru_in_optima.RDS")) 1 else NULL) 
         clusp_da(if(file.exists("../input/var_corr_par.RDS")) 1 else NULL)
         
         optain <<- NULL # clear
-        output_handled(TRUE) 
       }
     })
     
     
     # Render UI output
-    output$scriptdp <- renderUI({
-      if (dp_done() && file.exists("../input/var_corr_par.csv")) {
-        tags$strong("The data preparation was successful. You can now continue with the Correlation and Principal Component Analysis. You will not need this tab again.")
-      } else {
-        verbatimTextOutput("rscriptcmd")
-      }
-    })
-    
+    output$scriptdp <- renderUI({   if(dp_done() && file.exists("../input/var_corr_par.csv")){
+      tags$strong("The data preparation was successful. You can now continue with the Correlation and Principal Component Analysis. You will not need this tab again.")
+    }else if(dp_done() && file.exists("../input/hru_in_optima.RDS")) {
+      tags$strong("The measure allocation was prepared successfully.")
+    }else {
+      verbatimTextOutput("rscriptcmd")
+    }})
+
     # Render process output
     output$rscriptcmd <- renderText({
       paste(script_output(), collapse = "\n")
@@ -1002,13 +1014,7 @@ server <- function(input, output, session) {
     
  
     ### Play Around Tab ####
-  if (!file.exists("../data/sq_fitness.txt")){
-    shinyjs::disable("plt_sq")
-    shinyjs::hide("status_quo_title")
-  }else{
-    shinyjs::show("status_quo_title") 
-    shinyjs::enable("plt_sq")}
-  
+ 
   #remove tab content if fitness not available
   observe({
     pareto_da()
@@ -1050,8 +1056,7 @@ server <- function(input, output, session) {
       fit1(fit() %>% rownames_to_column("optimum"))
       yo = fit() %>% mutate(across(everything(), ~ scales::rescale(.)))%>%mutate(id = row_number())
       f_scaled(yo)
-	  
-	  
+  
       yo2 <- pull_high_range(fit())
       rng_plt(yo2)
       
@@ -1112,11 +1117,11 @@ server <- function(input, output, session) {
     }
   })
   ##check if names of objectives have to be supplied or already present
-  observeEvent(input$tabs=="play_around",{ 
+  observeEvent(input$tabs,{ 
+    req(input$tabs == "play_around")
     ## make or pull objectives()
     map_plotted(FALSE)
     
-  
     if(!file.exists("../input/object_names.RDS")) {
       
       shinyjs::hide(id = "tab_play1")#do not show visualisation tab content 
@@ -1132,123 +1137,123 @@ server <- function(input, output, session) {
         updateSelectInput(session, "y_var3",   choices = short, selected = rng_plt()[2])
         updateSelectInput(session, "col_var3", choices = short, selected = rng_plt()[3])
         updateSelectInput(session, "size_var3",choices = short, selected = rng_plt()[4])
-        
-        num_criteria = length(objectives())
-        k=1
-        ahp_combo(character(0))
-        for (i in 1:(num_criteria - 1)) {
-          for (j in (i + 1):num_criteria) {
-            new_label <- paste0(objectives()[j]," vs. ",objectives()[i])
-            updateActionButton(session, paste0("ahp_card",k), label = new_label)
-            ahp_combo(c(ahp_combo(), new_label))  #identifier for ahp scatter plots
-            k = k+1}}
-        
-      }
-    
-    ## update slider labels based on objectives
-    observe({
-      req(objectives())
-      obj <- objectives()
-      for(i in 1:4){
-        updateSliderInput(session, paste0("obj",i), label = obj[i])
-        updateSliderInput(session, paste0("obj",i,"_ahp"), label = obj[i])
-        updateSliderInput(session, paste0("ran",i), label = obj[i])
-      }
-      updateCheckboxGroupInput(session, "sel_neg", choices = objectives(), selected = NULL)
-      
-    })
-    
-    observe({ #create mt() for measure sliders
-      req(aep_100(), hru_ever())
-      
-      fk = aep_100() %>% inner_join(hru_ever(),by = c("hru" = "id", "nswrm" = "measure"))%>% select(-hru)
-    
-      mt(fk %>%
-           group_by(nswrm, optims) %>%
-           summarize(distinct_aep = n_distinct(name), .groups = "drop") %>%
-           pivot_wider(names_from = optims, values_from = distinct_aep, values_fill = 0) %>%
-           column_to_rownames("nswrm") %>%  
-           t() %>%  
-           as.data.frame())
-      
-      })
-    
-    observe({
-      req(mt())
-      memima_ini(rbind(
-        min = apply(mt(), 2, min, na.rm = TRUE),
-        max = apply(mt(), 2, max, na.rm = TRUE)
-      ))
-      })
-    
-    #measure slider
-    output$mes_sliders <- renderUI({
-      req(mt())
-      numeric_cols <- sapply(mt(), is.numeric)
-      sliders <- lapply(names(mt())[numeric_cols], function(col) {
-        sliderInput(inputId = paste0("slider_", col),
-                    label = col,
-                    min = min(mt()[[col]]),
-                    max = max(mt()[[col]]),
-                    step = 1,
-                    value = c(min(mt()[[col]]), max(mt()[[col]]))
-        )
-      })
-      
-      slider_mes_ini(TRUE)
-      sliders
-    })
- 
-    
-    observe({
-      sq_da()
-      if (is.null(sq_da())) {
-        shinyjs::disable("add_sq_f")
-      } else{
-        shinyjs::enable("add_sq_f")
-      }
-    })
-    
-    mes_slider_debounced <- debounce(reactive({
-      req(slider_mes_ini(), mt())
-      numeric_cols <- names(mt())[sapply(mt(), is.numeric)]
-      values <- setNames(
-        lapply(numeric_cols, function(col) input[[paste0("slider_", col)]]),
-        numeric_cols
-      )
-      if (any(sapply(values, is.null))) return(NULL)
-      values
-    }), 400)
-    
-    observe({
-      req(fit())
-      req(slider_mes_ini(), mt(), mes_slider_debounced())
-      req(length(names(mt())[sapply(mt(), is.numeric)]) > 0)
-      
-      values <- mes_slider_debounced()  #debounced vals read
-      numeric_cols <- names(values)
-      
-      df_values <- as.data.frame(values)
-      df_first_values <- as.data.frame(memima_ini())
-      rownames(df_first_values) <- NULL
-      
-      if (!identical(df_values, df_first_values)) {#otherwise sometimes run too soon
-        isolate(mes_touched(TRUE))
-        
-        ff <- mt() %>%
-          rownames_to_column("optimum") %>%
-          reduce(numeric_cols, function(df, col) {
-            df %>% filter(.data[[col]] >= values[[col]][1] & .data[[col]] <= values[[col]][2])
-          }, .init = .)
-        
-        mt_optis = ff$optimum
-        opti_mima(fit1() %>% filter(optimum %in% mt_optis) %>% select(-optimum))
-        
-      } else { opti_mima(FALSE) }
-    })
+        }
+
     
     })#end of play tab observer
 
+  
+  
+  observe({
+    req(fit())
+    req(slider_mes_ini(), mt(), mes_slider_debounced())
+    req(length(names(mt())[sapply(mt(), is.numeric)]) > 0)
+    
+    values <- mes_slider_debounced()  #debounced vals read
+    numeric_cols <- names(values)
+    
+    df_values <- as.data.frame(values)
+    df_first_values <- as.data.frame(memima_ini())
+    rownames(df_first_values) <- NULL
+    
+    if (!identical(df_values, df_first_values)) {#otherwise sometimes run too soon
+      isolate(mes_touched(TRUE))
+      
+      ff <- mt() %>%
+        rownames_to_column("optimum") %>%
+        reduce(numeric_cols, function(df, col) {
+          df %>% filter(.data[[col]] >= values[[col]][1] & .data[[col]] <= values[[col]][2])
+        }, .init = .)
+      
+      mt_optis = ff$optimum
+      opti_mima(fit1() %>% filter(optimum %in% mt_optis) %>% select(-optimum))
+      
+    } else { opti_mima(FALSE) }
+  })
+  
+  
+  ## update slider labels based on objectives
+  observe({
+    req(objectives())
+    obj <- objectives()
+    for(i in 1:4){
+      updateSliderInput(session, paste0("obj",i), label = obj[i])
+      updateSliderInput(session, paste0("obj",i,"_ahp"), label = obj[i])
+      updateSliderInput(session, paste0("ran",i), label = obj[i])
+    }
+    updateCheckboxGroupInput(session, "sel_neg", choices = objectives(), selected = NULL)
+    
+  })
+  
+  observe({ #create mt() for measure sliders
+    hru_da()
+    req(aep_100(), hru_ever())
+    
+    fk = aep_100() %>% inner_join(hru_ever(),by = c("hru" = "id", "nswrm" = "measure"))%>% select(-hru)
+    
+    mt(fk %>%
+         group_by(nswrm, optims) %>%
+         summarize(distinct_aep = n_distinct(name), .groups = "drop") %>%
+         pivot_wider(names_from = optims, values_from = distinct_aep, values_fill = 0) %>%
+         column_to_rownames("nswrm") %>%  
+         t() %>%  
+         as.data.frame())
+    
+  })
+  
+  
+  
+  mes_slider_debounced <- debounce(reactive({
+    req(slider_mes_ini(), mt())
+    numeric_cols <- names(mt())[sapply(mt(), is.numeric)]
+    values <- setNames(
+      lapply(numeric_cols, function(col) input[[paste0("slider_", col)]]),
+      numeric_cols
+    )
+    if (any(sapply(values, is.null))) return(NULL)
+    values
+  }), 600)
+  
+  observe({
+    req(mt())
+    memima_ini(rbind(
+      min = apply(mt(), 2, min, na.rm = TRUE),
+      max = apply(mt(), 2, max, na.rm = TRUE)
+    ))
+  })
+  
+  
+  #measure slider
+  output$mes_sliders <- renderUI({
+    req(mt())
+    numeric_cols <- sapply(mt(), is.numeric)
+    sliders <- lapply(names(mt())[numeric_cols], function(col) {
+      sliderInput(inputId = paste0("slider_", col),
+                  label = col,
+                  min = min(mt()[[col]]),
+                  max = max(mt()[[col]]),
+                  step = 1,
+                  value = c(min(mt()[[col]]), max(mt()[[col]]))
+      )
+    })
+    
+    slider_mes_ini(TRUE)
+    sliders
+  })
+  
+  
+  observe({
+    sq_da()
+    if (is.null(sq_da())) {
+      shinyjs::disable("add_sq_f")
+      shinyjs::disable("plt_sq")
+      shinyjs::hide("status_quo_title")
+    } else{
+      shinyjs::enable("add_sq_f")
+      shinyjs::enable("plt_sq")
+      shinyjs::show("status_quo_title") 
+    }
+  })
   
   observe({
    axiselected()
@@ -1289,7 +1294,7 @@ server <- function(input, output, session) {
       minvals = c(input$obj1[1], input$obj2[1], input$obj3[1], input$obj4[1]),
       maxvals = c(input$obj1[2], input$obj2[2], input$obj3[2], input$obj4[2])
     )
-  }), 400)
+  }), 600)
   
   
   #filtered_data and scaled_filtered_data(), currently rather verbose setup
@@ -1421,8 +1426,8 @@ server <- function(input, output, session) {
         if(is.null(shp_da()) || is.null(hru_da())){ 
           return(NULL)
         }else{
-		shinyjs::show("download_sel_csv")										   
-        actionButton("map_sel", "Plot decision space of selected optimum")
+          shinyjs::show("download_sel_csv")
+          actionButton("map_sel", "Plot decision space of selected optimum")
         } 
       }
     })
@@ -1477,24 +1482,24 @@ server <- function(input, output, session) {
     }
 
     output$download_pm <- downloadHandler(
-
-        filename = function(){
-          curt = format(Sys.time(), "_%Y%m%d")
-          paste0(input$meas_play_savename,curt, ".png")
-        },
-
-        content = function(file) {
-          shinyjs::show("spinner_download_play")
-          measmap <- single_meas_fun2(fs = F)[[1]]
-          tmp_html<-file.path("/srv/shiny-server/output",paste0("temp_", session$token, ".html"))
-          tmp_dir<-paste0(tmp_html, "_files")
-          saveWidget(measmap, tmp_html, selfcontained = TRUE)
-          webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                           vheight = 900)
-          shinyjs::hide("spinner_download_play")
-          file.remove(tmp_html)
-          unlink(tmp_dir, recursive = TRUE)
-          }
+      
+      filename = function(){
+        curt = format(Sys.time(), "_%Y%m%d")
+        paste0(input$meas_play_savename,curt, ".png")
+      },
+      
+      content = function(file) {
+        shinyjs::show("spinner_download_play")
+        measmap <- single_meas_fun2(fs = F)[[1]]
+        tmp_html<-file.path("/srv/shiny-server/output",paste0("temp_", session$token, ".html"))
+        tmp_dir<-paste0(tmp_html, "_files")
+        saveWidget(measmap, tmp_html, selfcontained = TRUE)
+        webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
+                          vheight = 900)
+        shinyjs::hide("spinner_download_play")
+        file.remove(tmp_html)
+        unlink(tmp_dir, recursive = TRUE)
+      }
     )
     
     
@@ -1615,7 +1620,6 @@ server <- function(input, output, session) {
     
     output$linePlot <- renderPlot({ parplot_fun() })
     
-  # observe({if(!is.null(input$clickline)){shinyjs::show("save_click_line")}})
   observeEvent(input$clickline, {updateCheckboxInput(session, "save_click_line", value = FALSE) })
   
  
@@ -1664,7 +1668,6 @@ server <- function(input, output, session) {
       pull(optimum) %>%as.numeric()#slice needed for duplicate optima values
   }
   
- 
   
   click_table_data <- reactive({
     req(sel_tay())
@@ -1714,20 +1717,6 @@ server <- function(input, output, session) {
    
   }
   
-  # observeEvent(input$save_click_line,{
-  #   
-  #   if(input$save_click_line){
-  #     req(m_opt)
-  #     if(file.exists(paste0(output_dir,"selected_optima.csv"))){
-  #       
-  #     write.table(m_opt, file = paste0(output_dir,"selected_optima.csv"), sep = ",",
-  #                 append = TRUE, col.names = FALSE, row.names = FALSE)
-  #     
-  #   }else{write.csv(m_opt,file=paste0(output_dir,"selected_optima.csv"),row.names = F)
-  #   
-  #   }}
-  # })
-  
   output$save_click_line <- downloadHandler(
     filename = function(){
       curt = format(Sys.time(), "_%Y%m%d")
@@ -1737,6 +1726,7 @@ server <- function(input, output, session) {
       write.csv(sel_tay(),file,row.names = T) #rownames needed for optimum
     }
   )
+  
   
   
   output$download_line_plot <- downloadHandler(
@@ -1986,31 +1976,33 @@ server <- function(input, output, session) {
     }else{shinyjs::hide("freq_map_play")
       shinyjs::hide("download_freq_id")}})
  
-  play_freq = function(leg = TRUE){ #excessive function
-    req(cmf(), filtered_data(),hru_matcher())
+  sel_optima <- reactive({
+    req(filtered_data(), fit())
+    unique(match(do.call(paste, filtered_data()), do.call(paste, fit())))
+  })
+  
+  
+  play_freq = function(leg = TRUE){ 
+    req(cmf(), filtered_data(),hru_ever(),sel_optima())
     
     dat = filtered_data()
     
-    if(nrow(dat)== 0 || ncol(dat)== 0){return(NULL)}else{
-      optima <-unique( match(do.call(paste, dat), do.call(paste, fit())))
-      hru_subset_freq = hru_matcher()[,c("id",as.character(optima))]     #subset to only those optima in selection
-      
-      hru_freq = hru_subset_freq
-
-      opt_cols_cont <- hru_freq[, -which(names(hru_freq) == "id")]#only opt columns
-      
-      hru_freq$freq <- apply(opt_cols_cont, 1, function(row) {
-        counts <- table(row, useNA = "no")
-        if (length(counts) == 0) return(NA) #not activated (anymore)
-        max(counts) / length(row)
-      })
-      # hru_freq$freq = rowSums(!is.na(hru_freq[ , -which(names(hru_freq) == "id")])) / (ncol(hru_freq) - 1)
-      # hru_share = hru_freq%>%left_join(hru_100(),by="id") %>%select(id,measure,freq)
-      opt_cols <- names(opt_cols_cont)
-      
-      hru_share = hru_freq
-      hru_share$measure = apply(hru_share[opt_cols], 1, color_meas_most) 
-      hru_share = hru_share %>% select(id, measure, freq)
+    if(nrow(dat)== 0 || ncol(dat)== 0) return(NULL)
+    
+   
+    optima = sel_optima()
+    n_opt  = length(optima)
+    
+    #frequency and most common measure per hru
+    hru_share = hru_ever() %>%
+      ungroup() %>%
+      filter(optims %in% optima) %>%
+      count(id, measure) %>%
+      group_by(id) %>%
+      slice_max(n, n = 1, with_ties = FALSE) %>%
+      ungroup() %>%
+      mutate(freq = n / n_opt) %>%
+      select(id, measure, freq)
 
       #make unique measures outside
       mes <<- unique(hru_ever()$measure)
@@ -2022,7 +2014,7 @@ server <- function(input, output, session) {
       
       m = plt_freq(data = cmf(),lo=lalo()[2], la=lalo()[1], buffers=buffers(), remaining=hru_share, dispal=pal, mes = mes, legend = leg, basemap = input$anomap)
       
-      return(m)}
+      return(m)
   }
   
   
@@ -2044,7 +2036,7 @@ server <- function(input, output, session) {
       tmp_dir<-paste0(tmp_html, "_files")
       saveWidget(freqmap,tmp_html,selfcontained = TRUE)
       webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                       vheight = 900)
+                        vheight = 900)
       shinyjs::hide("spinner_download_play2")
       file.remove(tmp_html)
       unlink(tmp_dir, recursive = TRUE)
@@ -2054,40 +2046,29 @@ server <- function(input, output, session) {
   
 
  freq_shaper = function(){ 
-   req(cmf(), filtered_data(),hru_matcher())
+   req(cmf(), filtered_data(),hru_ever(), hru_matcher())
    
    dat = filtered_data()
+   if (nrow(dat) == 0 || ncol(dat) == 0) return(NULL)
    
-   if(nrow(dat)== 0 || ncol(dat)== 0){return(NULL)}else{
-     optima <-unique( match(do.call(paste, dat), do.call(paste, fit())))
-     hru_subset_freq = hru_matcher()[,c("id",as.character(optima))]     #subset to only those optima in selection
+   optima = sel_optima()
+   n_opt = length(optima)
+   
+   
+   mes_share = hru_ever() %>%
+     ungroup() %>%
+     filter(optims %in% optima) %>%
+     count(id, measure, name = "n_optima") %>%       # in how many selected optima this measure is in this HRU
+     mutate(freq = n_optima / n_opt * 100)           # percentage of selected optima
+   
+   m = cmf() %>%
+     select(id, geometry) %>%
+     inner_join(mes_share, by = "id") %>%
+     st_make_valid() %>%
+     subset(!st_is_empty(geometry))
+   
+   split(m, m$measure) #one layer per measure
      
-     hru_freq = hru_subset_freq
-     hru_freq$freq = (rowSums(!is.na(hru_freq[ , -which(names(hru_freq) == "id")])) / (ncol(hru_freq) - 1))*100
-     hru_freq$all_optima = rowSums(!is.na(hru_freq[ , -which(names(hru_freq) %in% c("id","freq"))]))
-     # hru_share = hru_freq%>%left_join(hru_100(),by="id") %>%select(id, measure, freq, all_optima)
-     
-     opt_cols <- setdiff(names(hru_freq), c("id", "freq", "all_optima")) #only opt colums
-     
-     hru_share = hru_freq
-     hru_share$measure = apply(hru_share[opt_cols], 1, color_meas_most) 
-     hru_share = hru_share %>% select(id, measure, freq, all_optima)
-     
-     #make unique measures outside
-     mes <<- unique(hru_ever()$measure)
-     
-     #make palette outside and pass to it
-     man_col = c("#66C2A5", "#4db818", "#663e13", "#F7A600", "#03597F", "#83D0F5",  "#FFEF2C",   "#a84632",  "#b82aa5",  "#246643" )
-     man_col = man_col[1:length(unique(mes))]
-     pal <<- colorFactor(palette = man_col, domain = unique(mes), na.color = "lightgrey")
-
-     m = left_join(cmf(), hru_share, by = c("id"))%>%select(id, geometry, measure, freq, all_optima)%>%st_make_valid() 
-     m = m %>%subset(!st_is_empty(geometry))
-     
-     #divide into different dataframes
-     m = split(m, m$measure)
-     return(m)
-     }
  }
   
   output$download_shp_freq <- downloadHandler(
@@ -2206,7 +2187,7 @@ server <- function(input, output, session) {
       req(aep_100_con(),hru_ever(),filtered_data())
       if(nrow(filtered_data())>= 1){
 
-        optima <-match(do.call(paste, filtered_data()), do.call(paste, fit()))
+        optima <-sel_optima()
         hru_spec_act = hru_ever() %>%filter(optims %in% optima)
         
         # aep_sel = aep_100() %>% filter(hru %in% unique(hru_spec_act$id))
@@ -3048,7 +3029,7 @@ server <- function(input, output, session) {
       
      
     }else{
-      
+      output$analysis_needs_var = NULL
       shinyjs::hide("analysis_needs_var")
       shinyjs::runjs("toggleSidebar(true);")  #show sidebar
       shinyjs::show("main_analysis")
@@ -3071,6 +3052,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$tabs == "analysis", { #this could be combined with the ahp tab for analysis
+    clus_out <- reactiveVal(if (list.files(path = output_dir, pattern = "clusters_representativesolutions.*\\.csv$", full.names = TRUE) %>% length() > 0) 1 else NULL) #observer for cluster output availability
     
     if(!file.exists("../input/object_names.RDS")) {
       choices = "Please select objectives in Data Preparation Tab"
@@ -3120,7 +3102,7 @@ server <- function(input, output, session) {
         })}else{shinyjs::hide("meas_low")}
       
       observe({
-        
+
         all_files <- list.files(output_dir, pattern = "clusters_representativesolutions.*\\.csv", full.names = TRUE)
         
         if(length(all_files)>1){
@@ -3563,32 +3545,80 @@ server <- function(input, output, session) {
  })
   
   ### AHP ####
-  observeEvent(input$tabs == "ahp",{
-    if(!file.exists("../data/pareto_fitness.txt")){ #check if fit() has been created yet
-      output$nothing_ran_ahp <- renderText({HTML("please provide the pareto_fitness.txt and the objective names in the Data Preparation tab.")})
-    }else{ shinyjs::hide("nothing_ran_ahp")
-      shinyjs::runjs("toggleSidebar(false);")  # Hide sidebar
-    }      
-    if (is.null(sq_da())){shinyjs::disable("show_status_quo")}else{shinyjs::enable("show_status_quo")} 
-      
-      if(!file.exists("../input/object_names.RDS")) {
-      choices = "Please select objectives in Data Preparation Tab"
-      
-      ids_to_hide <- c( "pareto_weighted", "random_ahp2", "random_ahp", "ahp_analysis", "ahp_weights","sel_wgt")
-      
-      lapply(ids_to_hide, shinyjs::hide)
-    
-      } else{choices = readRDS("../input/object_names.RDS")}
-    
-  
-    ahp_choices(choices)
+  # observeEvent(input$tabs == "ahp",{
+  #   if(!file.exists("../data/pareto_fitness.txt")){ #check if fit() has been created yet
+  #     output$nothing_ran_ahp <- renderText({HTML("please provide the pareto_fitness.txt and the objective names in the Data Preparation tab.")})
+  #   }else{ shinyjs::hide("nothing_ran_ahp")
+  #     shinyjs::runjs("toggleSidebar(false);")  # Hide sidebar
+  #   }      
+  #   if (is.null(sq_da())){shinyjs::disable("show_status_quo")}else{shinyjs::enable("show_status_quo")} 
+  #     
+  #     if(!file.exists("../input/object_names.RDS")) {
+  #     choices = "Please select objectives in Data Preparation Tab"
+  #     
+  #     ids_to_hide <- c( "pareto_weighted", "random_ahp2", "random_ahp", "ahp_analysis", "ahp_weights","sel_wgt")
+  #     
+  #     lapply(ids_to_hide, shinyjs::hide)
+  #   
+  #     } else{choices = readRDS("../input/object_names.RDS")}
+  #   
+  # 
+  #   ahp_choices(choices)
+  #  
+  #   updateSelectInput(session,inputId = "x_var", choices = choices,selected = rng_plt()[1])
+  #   updateSelectInput(session,inputId = "y_var", choices = choices, selected = rng_plt()[2])
+  #   updateSelectInput(session,inputId = "col_var", choices = choices, selected = rng_plt()[3])
+  #   updateSelectInput(session,inputId = "size_var", choices = choices, selected = rng_plt()[4])
+  #   
+  #   })
+ 
+ observeEvent(input$tabs == "ahp", {
+   ids_ahp <- c("pareto_weighted", "random_ahp2", "random_ahp", "ahp_analysis", "ahp_weights", "sel_wgt")
    
-    updateSelectInput(session,inputId = "x_var", choices = choices,selected = rng_plt()[1])
-    updateSelectInput(session,inputId = "y_var", choices = choices, selected = rng_plt()[2])
-    updateSelectInput(session,inputId = "col_var", choices = choices, selected = rng_plt()[3])
-    updateSelectInput(session,inputId = "size_var", choices = choices, selected = rng_plt()[4])
-    
-    })
+   #if pareto_fitness.txt is missing
+   if (!file.exists("../data/pareto_fitness.txt")) {
+     shinyjs::show("nothing_ran_ahp")
+     output$nothing_ran_ahp <- renderText({"Please provide the pareto_fitness.txt and the objective names in the Data Preparation tab."})
+   } else {
+     shinyjs::hide("nothing_ran_ahp")
+     shinyjs::runjs("toggleSidebar(false);")
+   }
+   
+   #sq button
+   if (is.null(sq_da())) shinyjs::disable("show_status_quo") else shinyjs::enable("show_status_quo")
+   
+   #objective names: hide or show the AHP elements, build the cards
+   if (!file.exists("../input/object_names.RDS")) {
+     choices <- "Please select objectives in Data Preparation Tab"
+     lapply(ids_ahp, shinyjs::hide)
+   } else {
+     choices <- readRDS("../input/object_names.RDS")
+     lapply(ids_ahp, shinyjs::show)
+     
+     combos <- character(0)
+     k <- 1
+     for (i in 1:(length(choices) - 1)) {
+       for (j in (i + 1):length(choices)) {
+         new_label <- paste0(choices[j], " vs. ", choices[i])
+         updateActionButton(session, paste0("ahp_card", k), label = new_label)
+         combos <- c(combos, new_label)
+         k <- k + 1
+       }
+     }
+     ahp_combo(combos)
+   }
+   
+   ahp_choices(choices)
+   
+   #keep user's choice, otherwise use the default
+   keep_or_default <- function(current, default) {
+     if (!is.null(current) && current %in% choices) current else default
+   }
+   updateSelectInput(session, "x_var",    choices = choices, selected = keep_or_default(input$x_var,    rng_plt()[1]))
+   updateSelectInput(session, "y_var",    choices = choices, selected = keep_or_default(input$y_var,    rng_plt()[2]))
+   updateSelectInput(session, "col_var",  choices = choices, selected = keep_or_default(input$col_var,  rng_plt()[3]))
+   updateSelectInput(session, "size_var", choices = choices, selected = keep_or_default(input$size_var, rng_plt()[4]))
+ })
   
   observe({ #hide measure slider title too
     hru_ever()
@@ -3701,23 +3731,22 @@ server <- function(input, output, session) {
   observe({
     #best_option() is set to cluster in other table
     req(sols(), best_option(), dfx())
-    
     if (!is.null(input$best_cluster) && input$best_cluster) {
       shinyjs::show("ahp_cluster_div")
       bor = sols() %>% filter(if_all(objectives(), ~ . %in% best_option())) %>% as.data.frame()
       
-      if (
-          (!is.null(mahp()) && nrow(mahp()) == 0) || 
+      if ((!is.null(mahp()) && nrow(mahp()) == 0) ||
           nrow(bor) == 0) {
         output$ahp_cluster_num <- renderText({paste0("none of the clusters fall within your selection!")})
-          shinyjs::disable("save_ahp")
+        shinyjs::disable("save_ahp")
         
-      }else{
-        output$ahp_cluster_num <- renderText({paste("cluster number: ", 
-                bor$`cluster number`,"; the representative optimum is ", bor$optimum,sep = "")})
-        
+      } else{
+        output$ahp_cluster_num <- renderText({
+          paste("cluster number: ", bor$`cluster number`, "; the representative optimum is ", bor$optimum, sep = "")
+        })
       }
-    }else{shinyjs::hide("ahp_cluster_div")}
+    } else{shinyjs::hide("ahp_cluster_div")
+    }
   })
   
   observe({
@@ -3779,11 +3808,11 @@ server <- function(input, output, session) {
         mahp_touched = mahp_touched()
       )
     }), 
-    400
+    600
   )
   
   #main datasets for this tab: sols_ahp() and whole_ahp()
- observe({
+  observe({
     clus_out()  
     req(ahp_combined_debounced(), fit())
     
@@ -3810,8 +3839,9 @@ server <- function(input, output, session) {
         mes_df = inputs$mahp_data
       ))
     } 
- 
   })
+  
+ 
   
   observe({ #switch between datasets
     
@@ -3820,9 +3850,7 @@ server <- function(input, output, session) {
     if(!is.null(sols_ahp()) && !is.null(input$best_cluster) && input$best_cluster){dfx(sols_ahp())}else{
       dfx(whole_ahp()) #default
     }
-    
   })
-  
   
   utopia= reactive({
     df = dfx()
@@ -3830,7 +3858,7 @@ server <- function(input, output, session) {
     find_utopia(dfx())
   })
   
-  
+ 
   anchor_fit = reactive({
     df = dfx()
     if (is.null(df) || nrow(df) == 0) return(NULL)
@@ -3840,14 +3868,15 @@ server <- function(input, output, session) {
     max_rows$anchor_label = names(df)
     max_rows
   })
+
   
   observe({
     req(whole_ahp())
     sk = whole_ahp()
     
-    output$ahp_count <- renderUI({
-      tagList("The remaining number of optima is: ",tags$b(nrow(sk)))
-    })
+      output$ahp_count <- renderUI({
+        tagList("The remaining number of optima is: ",tags$b(nrow(sk)))
+      })
     
     
   })
@@ -4155,56 +4184,34 @@ server <- function(input, output, session) {
           
         })
         
+        observe({
+          req(best_option(), fit1(), objectives())
+          updateCheckboxInput(session, "save_ahp", value = FALSE) 
 
-    
-    # observe({#moved elsewhere
-    #   req(dfx(),objectives())
-    #   if(!is.null(best_option())) {shinyjs::show("save_ahp")}})
-    
-    observe({
-      req(best_option(), fit1(), objectives())
-      updateCheckboxInput(session, "save_ahp", value = FALSE) 
-      # bprv(fit()%>% rownames_to_column("optimum") %>% filter(if_all(all_of(objectives()), ~ . %in% bp)))
+          bp_vals <- as.data.frame(best_option())
+          objs <- objectives()
+          tol_abs <- 1e-3
+          
+          #plain named vector (see values)
+          bp_vec <- setNames(as.numeric(bp_vals[1, objs]), objs)
 
-      bp_vals <- as.data.frame(best_option())
-      objs <- objectives()
-      tol_abs <- 1e-3
-      
-      #plain named vector (see values)
-      bp_vec <- setNames(as.numeric(bp_vals[1, objs]), objs)
+          bprv(fit1() %>% mutate(match = rowSums(across(all_of(objs), ~ abs(. - bp_vec[[cur_column()]]) < tol_abs)) == length(objs)) %>%
+                 filter(match) %>%
+                 select(-match))
+          
+        })
+    
+        output$save_ahp <- downloadHandler(
+          filename = function(){
+            curt = format(Sys.time(), "_%Y%m%d")
+            paste0(input$save_ahp_name, curt, ".csv")
+          },
+          content = function(file){
+            write.csv(bprv(),file,row.names = F) #optimum as column included, not rownames
+          }
+        )
 
-      bprv(fit1() %>% mutate(match = rowSums(across(all_of(objs), ~ abs(. - bp_vec[[cur_column()]]) < tol_abs)) == length(objs)) %>%
-        filter(match) %>%
-        select(-match))
-    
-      })
-    
-    
-    
-    # observeEvent(input$save_ahp,{
-    #   
-    #   if(input$save_ahp){
-    #     
-    #     if(file.exists(paste0(output_dir,"selected_optima.csv"))){
-    #       
-    #       write.table(bp, file = paste0(output_dir,"selected_optima.csv"), sep = ",",
-    #                   append = TRUE, col.names = FALSE, row.names = FALSE)
-    # 
-    #     }else{
-    #     write.csv(bp,file=paste0(output_dir,"selected_optima.csv"),row.names = F)
-    # 
-    #     }}
-    # })
   
-    output$save_ahp <- downloadHandler(
-      filename = function(){
-        curt = format(Sys.time(), "_%Y%m%d")
-        paste0(input$save_ahp_name, curt, ".csv")
-      },
-      content = function(file){
-        write.csv(bprv(),file,row.names = F) #optimum as column included, not rownames
-      }
-    )
     
     
     weight_plt_fun = function(){
@@ -4212,7 +4219,7 @@ server <- function(input, output, session) {
       req(whole_ahp())
       req(input$x_var, input$y_var, input$col_var, input$size_var)
       
-     if(!is.null(sols())){ sol<<-sols()[,objectives()]}else{sol = NULL}
+      if(!is.null(sols())){ sol<<-sols()[,objectives()]}else{sol = NULL}
       bo = best_option()
       df3 = whole_ahp()
       req(nrow(df3) > 0, any(is.finite(df3[[input$col_var]])))
@@ -4422,11 +4429,11 @@ server <- function(input, output, session) {
       tmp_dir <-paste0(tmp_html, "_files")
       saveWidget(mp,tmp_html, selfcontained = TRUE)
       webshot2::webshot(tmp_html, file = file, cliprect = "viewport",vwidth = 900,
-                       vheight = 900)
+                        vheight = 900)
       shinyjs::hide("spinner_download_ahp")  
       file.remove(tmp_html)
       unlink(tmp_dir, recursive = TRUE)
-      }
+    }
   )
   
   shp_ahp = function(shp=T){
