@@ -573,10 +573,10 @@ ui <-
                                
                                
                                div(id="runprep_show",p("Check files and click either 'Run Prep: Measure Allocation' or 'Run Prep: Both' when ready 
-                                                       (depending on the size of the shapefiles this can take up to 10 minutes)",style =  "text-align: left; font-size:100%; width: 100%;"),
+                                                       (depending on the size of the shapefiles this can take up to 10 minutes)"),
                                    actionButton("runprep", "Run Prep: Both"))%>%hidden,
                                
-                               div(id="runhruprep_show",p("Click here if you want to prepare the measure allocation only:",style =  "text-align: left; font-size:100%; width: 150%;"),
+                               div(id="runhruprep_show",p("Click here if you want to prepare the measure allocation only:"),
                                    actionButton("runhruprep", "Run Prep: Measure Allocation"))%>%hidden,
                                uiOutput("scriptdp"),
                                #####################################

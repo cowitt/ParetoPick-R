@@ -489,7 +489,7 @@ server <- function(input, output, session) {
       cluster_files = c("../data/hru.con", "../data/rout_unit.con")
       missing_files <- required_files[!file.exists(required_files)]
       names_avail   <- file.exists("../input/object_names.RDS")
-      
+  
       #case 1 - Everything available
       if (length(missing_files) == 0) {
         if(names_avail){
@@ -1027,13 +1027,7 @@ server <- function(input, output, session) {
     
  
     ### Play Around Tab ####
-  if (!file.exists("../data/sq_fitness.txt")){
-    shinyjs::disable("plt_sq")
-    shinyjs::hide("status_quo_title")
-  }else{
-    shinyjs::show("status_quo_title") 
-    shinyjs::enable("plt_sq")}
-  
+ 
   #remove tab content if fitness not available
   observe({
     pareto_da()
@@ -1136,11 +1130,11 @@ server <- function(input, output, session) {
     }
   })
   ##check if names of objectives have to be supplied or already present
-  observeEvent(input$tabs=="play_around",{ 
+  observeEvent(input$tabs,{ 
+    req(input$tabs == "play_around")
     ## make or pull objectives()
     map_plotted(FALSE)
     
-  
     if(!file.exists("../input/object_names.RDS")) {
       
       shinyjs::hide(id = "tab_play1")#do not show visualisation tab content 
@@ -1156,123 +1150,123 @@ server <- function(input, output, session) {
         updateSelectInput(session, "y_var3",   choices = short, selected = rng_plt()[2])
         updateSelectInput(session, "col_var3", choices = short, selected = rng_plt()[3])
         updateSelectInput(session, "size_var3",choices = short, selected = rng_plt()[4])
-        
-        num_criteria = length(objectives())
-        k=1
-        ahp_combo(character(0))
-        for (i in 1:(num_criteria - 1)) {
-          for (j in (i + 1):num_criteria) {
-            new_label <- paste0(objectives()[j]," vs. ",objectives()[i])
-            updateActionButton(session, paste0("ahp_card",k), label = new_label)
-            ahp_combo(c(ahp_combo(), new_label))  #identifier for ahp scatter plots
-            k = k+1}}
-        
-      }
-    
-    ## update slider labels based on objectives
-    observe({
-      req(objectives())
-      obj <- objectives()
-      for(i in 1:4){
-        updateSliderInput(session, paste0("obj",i), label = obj[i])
-        updateSliderInput(session, paste0("obj",i,"_ahp"), label = obj[i])
-        updateSliderInput(session, paste0("ran",i), label = obj[i])
-      }
-      updateCheckboxGroupInput(session, "sel_neg", choices = objectives(), selected = NULL)
-      
-    })
-    
-    observe({ #create mt() for measure sliders
-      req(aep_100(), hru_ever())
-      
-      fk = aep_100() %>% inner_join(hru_ever(),by = c("hru" = "id", "nswrm" = "measure"))%>% select(-hru)
-    
-      mt(fk %>%
-           group_by(nswrm, optims) %>%
-           summarize(distinct_aep = n_distinct(name), .groups = "drop") %>%
-           pivot_wider(names_from = optims, values_from = distinct_aep, values_fill = 0) %>%
-           column_to_rownames("nswrm") %>%  
-           t() %>%  
-           as.data.frame())
-      
-      })
-    
-    observe({
-      req(mt())
-      memima_ini(rbind(
-        min = apply(mt(), 2, min, na.rm = TRUE),
-        max = apply(mt(), 2, max, na.rm = TRUE)
-      ))
-      })
-    
-    #measure slider
-    output$mes_sliders <- renderUI({
-      req(mt())
-      numeric_cols <- sapply(mt(), is.numeric)
-      sliders <- lapply(names(mt())[numeric_cols], function(col) {
-        sliderInput(inputId = paste0("slider_", col),
-                    label = col,
-                    min = min(mt()[[col]]),
-                    max = max(mt()[[col]]),
-                    step = 1,
-                    value = c(min(mt()[[col]]), max(mt()[[col]]))
-        )
-      })
-      
-      slider_mes_ini(TRUE)
-      sliders
-    })
- 
-    
-    observe({
-      sq_da()
-      if (is.null(sq_da())) {
-        shinyjs::disable("add_sq_f")
-      } else{
-        shinyjs::enable("add_sq_f")
-      }
-    })
-    
-    mes_slider_debounced <- debounce(reactive({
-      req(slider_mes_ini(), mt())
-      numeric_cols <- names(mt())[sapply(mt(), is.numeric)]
-      values <- setNames(
-        lapply(numeric_cols, function(col) input[[paste0("slider_", col)]]),
-        numeric_cols
-      )
-      if (any(sapply(values, is.null))) return(NULL)
-      values
-    }), 600)
-    
-    observe({
-      req(fit())
-      req(slider_mes_ini(), mt(), mes_slider_debounced())
-      req(length(names(mt())[sapply(mt(), is.numeric)]) > 0)
-      
-      values <- mes_slider_debounced()  #debounced vals read
-      numeric_cols <- names(values)
-      
-      df_values <- as.data.frame(values)
-      df_first_values <- as.data.frame(memima_ini())
-      rownames(df_first_values) <- NULL
-      
-      if (!identical(df_values, df_first_values)) {#otherwise sometimes run too soon
-        isolate(mes_touched(TRUE))
-        
-        ff <- mt() %>%
-          rownames_to_column("optimum") %>%
-          reduce(numeric_cols, function(df, col) {
-            df %>% filter(.data[[col]] >= values[[col]][1] & .data[[col]] <= values[[col]][2])
-          }, .init = .)
-        
-        mt_optis = ff$optimum
-        opti_mima(fit1() %>% filter(optimum %in% mt_optis) %>% select(-optimum))
-        
-      } else { opti_mima(FALSE) }
-    })
+        }
+
     
     })#end of play tab observer
 
+  
+  
+  observe({
+    req(fit())
+    req(slider_mes_ini(), mt(), mes_slider_debounced())
+    req(length(names(mt())[sapply(mt(), is.numeric)]) > 0)
+    
+    values <- mes_slider_debounced()  #debounced vals read
+    numeric_cols <- names(values)
+    
+    df_values <- as.data.frame(values)
+    df_first_values <- as.data.frame(memima_ini())
+    rownames(df_first_values) <- NULL
+    
+    if (!identical(df_values, df_first_values)) {#otherwise sometimes run too soon
+      isolate(mes_touched(TRUE))
+      
+      ff <- mt() %>%
+        rownames_to_column("optimum") %>%
+        reduce(numeric_cols, function(df, col) {
+          df %>% filter(.data[[col]] >= values[[col]][1] & .data[[col]] <= values[[col]][2])
+        }, .init = .)
+      
+      mt_optis = ff$optimum
+      opti_mima(fit1() %>% filter(optimum %in% mt_optis) %>% select(-optimum))
+      
+    } else { opti_mima(FALSE) }
+  })
+  
+  
+  ## update slider labels based on objectives
+  observe({
+    req(objectives())
+    obj <- objectives()
+    for(i in 1:4){
+      updateSliderInput(session, paste0("obj",i), label = obj[i])
+      updateSliderInput(session, paste0("obj",i,"_ahp"), label = obj[i])
+      updateSliderInput(session, paste0("ran",i), label = obj[i])
+    }
+    updateCheckboxGroupInput(session, "sel_neg", choices = objectives(), selected = NULL)
+    
+  })
+  
+  observe({ #create mt() for measure sliders
+    hru_da()
+    req(aep_100(), hru_ever())
+    
+    fk = aep_100() %>% inner_join(hru_ever(),by = c("hru" = "id", "nswrm" = "measure"))%>% select(-hru)
+    
+    mt(fk %>%
+         group_by(nswrm, optims) %>%
+         summarize(distinct_aep = n_distinct(name), .groups = "drop") %>%
+         pivot_wider(names_from = optims, values_from = distinct_aep, values_fill = 0) %>%
+         column_to_rownames("nswrm") %>%  
+         t() %>%  
+         as.data.frame())
+    
+  })
+  
+  
+  
+  mes_slider_debounced <- debounce(reactive({
+    req(slider_mes_ini(), mt())
+    numeric_cols <- names(mt())[sapply(mt(), is.numeric)]
+    values <- setNames(
+      lapply(numeric_cols, function(col) input[[paste0("slider_", col)]]),
+      numeric_cols
+    )
+    if (any(sapply(values, is.null))) return(NULL)
+    values
+  }), 600)
+  
+  observe({
+    req(mt())
+    memima_ini(rbind(
+      min = apply(mt(), 2, min, na.rm = TRUE),
+      max = apply(mt(), 2, max, na.rm = TRUE)
+    ))
+  })
+  
+  
+  #measure slider
+  output$mes_sliders <- renderUI({
+    req(mt())
+    numeric_cols <- sapply(mt(), is.numeric)
+    sliders <- lapply(names(mt())[numeric_cols], function(col) {
+      sliderInput(inputId = paste0("slider_", col),
+                  label = col,
+                  min = min(mt()[[col]]),
+                  max = max(mt()[[col]]),
+                  step = 1,
+                  value = c(min(mt()[[col]]), max(mt()[[col]]))
+      )
+    })
+    
+    slider_mes_ini(TRUE)
+    sliders
+  })
+  
+  
+  observe({
+    sq_da()
+    if (is.null(sq_da())) {
+      shinyjs::disable("add_sq_f")
+      shinyjs::disable("plt_sq")
+      shinyjs::hide("status_quo_title")
+    } else{
+      shinyjs::enable("add_sq_f")
+      shinyjs::enable("plt_sq")
+      shinyjs::show("status_quo_title") 
+    }
+  })
   
   observe({
    axiselected()
@@ -2001,31 +1995,33 @@ server <- function(input, output, session) {
     }else{shinyjs::hide("freq_map_play")
       shinyjs::hide("download_freq_id")}})
  
-  play_freq = function(leg = TRUE){ #excessive function
-    req(cmf(), filtered_data(),hru_matcher())
+  sel_optima <- reactive({
+    req(filtered_data(), fit())
+    unique(match(do.call(paste, filtered_data()), do.call(paste, fit())))
+  })
+  
+  
+  play_freq = function(leg = TRUE){ 
+    req(cmf(), filtered_data(),hru_ever(),sel_optima())
     
     dat = filtered_data()
     
-    if(nrow(dat)== 0 || ncol(dat)== 0){return(NULL)}else{
-      optima <-unique( match(do.call(paste, dat), do.call(paste, fit())))
-      hru_subset_freq = hru_matcher()[,c("id",as.character(optima))]     #subset to only those optima in selection
-      
-      hru_freq = hru_subset_freq
-
-      opt_cols_cont <- hru_freq[, -which(names(hru_freq) == "id")]#only opt columns
-      
-      hru_freq$freq <- apply(opt_cols_cont, 1, function(row) {
-        counts <- table(row, useNA = "no")
-        if (length(counts) == 0) return(NA) #not activated (anymore)
-        max(counts) / length(row)
-      })
-      # hru_freq$freq = rowSums(!is.na(hru_freq[ , -which(names(hru_freq) == "id")])) / (ncol(hru_freq) - 1)
-      # hru_share = hru_freq%>%left_join(hru_100(),by="id") %>%select(id,measure,freq)
-      opt_cols <- names(opt_cols_cont)
-      
-      hru_share = hru_freq
-      hru_share$measure = apply(hru_share[opt_cols], 1, color_meas_most) 
-      hru_share = hru_share %>% select(id, measure, freq)
+    if(nrow(dat)== 0 || ncol(dat)== 0) return(NULL)
+    
+   
+    optima = sel_optima()
+    n_opt  = length(optima)
+    
+    #frequency and most common measure per hru
+    hru_share = hru_ever() %>%
+      ungroup() %>%
+      filter(optims %in% optima) %>%
+      count(id, measure) %>%
+      group_by(id) %>%
+      slice_max(n, n = 1, with_ties = FALSE) %>%
+      ungroup() %>%
+      mutate(freq = n / n_opt) %>%
+      select(id, measure, freq)
 
       #make unique measures outside
       mes <<- unique(hru_ever()$measure)
@@ -2037,7 +2033,7 @@ server <- function(input, output, session) {
       
       m = plt_freq(data = cmf(),lo=lalo()[2], la=lalo()[1], buffers=buffers(), remaining=hru_share, dispal=pal, mes = mes, legend = leg, basemap = input$anomap)
       
-      return(m)}
+      return(m)
   }
   
   
@@ -2068,40 +2064,29 @@ server <- function(input, output, session) {
   
 
  freq_shaper = function(){ 
-   req(cmf(), filtered_data(),hru_matcher())
+   req(cmf(), filtered_data(),hru_ever(), hru_matcher())
    
    dat = filtered_data()
+   if (nrow(dat) == 0 || ncol(dat) == 0) return(NULL)
    
-   if(nrow(dat)== 0 || ncol(dat)== 0){return(NULL)}else{
-     optima <-unique( match(do.call(paste, dat), do.call(paste, fit())))
-     hru_subset_freq = hru_matcher()[,c("id",as.character(optima))]     #subset to only those optima in selection
+   optima = sel_optima()
+   n_opt = length(optima)
+   
+   
+   mes_share = hru_ever() %>%
+     ungroup() %>%
+     filter(optims %in% optima) %>%
+     count(id, measure, name = "n_optima") %>%       # in how many selected optima this measure is in this HRU
+     mutate(freq = n_optima / n_opt * 100)           # percentage of selected optima
+   
+   m = cmf() %>%
+     select(id, geometry) %>%
+     inner_join(mes_share, by = "id") %>%
+     st_make_valid() %>%
+     subset(!st_is_empty(geometry))
+   
+   split(m, m$measure) #one layer per measure
      
-     hru_freq = hru_subset_freq
-     hru_freq$freq = (rowSums(!is.na(hru_freq[ , -which(names(hru_freq) == "id")])) / (ncol(hru_freq) - 1))*100
-     hru_freq$all_optima = rowSums(!is.na(hru_freq[ , -which(names(hru_freq) %in% c("id","freq"))]))
-     # hru_share = hru_freq%>%left_join(hru_100(),by="id") %>%select(id, measure, freq, all_optima)
-     
-     opt_cols <- setdiff(names(hru_freq), c("id", "freq", "all_optima")) #only opt colums
-     
-     hru_share = hru_freq
-     hru_share$measure = apply(hru_share[opt_cols], 1, color_meas_most) 
-     hru_share = hru_share %>% select(id, measure, freq, all_optima)
-     
-     #make unique measures outside
-     mes <<- unique(hru_ever()$measure)
-     
-     #make palette outside and pass to it
-     man_col = c("#66C2A5", "#4db818", "#663e13", "#F7A600", "#03597F", "#83D0F5",  "#FFEF2C",   "#a84632",  "#b82aa5",  "#246643" )
-     man_col = man_col[1:length(unique(mes))]
-     pal <<- colorFactor(palette = man_col, domain = unique(mes), na.color = "lightgrey")
-
-     m = left_join(cmf(), hru_share, by = c("id"))%>%select(id, geometry, measure, freq, all_optima)%>%st_make_valid() 
-     m = m %>%subset(!st_is_empty(geometry))
-     
-     #divide into different dataframes
-     m = split(m, m$measure)
-     return(m)
-     }
  }
   
   output$download_shp_freq <- downloadHandler(
@@ -2220,7 +2205,7 @@ server <- function(input, output, session) {
       req(aep_100_con(),hru_ever(),filtered_data())
       if(nrow(filtered_data())>= 1){
 
-        optima <-match(do.call(paste, filtered_data()), do.call(paste, fit()))
+        optima <-sel_optima()
         hru_spec_act = hru_ever() %>%filter(optims %in% optima)
         
         # aep_sel = aep_100() %>% filter(hru %in% unique(hru_spec_act$id))
@@ -3578,32 +3563,80 @@ server <- function(input, output, session) {
  })
   
   ### AHP ####
-  observeEvent(input$tabs == "ahp",{
-    if(!file.exists("../data/pareto_fitness.txt")){ #check if fit() has been created yet
-      output$nothing_ran_ahp <- renderText({HTML("please provide the pareto_fitness.txt and the objective names in the Data Preparation tab.")})
-    }else{ shinyjs::hide("nothing_ran_ahp")
-      shinyjs::runjs("toggleSidebar(false);")  # Hide sidebar
-    }      
-    if (is.null(sq_da())){shinyjs::disable("show_status_quo")}else{shinyjs::enable("show_status_quo")} 
-      
-      if(!file.exists("../input/object_names.RDS")) {
-      choices = "Please select objectives in Data Preparation Tab"
-      
-      ids_to_hide <- c( "pareto_weighted", "random_ahp2", "random_ahp", "ahp_analysis", "ahp_weights","sel_wgt")
-      
-      lapply(ids_to_hide, shinyjs::hide)
-    
-      } else{choices = readRDS("../input/object_names.RDS")}
-    
-  
-    ahp_choices(choices)
+  # observeEvent(input$tabs == "ahp",{
+  #   if(!file.exists("../data/pareto_fitness.txt")){ #check if fit() has been created yet
+  #     output$nothing_ran_ahp <- renderText({HTML("please provide the pareto_fitness.txt and the objective names in the Data Preparation tab.")})
+  #   }else{ shinyjs::hide("nothing_ran_ahp")
+  #     shinyjs::runjs("toggleSidebar(false);")  # Hide sidebar
+  #   }      
+  #   if (is.null(sq_da())){shinyjs::disable("show_status_quo")}else{shinyjs::enable("show_status_quo")} 
+  #     
+  #     if(!file.exists("../input/object_names.RDS")) {
+  #     choices = "Please select objectives in Data Preparation Tab"
+  #     
+  #     ids_to_hide <- c( "pareto_weighted", "random_ahp2", "random_ahp", "ahp_analysis", "ahp_weights","sel_wgt")
+  #     
+  #     lapply(ids_to_hide, shinyjs::hide)
+  #   
+  #     } else{choices = readRDS("../input/object_names.RDS")}
+  #   
+  # 
+  #   ahp_choices(choices)
+  #  
+  #   updateSelectInput(session,inputId = "x_var", choices = choices,selected = rng_plt()[1])
+  #   updateSelectInput(session,inputId = "y_var", choices = choices, selected = rng_plt()[2])
+  #   updateSelectInput(session,inputId = "col_var", choices = choices, selected = rng_plt()[3])
+  #   updateSelectInput(session,inputId = "size_var", choices = choices, selected = rng_plt()[4])
+  #   
+  #   })
+ 
+ observeEvent(input$tabs == "ahp", {
+   ids_ahp <- c("pareto_weighted", "random_ahp2", "random_ahp", "ahp_analysis", "ahp_weights", "sel_wgt")
    
-    updateSelectInput(session,inputId = "x_var", choices = choices,selected = rng_plt()[1])
-    updateSelectInput(session,inputId = "y_var", choices = choices, selected = rng_plt()[2])
-    updateSelectInput(session,inputId = "col_var", choices = choices, selected = rng_plt()[3])
-    updateSelectInput(session,inputId = "size_var", choices = choices, selected = rng_plt()[4])
-    
-    })
+   #if pareto_fitness.txt is missing
+   if (!file.exists("../data/pareto_fitness.txt")) {
+     shinyjs::show("nothing_ran_ahp")
+     output$nothing_ran_ahp <- renderText({"Please provide the pareto_fitness.txt and the objective names in the Data Preparation tab."})
+   } else {
+     shinyjs::hide("nothing_ran_ahp")
+     shinyjs::runjs("toggleSidebar(false);")
+   }
+   
+   #sq button
+   if (is.null(sq_da())) shinyjs::disable("show_status_quo") else shinyjs::enable("show_status_quo")
+   
+   #objective names: hide or show the AHP elements, build the cards
+   if (!file.exists("../input/object_names.RDS")) {
+     choices <- "Please select objectives in Data Preparation Tab"
+     lapply(ids_ahp, shinyjs::hide)
+   } else {
+     choices <- readRDS("../input/object_names.RDS")
+     lapply(ids_ahp, shinyjs::show)
+     
+     combos <- character(0)
+     k <- 1
+     for (i in 1:(length(choices) - 1)) {
+       for (j in (i + 1):length(choices)) {
+         new_label <- paste0(choices[j], " vs. ", choices[i])
+         updateActionButton(session, paste0("ahp_card", k), label = new_label)
+         combos <- c(combos, new_label)
+         k <- k + 1
+       }
+     }
+     ahp_combo(combos)
+   }
+   
+   ahp_choices(choices)
+   
+   #keep user's choice, otherwise use the default
+   keep_or_default <- function(current, default) {
+     if (!is.null(current) && current %in% choices) current else default
+   }
+   updateSelectInput(session, "x_var",    choices = choices, selected = keep_or_default(input$x_var,    rng_plt()[1]))
+   updateSelectInput(session, "y_var",    choices = choices, selected = keep_or_default(input$y_var,    rng_plt()[2]))
+   updateSelectInput(session, "col_var",  choices = choices, selected = keep_or_default(input$col_var,  rng_plt()[3]))
+   updateSelectInput(session, "size_var", choices = choices, selected = keep_or_default(input$size_var, rng_plt()[4]))
+ })
   
   observe({ #hide measure slider title too
     hru_ever()
